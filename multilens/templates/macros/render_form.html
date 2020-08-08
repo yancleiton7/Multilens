@@ -1,0 +1,10 @@
+{% macro render_field(field, icon) %}
+
+<div class="field">
+    <label class="label">{{ field.label }}</label>
+    <p class="control has-icons-left has-icons-right">
+        {{ field(**kwargs)|safe }}
+    </p>
+</div>
+
+{% endmacro %}

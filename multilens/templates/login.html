@@ -1,5 +1,32 @@
 {% extends "base.html" %}
+{% block menu %}
+{% endblock menu %}
 
 {% block body %}
-Tela de login da Multilens
-{% endblock body %}
+    {% from "macros/render_form.html" import render_field %}
+    {% with messages = get_flashed_messages(category_filter=["error"]) %}
+    {% if messages %}
+      <ul class=flashes>
+      {% for erro in messages %}
+        <article class="message is-danger my-5">
+            <div class="message-header">
+                <p>{{ erro }}</p>
+            <button class="delete" aria-label="delete"></button>
+            </div>
+        </article>
+      {% endfor %}
+      </ul>
+    {% endif %}
+    {% endwith %}
+
+    <div class="column is-three-fifths is-offset-one-fifth">
+        <form method="post">
+            <dl>    
+                {{ render_field(form.username, class="input", type="text", placeholder="Usuario") }}
+                {{ render_field(form.passwd, class="input", type="password", placeholder="Senha") }}
+            </dl>
+            <p><input class="button is-primary my-4" type="submit" value="Login"></p>
+        </form>
+
+    </div>
+    {% endblock body %}
