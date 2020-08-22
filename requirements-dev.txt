@@ -1,2 +1,4 @@
 flask
-black
+flask_sqlalchemy
+flask-admin
+flask-wtf

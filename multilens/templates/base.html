@@ -5,74 +5,83 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multilens</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css">   
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js" type="text/javascript"></script>
+    <script src="{{ url_for('static', filename='js/main..js') }}" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/base.css') }}">
+
     {% endblock head %}
     {% block extra_css %} {% endblock extra_css %}
-</head>
-{% block nav %}
-<nav class="navbar is-primary" role="navigation" aria-label="main navigation">
-    <div class="navbar-brand">
-      <a class="navbar-item" href="{{ url_for('site.index') }}">
-        <img src="https://bulma.io/images/bulma-logo.png" width="112" height="28">
-      </a>
-      <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
-        <span aria-hidden="true"></span>
-        <span aria-hidden="true"></span>
-        <span aria-hidden="true"></span>
-      </a>
-    </div>
-    
-    {% block menu %}
-    <div id="navbarBasicExample" class="navbar-menu">
-      <div class="navbar-start">
-        <a class="navbar-item" href="{{ url_for('site.clients') }}">
-          Clientes
-        </a>
-  
-        <a class="navbar-item" href="{{ url_for('site.storage') }}">
-          Estoque
-        </a>
-
-        <div class="navbar-item has-dropdown is-hoverable">
-          <a class="navbar-link"">
-            Vendas
+  </head>
+  {% block nav %}
+    <nav class="navbar is-primary" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+          <a class="navbar-item" href="{{ url_for('site.index') }}">
+            <img src="{{ url_for('static', filename='img/logo.png')}}" width="112" height="28">
           </a>
+          <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+          </a>
+        </div>
 
-          <div class="navbar-dropdown">
+        {% block menu %}
+        <div id="navbarBasicExample" class="navbar-menu">
+          <div class="navbar-start">
+            <a class="navbar-item" href="{{ url_for('site.clients') }}">
+              Clientes
+            </a>
+      
+            <a class="navbar-item" href="{{ url_for('site.storage') }}">
+              Estoque
+            </a>
+
             <a class="navbar-item" href="{{ url_for('site.register_sale') }}">
-              Cadastrar
+              Nova Venda
             </a>
             <a class="navbar-item" href="{{ url_for('site.sales') }}">
-              Historico
+              Historico de vendas
             </a>
+            {% if current_user.is_admin %}
+            <a class="navbar-item" href="{{ url_for('user.index_view') }}"> 
+              Tela Administrativa
+            </a>
+            {% endif %}
+
 
           </div>
+          
+          <div class="navbar-end">
+            <div class="navbar-item">
+              <div class="buttons">
+                <a class="button is-light" href="{{ url_for('site.logout') }}"> 
+                  Logout
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-      {% endblock menu%}
-
-      <div class="navbar-end">
-        <div class="navbar-item">
-        </div>
-      </div>
-    </div>
-  </nav>
+        {% endblock menu%}
+    </nav>
   {% endblock nav %}
-{% block top %} {% endblock top %}
-<body>
-    {% block body %}
-    {% endblock body %}
-</body>
-
-<footer>
-    {% block footer %}
-    <footer class="footer">
-      <div class="content has-text-left	is-size-6">
-        <p>
-          <strong>Multilens</strong> desenvolvido por <a href="https://www.linkedin.com/in/uesleicarvalhoo/">Ueslei Carvalho</a>.
-        </p>
-      </div>
-    </footer>
-    {% endblock footer %}
-</footer>
+  {% block top %} {% endblock top %}
+  <div class="main">
+    <body class="body">
+        {% block body %}
+        {% endblock body %}
+    </body>
+  </div>
+  <footer>
+      {% block footer %}
+      <footer class="footer">
+        <div class="content has-text-left	is-size-6">
+          <p>
+            <strong>Multilens</strong> desenvolvido por <a href="https://www.linkedin.com/in/uesleicarvalhoo/">Ueslei Carvalho</a>.
+          </p>
+        </div>
+      </footer>
+      {% endblock footer %}
+  </footer>
 </html>

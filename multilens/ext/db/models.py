@@ -1,10 +1,13 @@
 # -*- encoding: utf-8 -*-
 
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash
+
 from . import db
 
 
-class Employees(db.Model):
-    __tablename__ = "employees"
+class User(UserMixin, db.Model):
+    __tablename__ = "user"
     id = db.Column("id", db.Integer, primary_key=True)
     user = db.Column("user", db.Unicode)
     password = db.Column("password", db.Unicode)
@@ -12,6 +15,31 @@ class Employees(db.Model):
     name = db.Column("name", db.Unicode)
     cpf = db.Column("cpf", db.Unicode)
     admin = db.Column("admin", db.Boolean)
+
+    @staticmethod
+    def create(user: str, password: str, email: str, cpf: str, admin=False):
+        hash_passwd = generate_password_hash(password)
+        user = User(user=user, password=hash_passwd, email=email, cpf=cpf, admin=admin)
+        db.session.add(user)
+        db.session.commit()
+
+        return user
+
+    @staticmethod
+    def get(**kwargs):
+        return User.query.filter_by(**kwargs).first()
+
+    def update(self):
+        pass
+
+    @staticmethod
+    def delete(**kwargs):
+        User.query.filter_by(**kwargs).delete()
+        db.session.commit()
+
+    @property
+    def is_admin(self):
+        return self.admin
 
 
 class Storage(db.Model):
@@ -37,13 +65,13 @@ class Balance(db.Model):
 class Order(db.Model):
     __tablename__ = "order"
     id = db.Column("id", db.Integer, primary_key=True)
-    employee_id = db.Column("employee_id", db.Integer, db.ForeignKey("employees.id"))
+    employee_id = db.Column("employee_id", db.Integer, db.ForeignKey("user.id"))
     register_id = db.Column("register_id", db.Integer, db.ForeignKey("register.id"))
     date = db.Column("date", db.Date)
     type_pgto = db.Column("type_pgto", db.Unicode)
     type = db.Column("type", db.Unicode)
 
-    employees = db.relationship("Employees", foreign_keys=employee_id)
+    user = db.relationship("User", foreign_keys=employee_id)
     register = db.relationship("Register", foreign_keys=register_id)
 
 

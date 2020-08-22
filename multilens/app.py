@@ -1,6 +1,6 @@
 from flask import Flask
 
-from multilens.ext import admin, cli, config, db, site
+from multilens.ext import admin, auth, cli, config, db, site
 
 
 def create_app():
@@ -9,7 +9,8 @@ def create_app():
     config.init_app(app)
     db.init_app(app)
     cli.init_app(app)
-    admin.init_app(app)
     site.init_app(app)
+    auth.init_app(app)
+    admin.init_app(app)
 
     return app

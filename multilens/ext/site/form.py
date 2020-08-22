@@ -1,6 +1,6 @@
-from wtforms import Form, StringField, PasswordField, validators
+from wtforms import Form, PasswordField, StringField, validators
 
 
 class FormLogin(Form):
-    username = StringField('Usuario', [validators.Required()])
-    passwd = PasswordField('Senha', [validators.Required()])
+    username = StringField("Usuario", [validators.Required()])
+    passwd = PasswordField("Senha", [validators.Required()])
