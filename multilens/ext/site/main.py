@@ -1,9 +1,10 @@
-from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
+from flask import (Blueprint, abort, flash, redirect, render_template, request,
+                   url_for)
 from flask_login import current_user, login_required, login_user, logout_user
 
 from multilens.ext.auth import is_safe_url, validate_user
 
-from .form import FormLogin
+from .form import FormDoctor, FormLogin
 
 bp = Blueprint("site", __name__)
 
@@ -16,10 +17,15 @@ def index():
     return render_template("site/index.html")
 
 
-@bp.route("/clientes", methods=["GET"])
+@bp.route("/clientes", methods=["GET", "POST"])
 @login_required
 def clients():
-    return render_template("site/clients.html")
+    if request.method == "GET":
+        return render_template("site/clients.html", form=FormDoctor(request.form))
+
+    elif request.metodh == "POST":
+        flash("Doutor cadastrado com sucesso!", "success")
+        return render_template("site/clients.html", form=FormDoctor(request.form))
 
 
 @bp.route("/cliente/<int:register>", methods=["GET"])
@@ -30,8 +36,7 @@ def client(register):
 @bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
-        if False:  # current_user.is_authenticated:
-            return redirect(url_for("site.index"))
+        return render_template("auth/login.html", form=FormLogin(request.form))
 
     elif request.method == "POST":
         form = FormLogin(request.form)
@@ -47,8 +52,6 @@ def login():
 
         else:
             flash(response["message"], "error")
-
-    return render_template("auth/login.html", form=FormLogin(request.form))
 
 
 @bp.route("/logout", methods=["GET"])

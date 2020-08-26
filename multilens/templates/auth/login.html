@@ -22,8 +22,8 @@
     <div class="column is-three-fifths is-offset-one-fifth">
         <form method="post">
             <dl>
-                {{ render_field(form.username, "fa-user", class="input", type="text", placeholder="Usuario") }}
-                {{ render_field(form.passwd, "fa-lock",class="input", type="password", placeholder="Senha") }}
+                {{ render_field(form.username, icon="fa-user", class="input", type="text", placeholder="Usuario") }}
+                {{ render_field(form.passwd, icon="fa-lock",class="input", type="password", placeholder="Senha") }}
             </dl>
             <p><input class="button is-primary my-4" type="submit" value="Login"></p>
         </form>

@@ -2,3 +2,6 @@ flask
 flask_sqlalchemy
 flask-admin
 flask-wtf
+flask-login
+dynaconf
+email_validator

@@ -1,0 +1,34 @@
+[default]
+SQLALCHEMY_DATABASE_URI = "sqlite:///multilens.db"
+SQLALCHEMY_TRACK_MODIFICATIONS = false
+
+EXTENSIONS = [
+    "multilens.ext.db:init_app",
+    "multilens.ext.cli:init_app",
+    "multilens.ext.site:init_app",
+    "multilens.ext.auth:init_app",
+    "multilens.ext.admin:init_app",
+]
+
+DOCTOR_TYPES = [
+    "Médico",
+    "Cliníca",
+    "Hospital",
+    "Ótica"
+]
+
+DOCTOR_SPECIALITYS = [
+    "Oftalmo Clinico",
+    "Glaucoma",
+    "Catarata",
+    "Retina e Vítreo",
+    "Plástica",
+    "Optometrista",
+    "Outros"
+]
+
+
+[development]
+debug=true
+
+[testing]

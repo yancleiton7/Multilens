@@ -1,5 +1,3 @@
-# -*- encoding: utf-8 -*-
-
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash
 
@@ -131,3 +129,7 @@ class Institution(db.Model):
     enf_phone = db.Column("enf_phone", db.Integer)
 
     register = db.relationship("Register", foreign_keys=register_id)
+
+    @staticmethod
+    def get_all():
+        return Institution.query.all()
