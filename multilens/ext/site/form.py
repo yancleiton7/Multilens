@@ -7,7 +7,6 @@ from wtforms.validators import Email, Length, Required
 
 from multilens.ext.db.models import Institution
 
-
 class FormLogin(Form):
     username = StringField("Usuario", [Required()])
     passwd = PasswordField("Senha", [Required()])
@@ -29,5 +28,5 @@ class FormDoctor(Form):
     zip = IntegerField("CEP", [Required(), Length(min=8, max=8)])
     country = StringField("Cidade", [Required()])
     address = StringField("Endereço", [Required(), Length(min=1, max=70)])
-    type = SelectField("Tipo", [Required()])
     speciality = SelectField("Especialidade", [Required()])
+    district = IntegerField("Bairro", [Required(), Length(min=12, max=12)])

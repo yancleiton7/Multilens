@@ -44,5 +44,5 @@ def validate_user(username: str, password: str):
 
 @login_manager.unauthorized_handler
 def unauthorized():
-    flash("Você precisa estar logado para acessar esta página.")
+    flash("Você precisa estar logado para acessar esta página.", "error")
     return redirect(url_for("site.login", next=request.url))

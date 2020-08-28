@@ -21,11 +21,11 @@ def index():
 @login_required
 def clients():
     if request.method == "GET":
-        return render_template("site/clients.html", form=FormDoctor(request.form))
+        return render_template("forms/clients.html", form=FormDoctor(request.form))
 
-    elif request.metodh == "POST":
-        flash("Doutor cadastrado com sucesso!", "success")
-        return render_template("site/clients.html", form=FormDoctor(request.form))
+    elif request.method == "POST":
+        flash("Doutor cadastrado com sucesso!", "is-success")
+        return render_template("forms/clients.html", form=FormDoctor(request.form))
 
 
 @bp.route("/cliente/<int:register>", methods=["GET"])
@@ -42,16 +42,17 @@ def login():
         form = FormLogin(request.form)
         response = validate_user(form.username.data, form.passwd.data)
 
+        next_url = request.args.get("next")
+        if not is_safe_url(next_url):
+            abort(400)
+
         if response["sucess"]:
             login_user(response["user"])
-            next_url = request.args.get("next")
-            if not is_safe_url(next_url):
-                abort(400)
-
-            return redirect(next_url or url_for("site.index"))
 
         else:
-            flash(response["message"], "error")
+            flash(response["message"], "is-danger")
+
+        return redirect(next_url or url_for("site.index"))
 
 
 @bp.route("/logout", methods=["GET"])

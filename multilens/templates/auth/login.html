@@ -3,21 +3,9 @@
 {% endblock menu %}
 
 {% block body %}
+    {% from "macros/render_messages.html" import render_message %}
     {% from "macros/render_form.html" import render_field %}
-    {% with messages = get_flashed_messages(category_filter=["error"]) %}
-    {% if messages %}
-      <ul class=flashes>
-        {% for erro in messages %}
-        <article class="message is-danger my-5">
-            <div class="message-header">
-                <p>{{ erro }}</p>
-                <button class="delete" aria-label="delete"></button>
-            </div>
-        </article>
-        {% endfor %}
-      </ul>
-    {% endif %}
-    {% endwith %}
+    {{ render_message() }}
 
     <div class="column is-three-fifths is-offset-one-fifth">
         <form method="post">

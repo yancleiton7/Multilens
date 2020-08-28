@@ -1,43 +1,41 @@
 {% macro render_field(field, icon="") %}
 
-    <div class="field is-grouped-right">
-        <label class="label">{{ field.label }}</label>
-        {% if icon == "" %}
-            <p class="control">
-                {{ field(**kwargs) | safe }}
-            </p>
-        {% else %}
-            <p class="control has-icons-left has-icons-right">
-                {{ field(**kwargs) | safe }}
-                <span class="icon is-small is-left">
-                    <i class="fas {{ icon }}"></i>
-                </span>
-            </p>
-        {% endif %}
-    </div>
+<div class="field is-grouped-right">
+    <label class="label">{{ field.label }}</label>
+    {% if icon == "" %}
+    <p class="control">
+        {{ field(**kwargs) | safe }}
+    </p>
+    {% else %}
+    <p class="control has-icons-left has-icons-right">
+        {{ field(**kwargs) | safe }}
+        <span class="icon is-small is-left">
+            <i class="fas {{ icon }}"></i>
+        </span>
+    </p>
+    {% endif %}
+</div>
 
 {% endmacro %}
 
 {% macro render_select(field, icon="") %}
-    <div class="field is-grouped-right">
-        <label class="label">{{ field.label }}</label>
-        {% if icon == "" %}
-        <div class="control">
-            <div class="select">
-                {{ field(**kwargs) | safe }}
-            </div>
+<div class="field is-grouped-right">
+    <label class="label">{{ field.label }}</label>
+    {% if icon == "" %}
+    <div class="control">
+        <div class="select">
+            {{ field(**kwargs) | safe }}
         </div>
-        {% else %}
-        <div class="control has-icons-left">
-            <div class="select">
-                {{ field(**kwargs) | safe }}
-            </div>
-            <div class="icon is-small is-left">
-                <i class="fas {{ icon }}"></i>
-            </div>
-        </div>
-        {% endif %}
     </div>
-
-
+    {% else %}
+    <div class="control has-icons-left">
+        <div class="select">
+            {{ field(**kwargs) | safe }}
+        </div>
+        <div class="icon is-small is-left">
+            <i class="fas {{ icon }}"></i>
+        </div>
+    </div>
+    {% endif %}
+</div>
 {% endmacro %}

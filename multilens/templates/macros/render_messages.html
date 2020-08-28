@@ -1,0 +1,16 @@
+{% macro render_message(filter=[]) %}
+{% with messages = get_flashed_messages(category_filter=filter, with_categories=True) %}
+{% if messages %}
+    <ul class="flashes">
+        {% for category, message in messages %}
+        <article class="message {{ category }}">
+            <div class="message-header">
+                <p>{{ message }}</p>
+                <button class="delete" aria-label="delete"></button>
+            </div>
+        </article>
+        {% endfor %}
+    </ul>
+{% endif %}
+{% endwith %}
+{% endmacro %}

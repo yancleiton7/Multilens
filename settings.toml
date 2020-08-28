@@ -1,6 +1,7 @@
 [default]
 SQLALCHEMY_DATABASE_URI = "sqlite:///multilens.db"
 SQLALCHEMY_TRACK_MODIFICATIONS = false
+SESSION_REFRESH_EACH_REQUEST = true
 
 EXTENSIONS = [
     "multilens.ext.db:init_app",
