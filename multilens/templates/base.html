@@ -16,7 +16,8 @@
   {% block extra_css %} {% endblock extra_css %}
 </head>
 {% block nav %}
-<nav class="navbar is-primary" role="navigation" aria-label="main navigation">
+{% set color_theme = config.get("COLOR_THEME", is_primary) %}
+<nav class="navbar {{ color_theme }}" role="navigation" aria-label="main navigation">
   <div class="navbar-brand">
     <a class="navbar-item" href="{{ url_for('site.index') }}">
       <img src="{{ url_for('static', filename='img/logo.png')}}" width="112" height="28">
@@ -32,8 +33,11 @@
   {% block menu %}
   <div id="navbarBasicExample" class="navbar-menu">
     <div class="navbar-start">
-      <a class="navbar-item" href="{{ url_for('site.clients') }}">
-        Clientes
+      <a class="navbar-item" href="{{ url_for('site.doctors') }}">
+        Médicos
+      </a>
+      <a class="navbar-item" href="{{ url_for('site.institutions') }}">
+        Instituições
       </a>
 
       <a class="navbar-item" href="{{ url_for('site.storage') }}">
@@ -67,7 +71,6 @@
 {% endblock nav %}
 {% block top %} {% endblock top %}
 <div class="main">
-
   <body class="body">
     {% block body %}
     {% endblock body %}

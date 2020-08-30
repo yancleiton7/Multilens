@@ -7,7 +7,7 @@ from . import db
 class User(UserMixin, db.Model):
     __tablename__ = "user"
     id = db.Column("id", db.Integer, primary_key=True)
-    user = db.Column("user", db.Unicode)
+    user = db.Column("user", db.Unicode, unique=True)
     password = db.Column("password", db.Unicode)
     email = db.Column("email", db.Unicode)
     name = db.Column("name", db.Unicode)
@@ -112,6 +112,14 @@ class Doctor(db.Model):
 
     register = db.relationship("Register", foreign_keys=register_id)
 
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    @staticmethod
+    def get_all():
+        return Doctor.query.all()
+
 
 class Institution(db.Model):
     __tablename__ = "institution"
@@ -133,3 +141,12 @@ class Institution(db.Model):
     @staticmethod
     def get_all():
         return Institution.query.all()
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+class SpecialityType(db.Model):
+    __tablename__ = "type_institution"
+    id = db.Column("id", db.Integer, primary_key=True)
+    speciality = db.Column("speciality", db.Unicode)

@@ -3,6 +3,7 @@
 {% endblock menu %}
 
 {% block body %}
+    {% set color_theme = config.get("COLOR_THEME", "is-primary") %}
     {% from "macros/render_messages.html" import render_message %}
     {% from "macros/render_form.html" import render_field %}
     {{ render_message() }}
@@ -13,7 +14,7 @@
                 {{ render_field(form.username, icon="fa-user", class="input", type="text", placeholder="Usuario") }}
                 {{ render_field(form.passwd, icon="fa-lock",class="input", type="password", placeholder="Senha") }}
             </dl>
-            <p><input class="button is-primary my-4" type="submit" value="Login"></p>
+            <p><input class="button {{ color_theme }} my-4" type="submit" value="Login"></p>
         </form>
 
     </div>

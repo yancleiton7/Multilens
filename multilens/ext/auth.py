@@ -1,4 +1,4 @@
-from urllib.parse import urljoin, urlparse
+from datetime import timedelta
 
 from flask import flash, redirect, request, url_for
 from flask_login import LoginManager, login_required, login_user, logout_user
@@ -12,16 +12,12 @@ login_manager = LoginManager()
 def init_app(app):
     login_manager.init_app(app)
     login_manager.login_view = "site.login"
-
-    @login_manager.user_loader
-    def load_user(user_id):
-        return User.get(id=user_id)
+    app.permanent_session_lifetime = timedelta(hours=1)
 
 
-def is_safe_url(target):
-    ref_url = urlparse(request.host_url)
-    test_url = urlparse(urljoin(request.host_url, target))
-    return test_url.scheme in ("http", "https") and ref_url.netloc == test_url.netloc
+@login_manager.user_loader
+def load_user(user_id):
+    return User.get(id=user_id)
 
 
 def validate_user(username: str, password: str):
@@ -44,5 +40,5 @@ def validate_user(username: str, password: str):
 
 @login_manager.unauthorized_handler
 def unauthorized():
-    flash("Você precisa estar logado para acessar esta página.", "error")
+    flash("Você precisa estar logado para acessar esta página.", "is-danger")
     return redirect(url_for("site.login", next=request.url))

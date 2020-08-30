@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block body %}
+{% set color_theme = config.get("COLOR_THEME", "is-success") %}
+<article class="panel {{ color_theme }}">
+    <div class="panel-heading">Médicos</div>
+    <div class="panel-block">
+        <div class="field is-grouped">
+            <div class="control is-expanded has-icons-left">
+                <input class="input" type="search" placeholder="Nome da Instituição">
+                <span class="icon is-left">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                </span>
+            </div>
+            <div class="control">
+                <a href="{{url_for('site.form_institution')}}" class="button {{ color_theme }}">Cadastrar</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-body">
+        {% for doctor in doctors %}
+        <div class="field">
+            <div class="control is-expanded">
+                {{ doctor.name }}
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+</article>
+{% endblock body%}

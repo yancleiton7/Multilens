@@ -3,12 +3,15 @@ SQLALCHEMY_DATABASE_URI = "sqlite:///multilens.db"
 SQLALCHEMY_TRACK_MODIFICATIONS = false
 SESSION_REFRESH_EACH_REQUEST = true
 
+COLOR_THEME = "is-primary"
+
 EXTENSIONS = [
     "multilens.ext.db:init_app",
     "multilens.ext.cli:init_app",
     "multilens.ext.site:init_app",
     "multilens.ext.auth:init_app",
     "multilens.ext.admin:init_app",
+    "multilens.ext.migrate:init_app",
 ]
 
 DOCTOR_TYPES = [
