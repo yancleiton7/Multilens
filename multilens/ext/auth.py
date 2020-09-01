@@ -23,17 +23,17 @@ def load_user(user_id):
 def validate_user(username: str, password: str):
     user = User.get(user=username)
     if user is None:
-        response = {"sucess": False, "message": "Usuario não cadastrado!"}
+        response = {"success": False, "message": "Usuario não cadastrado!"}
 
     elif check_password_hash(user.password, password):
         response = {
-            "sucess": True,
-            "message": "Usuario logado com sucesso!",
+            "success": True,
+            "message": "Usuario logado com successo!",
             "user": user,
         }
 
     else:
-        response = {"sucess": False, "message": "Senha invalida"}
+        response = {"success": False, "message": "Senha invalida"}
 
     return response
 

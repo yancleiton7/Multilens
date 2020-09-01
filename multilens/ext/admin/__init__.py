@@ -1,7 +1,7 @@
 from flask_admin import Admin
 
 from multilens.ext.db import db
-from multilens.ext.db.models import SpecialityType, Storage, User
+from multilens.ext.db.models import Speciality, Storage, User
 
 from .models import (AdminView, SpecialityModelView, StorageModelView,
                      UserModelView)
@@ -16,6 +16,6 @@ def init_app(app):
     admin.template_mode = app.config.get("ADMIN_TEMPLATE_MODE", "bootstrap3")
     admin.add_view(UserModelView(User, db.session, "Funcionarios"))
     admin.add_view(StorageModelView(Storage, db.session, "Produtos"))
-    admin.add_view(SpecialityModelView(SpecialityType, db.session, "Especialidade"))
+    admin.add_view(SpecialityModelView(Speciality, db.session, "Especialidade"))
 
     admin.init_app(app)

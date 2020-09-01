@@ -1,8 +1,6 @@
 {% extends "base.html" %}
 {% from "macros/render_messages.html" import render_message %}
 
-{% set color_theme = config.get("COLOR_THEME", "is-primary") %}
-
 {% block body %}
 {{ render_message() }}
 <form method="POST">
@@ -21,7 +19,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="field is-grouped is-grouped-multiline">
                 <div class="control is-expanded">
                     <label class="label"> {{ form.cpf.label }} </label>
@@ -50,9 +47,19 @@
                         </span>
                     </div>
                 </div>
+                <div class="control">
+                    <label class="label"> {{ form.speciality_id.label }} </label>
+                    <div class="control has-icons-left">
+                        <div class="select">
+                            {{ form.speciality_id() }}
+                        </div>
+                        <span class="icon is-left">
+                            <i class="fas fa-first-aid"></i>
+                        </span>
+                    </div>
+                </div>
             </div>
-
-            <div class="field is-grouped">
+            <div class="field is-grouped is-grouped-multiline">
                 <div class="control is-expanded">
                     <label class="label"> {{ form.email.label }} </label>
                     <div class="control has-icons-left">
@@ -62,9 +69,6 @@
                         </span>
                     </div>
                 </div>
-            </div>
-
-            <div class="field is-grouped is-grouped-multiline">
                 <div class="control">
                     <label class="label"> {{ form.cel.label }} </label>
                     <div class="field has-addons">
@@ -85,29 +89,6 @@
                         <div class="control">
                             {{ form.phone(class="input", type="text", placeholder="99999999999") }}
                         </div>
-                    </div>
-
-                </div>
-                <div class="control">
-                    <label class="label"> {{ form.speciality.label }} </label>
-                    <div class="control has-icons-left">
-                        <div class="select">
-                            {{ form.speciality() }}
-                        </div>
-                        <span class="icon is-left">
-                            <i class="fas fa-first-aid"></i>
-                        </span>
-                    </div>
-                </div>
-                <div class="control">
-                    <label class="label"> {{ form.institution.label }} </label>
-                    <div class="control has-icons-left">
-                        <div class="select">
-                            {{ form.institution() }}
-                        </div>
-                        <span class="icon is-left">
-                            <i class="fas fa-hospital"></i>
-                        </span>
                     </div>
                 </div>
             </div>
@@ -134,7 +115,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="field is-grouped">
                 <div class="control is-expanded">
                     <label class="label"> {{ form.address.label }} </label>
@@ -146,15 +126,13 @@
                     </div>
                 </div>
             </div>
-
             <div class="field is-grouped">
                 <div class="control is-expanded">
-                    <input class="button is-fullwidth {{ color_theme }}" type="submit" value="Cadastrar">
+                    <input class="button is-fullwidth {{ color_theme }}" type="submit" value="Salvar">
                 </div>
             </div>
         </div>
     </article>
-
 </form>
 
 {% endblock body %}

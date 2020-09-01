@@ -1,6 +1,6 @@
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash
-
+from sqlalchemy.exc import IntegrityError
 from . import db
 
 
@@ -89,32 +89,56 @@ class DescOrder(db.Model):
 class Register(db.Model):
     __tablename__ = "register"
     id = db.Column("id", db.Integer, primary_key=True)
-    client_id = db.Column("client_id", db.Integer)
-    institution_id = db.Column("institution_id", db.Integer)
     zip = db.Column("zip", db.Integer)
     country = db.Column("country", db.Unicode)
     address = db.Column("address", db.Unicode)
+    district = db.Column("district", db.Unicode)
     type = db.Column("type", db.Unicode)
-
-
-class Doctor(db.Model):
-    __tablename__ = "doctor"
-    register_id = db.Column("register_id", db.Integer, db.ForeignKey("register.id"))
-    id = db.Column("id", db.Integer, primary_key=True)
-    name = db.Column("name", db.Unicode)
-    sex = db.Column("sex", db.Unicode)
-    cpf = db.Column("cpf", db.Integer)
-    rg = db.Column("rg", db.Integer)
-    crm = db.Column("crm", db.Integer)
-    cel = db.Column("cel", db.Integer)
-    phone = db.Column("phone", db.Integer)
-    email = db.Column("email", db.Unicode)
-
-    register = db.relationship("Register", foreign_keys=register_id)
 
     def save(self):
         db.session.add(self)
         db.session.commit()
+
+    def to_dict(self):
+        return dict((col, getattr(self, col)) for col in self.__table__.columns.keys())
+
+
+class Doctor(db.Model):
+    __tablename__ = "doctor"
+    id = db.Column("id", db.Integer, primary_key=True)
+    register_id = db.Column("register_id", db.Integer, db.ForeignKey("register.id"))
+    speciality_id = db.Column("speciality_id", db.Integer, db.ForeignKey("speciality.id"))
+    name = db.Column("name", db.Unicode)
+    sex = db.Column("sex", db.Unicode)
+    cpf = db.Column("cpf", db.Integer, unique=True)
+    rg = db.Column("rg", db.Integer, unique=True)
+    crm = db.Column("crm", db.Integer, unique=True)
+    cel = db.Column("cel", db.Integer)
+    phone = db.Column("phone", db.Integer)
+    email = db.Column("email", db.Unicode)
+
+    speciality = db.relationship("Speciality", foreign_keys=speciality_id)
+    register = db.relationship("Register", foreign_keys=register_id)
+
+    def save(self):
+        try:
+            db.session.add(self)
+            db.session.commit()
+
+        except IntegrityError:
+            db.session.rollback()
+            response = {
+                "success": False,
+                "message": "Já existe um cadastro com o mesmo CPF, RG ou CRM no banco de dados."
+            }
+
+        else:
+            response = {
+                "success": True,
+                "message": "Doutor cadastrado com successo!",
+            }
+
+        return response
 
     @staticmethod
     def get_all():
@@ -145,8 +169,15 @@ class Institution(db.Model):
     def save(self):
         db.session.add(self)
         db.session.commit()
+        response = {
+            "success": True,
+            "message": "Instituiçao cadastrada com successo!"
+        }
 
-class SpecialityType(db.Model):
-    __tablename__ = "type_institution"
+        return response
+
+
+class Speciality(db.Model):
+    __tablename__ = "speciality"
     id = db.Column("id", db.Integer, primary_key=True)
     speciality = db.Column("speciality", db.Unicode)

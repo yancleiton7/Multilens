@@ -1,8 +1,9 @@
+dynaconf
+email_validator
 flask
 flask_sqlalchemy
 flask-admin
 flask-wtf
 flask-login
 flask-migrate
-dynaconf
-email_validator
+pytest

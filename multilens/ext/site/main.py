@@ -5,9 +5,11 @@ from flask import (Blueprint, abort, flash, redirect, render_template, request,
 from flask_login import current_user, login_required, login_user, logout_user
 
 from multilens.ext.auth import validate_user
-from multilens.ext.db.models import Doctor, Institution
+from multilens.ext.db.models import Doctor, Institution, Register
 
 from .form import FormDoctor, FormInstitution, FormLogin
+
+from sqlalchemy.exc import IntegrityError
 
 bp = Blueprint("site", __name__)
 
@@ -31,7 +33,7 @@ def login():
         if not is_safe_url(next_url):
             abort(400)
 
-        if response["sucess"]:
+        if response["success"]:
             login_user(response["user"])
 
         else:
@@ -71,9 +73,21 @@ def form_doctor():
     elif request.method == "POST":
         if form.validate_on_submit():
             doctor = Doctor()
+            register = Register()
+
+            form.populate_obj(register)
+            register.type = "doctor"
+            register.save()
+
             form.populate_obj(doctor)
-            doctor.save()
-            flash("Doutor cadastrado com sucesso!", "is-success")
+            doctor.register_id = register.id
+            response = doctor.save()
+
+            if response["success"]:
+                flash(response["message"], "is-success",)
+
+            else:
+                flash(response["message"], "is-danger")
 
         else:
             for field in form.errors.values():
@@ -82,13 +96,50 @@ def form_doctor():
         return render_template("forms/doctors.html", form=form)
 
 
-@bp.route("/medicos/<int:register>", methods=["GET"])
+@bp.route("/medicos/<int:register>", methods=["GET", "POST"])
 @login_required
-def doctor(register):
-    return render_template("site/doctor.html")
+def doctor(register: int):
+    doctor_data = Doctor.query.outerjoin(
+        Register, Doctor.register_id == Register.id
+    ).filter(Doctor.id == register).first()
+    form = FormDoctor(obj=doctor_data)
+
+    if request.method == "GET":
+        if doctor_data is None:
+            flash("Cadastro não localizado!", "is-warning")
+            redirect(url_for("site.form_doctor"))
+
+        else:
+            form.speciality_id.data = doctor_data.speciality
+            form.zip.data = doctor_data.register.zip
+            form.address.data = doctor_data.register.address
+            form.country.data = doctor_data.register.country
+            form.district.data = doctor_data.register.district
+
+    elif request.method == "POST":
+        if form.validate_on_submit():
+            register_data = Register.query.filter_by(id=doctor_data.register_id).first()
+            form.populate_obj(doctor_data)
+            form.populate_obj(register_data)
+
+            register_data.save()
+            response = doctor_data.save()
+
+            if response["success"]:
+                flash(response["message"], "is-success")
+
+            else:
+                flash(response["message"], "is-danger")
+
+        else:
+            for field in form.errors.values():
+                [flash(err, "is-danger") for err in field]
+
+    return render_template("forms/doctors.html", form=form)
 
 
 @bp.route("/instituicoes/", methods=["GET"])
+@login_required
 def institutions():
     return render_template("site/institution.html", institutions=Institution.get_all())
 
@@ -102,10 +153,63 @@ def form_institution():
 
     elif request.method == "POST":
         if form.validate_on_submit():
+            register = Register()
             institution = Institution()
+
+            form.populate_obj(register)
+            register.type = "institution"
+            register.save()
+
             form.populate_obj(institution)
-            institution.save()
-            flash("Instituição cadastrada com sucesso!", "is-success")
+            institution.register_id = register.id
+            response = institution.save()
+
+            if response["success"]:
+                flash(response["message"] + f"{register.id}", "is-success")
+
+            else:
+                flash(response["message"], "is-danger")
+
+        else:
+            for field in form.errors.values():
+                [flash(err, "is-danger") for err in field]
+
+    return render_template("forms/institution.html", form=form)
+
+
+@bp.route("/instituicoes/<int:register>", methods=["GET", "POST"])
+@login_required
+def institution(register: int):
+    form = FormInstitution()
+    institution_data = Institution.query.outerjoin(
+        Register, Institution.register_id == Register.id
+    ).filter(Institution.id == register).first()
+
+    if request.method == "GET":
+        if institution_data is None:
+            flash("Cadastro não localizado!", "is-warning")
+            redirect(url_for("site.form_institution"))
+
+        else:
+            form.process(obj=institution_data)
+            form.zip.data = institution_data.register.zip
+            form.address.data = institution_data.register.address
+            form.country.data = institution_data.register.country
+            form.district.data = institution_data.register.district
+
+    elif request.method == "POST":
+        if form.validate_on_submit():
+            register_data = Register.query.filter_by(id=institution_data.register_id).first()
+            form.populate_obj(institution_data)
+            form.populate_obj(register_data)
+            register_data.save()
+            response = institution_data.save()
+
+            if response["success"]:
+                flash(response["message"], "is-success")
+
+            else:
+                flash(response["message"], "is-danger")
 
         else:
             for field in form.errors.values():

@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 
 {% block body %}
-{% set color_theme = config.get("COLOR_THEME", "is-success") %}
 <article class="panel {{ color_theme }}">
     <div class="panel-heading">Médicos</div>
     <div class="panel-block">
@@ -13,7 +12,7 @@
                 </span>
             </div>
             <div class="control">
-                <a href="{{url_for('site.form_institution')}}" class="button {{ color_theme }}">Cadastrar</a>
+                <a href="{{url_for('site.form_doctor')}}" class="button {{ color_theme }}">Cadastrar</a>
             </div>
         </div>
     </div>
