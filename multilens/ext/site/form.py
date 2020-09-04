@@ -184,7 +184,8 @@ class FormInstitution(BaseForm):
         [
             Required("Informe um CEP valido"),
             Length(min=8, max=8, message="O CEP precisa conter exatamente 8 números"),
-            Optional(), Regexp("^[0-9]*$", message="Informe somente números"),
+            Optional(),
+            Regexp("^[0-9]*$", message="Informe somente números"),
         ],
     )
     country = StringField("Cidade", [Required("Informe uma cidade")])
