@@ -1,6 +1,7 @@
 from flask_login import UserMixin
-from werkzeug.security import generate_password_hash
 from sqlalchemy.exc import IntegrityError
+from werkzeug.security import generate_password_hash
+
 from . import db
 
 
@@ -107,7 +108,9 @@ class Doctor(db.Model):
     __tablename__ = "doctor"
     id = db.Column("id", db.Integer, primary_key=True)
     register_id = db.Column("register_id", db.Integer, db.ForeignKey("register.id"))
-    speciality_id = db.Column("speciality_id", db.Integer, db.ForeignKey("speciality.id"))
+    speciality_id = db.Column(
+        "speciality_id", db.Integer, db.ForeignKey("speciality.id")
+    )
     name = db.Column("name", db.Unicode)
     sex = db.Column("sex", db.Unicode)
     cpf = db.Column("cpf", db.Integer, unique=True)
@@ -120,6 +123,33 @@ class Doctor(db.Model):
     speciality = db.relationship("Speciality", foreign_keys=speciality_id)
     register = db.relationship("Register", foreign_keys=register_id)
 
+    @staticmethod
+    def create_by_form(form):
+        doctor = Doctor()
+        register = Register()
+
+        form.populate_obj(register)
+        register.type = "doctor"
+        register.save()
+
+        form.populate_obj(doctor)
+        doctor.register_id = register.id
+
+        response = doctor.save()
+
+        if not response["success"]:
+            register.delete()
+
+        return response
+
+    def update_by_form(self, form):
+        form.populate_obj(self)
+        form.populate_obj(self.register)
+        self.register.save()
+        response = self.save()
+
+        return response
+
     def save(self):
         try:
             db.session.add(self)
@@ -129,13 +159,14 @@ class Doctor(db.Model):
             db.session.rollback()
             response = {
                 "success": False,
-                "message": "Já existe um cadastro com o mesmo CPF, RG ou CRM no banco de dados."
+                "message": "Já existe um cadastro com o mesmo CPF, RG ou CRM no banco de dados.",
             }
 
         else:
             response = {
                 "success": True,
                 "message": "Doutor cadastrado com successo!",
+                "object": self,
             }
 
         return response
@@ -169,10 +200,34 @@ class Institution(db.Model):
     def save(self):
         db.session.add(self)
         db.session.commit()
-        response = {
-            "success": True,
-            "message": "Instituiçao cadastrada com successo!"
-        }
+        response = {"success": True, "message": "Instituiçao cadastrada com successo!"}
+
+        return response
+
+    @staticmethod
+    def create_by_form(form):
+        institution = Institution()
+        register = Register()
+
+        form.populate_obj(register)
+        register.type = "institution"
+        register.save()
+
+        form.populate_obj(institution)
+        institution.register_id = register.id
+
+        response = institution.save()
+
+        if not response["success"]:
+            register.delete()
+
+        return response
+
+    def update_by_form(self, form):
+        form.populate_obj(self)
+        form.populate_obj(self.register)
+        self.register.save()
+        response = self.save()
 
         return response
 

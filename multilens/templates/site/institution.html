@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "macros/render_modal.html" import render_institution_modal %}
 
 {% block body %}
 <article class="panel {{ color_theme }}">
@@ -6,7 +7,7 @@
     <div class="panel-block">
         <div class="field is-grouped">
             <div class="control is-expanded has-icons-left">
-                <input class="input" type="search" placeholder="Nome da Instituição">
+                <input class="input {{ color_theme}}" type="search" placeholder="Nome da Instituição">
                 <span class="icon is-left">
                     <i class="fas fa-search" aria-hidden="true"></i>
                 </span>
@@ -16,15 +17,15 @@
             </div>
         </div>
     </div>
-
     <div class="form-body">
         {% for institution in institutions %}
-        <div class="field">
-            <div class="control is-expanded">
-                {{ institution.name }}
-            </div>
-
-        </div>
+        <a class="panel-block is-active show-modal">
+            <span class="panel-icon">
+                <i class="fas fa-user" aria-hidden="true"></i>
+            </span>
+            <strong>{{ institution.name.title() }}</strong>
+            {{ render_institution_modal(institution) }}
+        </a>
         {% endfor %}
     </div>
 </article>

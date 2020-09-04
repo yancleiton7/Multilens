@@ -3,3 +3,6 @@ flask_sqlalchemy
 flask-admin
 flask-wtf
 pytest
+flake8
+black
+isort
