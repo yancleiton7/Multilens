@@ -1,7 +1,8 @@
 from flask import current_app, flash, redirect, request, url_for
-from flask_admin import Admin, AdminIndexView, expose
+from flask_admin import AdminIndexView, expose
 from flask_admin.contrib.sqla import ModelView
 from flask_login import current_user
+from wtforms import SelectField
 
 
 class AdminView(AdminIndexView):
@@ -15,7 +16,7 @@ class AdminView(AdminIndexView):
                 ),
                 "is-danger",
             )
-            return redirect(url_for("site.login", next=request.url))
+            return redirect(url_for("login", next=request.url))
 
         if current_user.is_admin:
             return super().index()
@@ -28,7 +29,7 @@ class AdminView(AdminIndexView):
                 ),
                 "is-danger",
             )
-            return redirect(url_for("site.login", next=request.url))
+            return redirect(url_for("login", next=request.url))
 
 
 class BaseView(ModelView):
@@ -47,7 +48,7 @@ class BaseView(ModelView):
                 ),
                 "is-danger",
             )
-            return redirect(url_for("site.login", next=request.url))
+            return redirect(url_for("login", next=request.url))
 
 
 class UserModelView(BaseView):
@@ -63,7 +64,7 @@ class StorageModelView(BaseView):
         "name",
     ]
     form_excluded_columns = [
-        "avaliable",
+        "balance",
     ]
     column_labels = {"name": "Produto", "price": "Preço", "unity": "Unidade"}
 
@@ -71,3 +72,31 @@ class StorageModelView(BaseView):
 class SpecialityModelView(BaseView):
     column_editable_list = ["speciality"]
     column_labels = {"speciality": "Especialidade"}
+
+
+class BalanceModelView(BaseView):
+    column_editable_list = ["quant", ]
+    column_list = ["balance", "quant", "event", "date"]
+    form_columns = ["balance", "quant", "event"]
+
+    column_labels = {
+        "item_id": "Item ID",
+        "quant": "Quantidade",
+        "date": "Data",
+        "event": "Entrada/Saida",
+        "balance": "Produto"
+
+    }
+
+    form_overrides = {
+        "event": SelectField
+    }
+
+    form_args = {
+        "event": {
+            "choices": [
+                ("Entrada", "Entrada"),
+                ("Saida", "Saida")
+            ]
+        }
+    }

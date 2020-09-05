@@ -1,5 +1,39 @@
 {% extends "base.html" %}
 
 {% block body %}
-Estoque da Multilens!
+<article class="panel {{ color_theme }}">
+    <div class="panel-heading">Estoque</div>
+    <div class="panel-block">
+        <div class="control is-expanded has-icons-left">
+            <input class="input {{ color_theme}}" type="search" placeholder="Nome do Produto">
+            <span class="icon is-left">
+                <i class="fas fa-search" aria-hidden="true"></i>
+            </span>
+        </div>
+    </div>
+    <div class="form-body">
+        <div class="table-container">
+            <table class="table is-striped is-fullwidth is-hoverable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Produto</th>
+                        <th>Unidade</th>
+                        <th>Preço (R$)</th>
+                        <th>Disponível</th>
+                    </tr>
+                </thead>
+                {% for product in products %}
+                <tr>
+                    <th>{{product.id}}</th>
+                    <td>{{product.name}}</td>
+                    <td>{{product.unity}}</td>
+                    <td>{{"%.2f" % product.price}}</td>
+                    <td>{{product.get_balance(product.id)}}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</article>
 {% endblock body %}

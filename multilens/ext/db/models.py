@@ -1,3 +1,4 @@
+import datetime as dt
 from flask_login import UserMixin
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash
@@ -43,11 +44,24 @@ class User(UserMixin, db.Model):
 
 class Storage(db.Model):
     __tablename__ = "storage"
+    balance = db.relationship("Balance", backref='balance', lazy='dynamic')
+
     id = db.Column("id", db.Integer, primary_key=True)
     name = db.Column("name", db.Unicode)
     price = db.Column("price", db.Numeric)
     unity = db.Column("unity", db.Unicode)
     avaliable = db.Column("avaliable", db.Boolean)
+
+    @staticmethod
+    def get_balance(id: int):
+        balance = Balance.query.filter_by(item_id=id)
+        entry = sum([i.quant for i in balance.filter_by(event="Entrada")])
+        sale = sum([i.quant for i in balance.filter_by(event="Saida")])
+
+        return entry - sale
+
+    def __str__(self):
+        return self.name
 
 
 class Balance(db.Model):
@@ -55,10 +69,8 @@ class Balance(db.Model):
     id = db.Column("id", db.Integer, primary_key=True)
     item_id = db.Column("item_id", db.Integer, db.ForeignKey("storage.id"))
     quant = db.Column("quant", db.Integer)
-    date = db.Column("date", db.Date)
+    date = db.Column("date", db.Date, default=dt.datetime.now())
     event = db.Column("event", db.Unicode)
-
-    storage = db.relationship("Storage", foreign_keys=item_id)
 
 
 class Order(db.Model):
@@ -72,6 +84,9 @@ class Order(db.Model):
 
     user = db.relationship("User", foreign_keys=employee_id)
     register = db.relationship("Register", foreign_keys=register_id)
+
+    def get_total_amount(self) -> float:
+        return 0.0
 
 
 class DescOrder(db.Model):

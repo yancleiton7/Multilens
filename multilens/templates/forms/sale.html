@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block body %}
+<form method="POST">
+    {{ form.csrf_token }}
+    <article class="panel {{ color_theme }}">
+        <div class="panel-heading">Fórmulario de venda</div>
+        <div class="form-body">
+            <div class="field is-grouped">
+                <div class="control is-expanded">
+                    <label class="label">{{ form.product_id.label}}</label>
+                    <div class="select">
+                        {{ form.product_id() }}
+                    </div>
+                </div>
+                <div class="control">
+                    <label class="label">{{ form.quant.label }}</label>
+                    {{ form.quant(class="input") }}
+                </div>
+                <div class="control">
+                    <label class="label">.</label>
+                    <button class="button {{ color_theme }}">Adicionar</button>
+                </div>
+            </div>
+        </div>
+    </article>
+</form>
+{% endblock body %}

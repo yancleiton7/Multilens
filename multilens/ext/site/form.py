@@ -1,10 +1,10 @@
 from flask_wtf import FlaskForm
-from wtforms import PasswordField, StringField
+from wtforms import PasswordField, StringField, IntegerField
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import Email, Length, Optional, Regexp, Required
 
-from multilens.ext.db.models import Speciality
+from multilens.ext.db.models import Speciality, Storage
 
 
 class BaseForm(FlaskForm):
@@ -82,7 +82,7 @@ class FormDoctor(BaseForm):
         [Required("Selecione a especialidade")],
         get_label="speciality",
         get_pk=lambda x: x.id,
-        query_factory=lambda: Speciality.query,
+        query_factory=lambda: Speciality.query.filter_by(avaliable=True),
         allow_blank=True,
     )
     zip = StringField(
@@ -211,3 +211,14 @@ class FormInstitution(BaseForm):
             self.address.data = institution.register.address
             self.country.data = institution.register.country
             self.district.data = institution.register.district
+
+
+class FormOrder(BaseForm):
+    product_id = QuerySelectField(
+        "Produto",
+        get_label="name",
+        get_pk=lambda x: x.id,
+        query_factory=lambda: Storage.query,
+        allow_blank=True,
+    )
+    quant = IntegerField("Quantidade", validators=[Required("Você precisa informar uma quantidade.")])

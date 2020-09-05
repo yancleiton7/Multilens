@@ -1,9 +1,9 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from multilens.ext.db.models import Doctor, Institution
+from multilens.ext.db.models import Doctor, Institution, Storage
 
-from .form import FormDoctor, FormInstitution
+from .form import FormDoctor, FormInstitution, FormOrder
 
 bp = Blueprint("site", __name__)
 
@@ -27,7 +27,7 @@ def doctors():
 def form_doctor():
     form = FormDoctor()
     if request.method == "GET":
-        return render_template("forms/doctors.html", form=form)
+        return render_template("forms/doctor.html", form=form)
 
     elif request.method == "POST":
         if form.validate_on_submit():
@@ -46,7 +46,7 @@ def form_doctor():
             for field in form.errors.values():
                 [flash(err, "is-danger") for err in field]
 
-        return render_template("forms/doctors.html", form=form)
+        return render_template("forms/doctor.html", form=form)
 
 
 @bp.route("/medicos/<int:register>", methods=["GET", "POST"])
@@ -77,7 +77,7 @@ def doctor(register: int):
             for field in form.errors.values():
                 [flash(err, "is-danger") for err in field]
 
-    return render_template("forms/doctors.html", form=form)
+    return render_template("forms/doctor.html", form=form)
 
 
 @bp.route("/instituicoes/", methods=["GET"])
@@ -145,7 +145,7 @@ def order(order_id):
 @bp.route("/estoque", methods=["GET"])
 @login_required
 def storage():
-    return render_template("site/storage.html")
+    return render_template("site/storage.html", products=Storage.query.filter_by(avaliable=True).all())
 
 
 @bp.route("/vendas/", methods=["GET"])
@@ -157,4 +157,5 @@ def sales():
 @bp.route("/vendas/nova", methods=["GET", "POST"])
 @login_required
 def register_sale():
-    return render_template("site/products.html")
+    if request.method == "GET":
+        return render_template("forms/sale.html", form=FormOrder())
