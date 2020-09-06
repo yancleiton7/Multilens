@@ -1,10 +1,10 @@
 from flask_wtf import FlaskForm
-from wtforms import PasswordField, StringField, IntegerField
+from wtforms import FloatField, IntegerField, PasswordField, StringField
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import Email, Length, Optional, Regexp, Required
 
-from multilens.ext.db.models import Speciality, Storage
+from multilens.ext.db.models import Register, SaleType, Speciality, Storage
 
 
 class BaseForm(FlaskForm):
@@ -82,14 +82,16 @@ class FormDoctor(BaseForm):
         [Required("Selecione a especialidade")],
         get_label="speciality",
         get_pk=lambda x: x.id,
-        query_factory=lambda: Speciality.query.filter_by(avaliable=True),
+        query_factory=lambda: Speciality.query,
         allow_blank=True,
     )
     zip = StringField(
         "CEP",
         [
             Required("Informe um CEP valido"),
-            Length(min=8, max=8),
+            Length(
+                min=8, max=8, message="O CEP precisa conter exatamente 8 caracters."
+            ),
             Regexp("^[0-9]*$", message="Informe somente números"),
         ],
     )
@@ -221,4 +223,20 @@ class FormOrder(BaseForm):
         query_factory=lambda: Storage.query,
         allow_blank=True,
     )
-    quant = IntegerField("Quantidade", validators=[Required("Você precisa informar uma quantidade.")])
+    quant = IntegerField("Quantidade", validators=[Optional()])
+    freight = FloatField("Frete", validators=[Required("O frete é obrigatorio")])
+    type_of_sale = QuerySelectField(
+        "Tipo de venda",
+        validators=[Required("O tipo de venda é obrigatorio!")],
+        get_label="type_of_sale",
+        get_pk=lambda x: x.id,
+        query_factory=lambda: SaleType.query,
+        allow_blank=True,
+    )
+    register = QuerySelectField(
+        "Médico/Instituição",
+        validators=[Required("Informe para quem será feita a venda")],
+        get_pk=lambda x: x.id,
+        query_factory=lambda: Register.query,
+        allow_blank=True,
+    )

@@ -1,4 +1,5 @@
 import datetime as dt
+
 from flask_login import UserMixin
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash
@@ -44,7 +45,7 @@ class User(UserMixin, db.Model):
 
 class Storage(db.Model):
     __tablename__ = "storage"
-    balance = db.relationship("Balance", backref='balance', lazy='dynamic')
+    balance = db.relationship("Balance", backref="balance", lazy="dynamic")
 
     id = db.Column("id", db.Integer, primary_key=True)
     name = db.Column("name", db.Unicode)
@@ -62,6 +63,11 @@ class Storage(db.Model):
 
     def __str__(self):
         return self.name
+
+    @staticmethod
+    def get_item_details(id: int):
+        item = Storage.query.get(id)
+        return {"name": item.name, "price": item.price, "unity": item.unity}
 
 
 class Balance(db.Model):
@@ -117,6 +123,13 @@ class Register(db.Model):
 
     def to_dict(self):
         return dict((col, getattr(self, col)) for col in self.__table__.columns.keys())
+
+    def __repr__(self):
+        if self.type == "institution":
+            return Institution.query.filter_by(register_id=self.id).first().name
+
+        elif self.type == "doctor":
+            return Doctor.query.filter_by(register_id=self.id).first().name
 
 
 class Doctor(db.Model):
@@ -251,3 +264,8 @@ class Speciality(db.Model):
     __tablename__ = "speciality"
     id = db.Column("id", db.Integer, primary_key=True)
     speciality = db.Column("speciality", db.Unicode)
+
+
+class SaleType(db.Model):
+    id = db.Column("id", db.Integer, primary_key=True)
+    type_of_sale = db.Column("type_of_sale", db.Unicode)

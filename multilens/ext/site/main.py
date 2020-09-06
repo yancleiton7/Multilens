@@ -1,4 +1,5 @@
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import (Blueprint, flash, redirect, render_template, request,
+                   session, url_for)
 from flask_login import current_user, login_required
 
 from multilens.ext.db.models import Doctor, Institution, Storage
@@ -145,7 +146,9 @@ def order(order_id):
 @bp.route("/estoque", methods=["GET"])
 @login_required
 def storage():
-    return render_template("site/storage.html", products=Storage.query.filter_by(avaliable=True).all())
+    return render_template(
+        "site/storage.html", products=Storage.query.filter_by(avaliable=True).all()
+    )
 
 
 @bp.route("/vendas/", methods=["GET"])
@@ -154,8 +157,42 @@ def sales():
     return render_template("site/sales.html")
 
 
-@bp.route("/vendas/nova", methods=["GET", "POST"])
+@bp.route("/vendas/nova", methods=["GET", "POST", "PUT", "DELETE"])
 @login_required
 def register_sale():
+    status = 200
+    form = FormOrder()
+
+    if "cart" not in session:
+        session["cart"] = dict()
+
     if request.method == "GET":
-        return render_template("forms/sale.html", form=FormOrder())
+        pass
+
+    elif request.method == "PUT":
+        if request.json is not None:
+            for item_id, qtd in request.json.get("items", list()):
+                cart = session["cart"]
+                cart[item_id] = cart.get(item_id, 0) + qtd
+
+    elif request.method == "DELETE":
+        if request.json is not None:
+            for item_id in request.json.get("items", list()):
+                session["cart"].pop(item_id)
+
+    elif request.method == "POST":
+        if form.validate_on_submit():
+            if session["cart"] == dict():
+                flash(
+                    "Você precisa adicionar pelo menos um produto ao carrinho",
+                    "is-danger",
+                )
+
+            else:
+                flash("Venda cadastrada com sucesso!", "is-success")
+
+        else:
+            for field in form.errors.values():
+                [flash(err, "is-danger") for err in field]
+
+    return render_template("forms/sale.html", form=form), status

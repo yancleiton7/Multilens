@@ -74,8 +74,15 @@ class SpecialityModelView(BaseView):
     column_labels = {"speciality": "Especialidade"}
 
 
+class SaleTypeModelView(BaseView):
+    column_editable_list = ["type_of_sale"]
+    column_labels = {"type_of_sale": "Tipo de venda"}
+
+
 class BalanceModelView(BaseView):
-    column_editable_list = ["quant", ]
+    column_editable_list = [
+        "quant",
+    ]
     column_list = ["balance", "quant", "event", "date"]
     form_columns = ["balance", "quant", "event"]
 
@@ -84,19 +91,9 @@ class BalanceModelView(BaseView):
         "quant": "Quantidade",
         "date": "Data",
         "event": "Entrada/Saida",
-        "balance": "Produto"
-
+        "balance": "Produto",
     }
 
-    form_overrides = {
-        "event": SelectField
-    }
+    form_overrides = {"event": SelectField}
 
-    form_args = {
-        "event": {
-            "choices": [
-                ("Entrada", "Entrada"),
-                ("Saida", "Saida")
-            ]
-        }
-    }
+    form_args = {"event": {"choices": [("Entrada", "Entrada"), ("Saida", "Saida")]}}
