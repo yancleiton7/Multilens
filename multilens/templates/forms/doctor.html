@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% from "macros/render_messages.html" import render_message %}
+
+{% block body %}
+{{ render_message() }}
+<form method="POST">
+    {{ form.csrf_token }}
+    <article class="panel {{ color_theme }}">
+        <div class="panel-heading">Médico</div>
+        <div class="form-body">
+            <div class="field is-grouped">
+                <div class="control is-expanded">
+                    <label class="label"> {{ form.name.label }} </label>
+                    <div class="control has-icons-left">
+                        {{ form.name(class="input", type="text", placeholder="Nome") }}
+                        <span class="icon is-smal is-left">
+                            <i class="fas fa-user"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-grouped is-grouped-multiline">
+                <div class="control is-expanded">
+                    <label class="label"> {{ form.cpf.label }} </label>
+                    <div class="control has-icons-left">
+                        {{ form.cpf(class="input", type="text", placeholder="CPF") }}
+                        <span class="icon is-left">
+                            <i class="fas fa-address-card"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="control is-expanded">
+                    <label class="label"> {{ form.rg.label }} </label>
+                    <div class="control has-icons-left">
+                        {{ form.rg(class="input", type="text", placeholder="RG") }}
+                        <span class="icon is-left">
+                            <i class="fas fa-address-card"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="control is-expanded">
+                    <label class="label"> {{ form.crm.label }} </label>
+                    <div class="control has-icons-left">
+                        {{ form.crm(class="input", type="text", placeholder="CRM") }}
+                        <span class="icon is-left">
+                            <i class="fas fa-id-card-alt"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="control">
+                    <label class="label"> {{ form.speciality_id.label }} </label>
+                    <div class="control has-icons-left">
+                        <div class="select">
+                            {{ form.speciality_id() }}
+                        </div>
+                        <span class="icon is-left">
+                            <i class="fas fa-first-aid"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-grouped is-grouped-multiline">
+                <div class="control is-expanded">
+                    <label class="label"> {{ form.email.label }} </label>
+                    <div class="control has-icons-left">
+                        {{ form.email(class="input", type="text", placeholder="email@multilens.com") }}
+                        <span class="icon is-left">
+                            <i class="fas fa-envelope"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="control">
+                    <label class="label"> {{ form.cel.label }} </label>
+                    <div class="field has-addons">
+                        <div class="control">
+                            <a class="button is-static">+55</a>
+                        </div>
+                        <div class="control">
+                            {{ form.cel(class="input", type="text", placeholder="99999999999") }}
+                        </div>
+                    </div>
+                </div>
+                <div class="control">
+                    <label class="label"> {{ form.phone.label }} </label>
+                    <div class="field has-addons">
+                        <div class="control">
+                            <a class="button is-static">+55</a>
+                        </div>
+                        <div class="control">
+                            {{ form.phone(class="input", type="text", placeholder="99999999999") }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-grouped is-grouped-multiline">
+                <div class="control is-expanded">
+                    <label class="label"> {{ form.district.label }} </label>
+                    <div class="control">
+                        {{ form.district(class="input", placeholder="Brotas") }}
+                    </div>
+                </div>
+                <div class="control">
+                    <label class="label"> {{ form.country.label }} </label>
+                    <div class="control has-icons-left">
+                        {{ form.country(class="input", placeholder="Salvador") }}
+                        <span class="icon is-left">
+                            <i class="fas fa-city"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="control">
+                    <label class="label"> {{ form.zip.label }} </label>
+                    <div class="control">
+                        {{ form.zip(class="input", placeholder="40000000") }}
+                    </div>
+                </div>
+            </div>
+            <div class="field is-grouped">
+                <div class="control is-expanded">
+                    <label class="label"> {{ form.address.label }} </label>
+                    <div class="control has-icons-left">
+                        {{ form.address(class="input", placeholder="Av. João N23") }}
+                        <span class="icon is-left">
+                            <i class="fas fa-address-card"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-grouped">
+                <div class="control is-expanded">
+                    <input class="button is-fullwidth {{ color_theme }}" type="submit" value="Salvar">
+                </div>
+            </div>
+        </div>
+    </article>
+</form>
+
+{% endblock body %}

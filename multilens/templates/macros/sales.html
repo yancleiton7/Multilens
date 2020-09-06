@@ -1,0 +1,39 @@
+{% macro render_table_sales() %}
+<table class="table is-striped is-hoverable is-fullwidth">
+    <thead>
+        <tr>
+            <th></th>
+            <th>Produto</th>
+            <th>Unid.</th>
+            <th>Qtd.</th>
+            <th>Valor Unitario</th>
+            <th>Valor Total</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in session.get("sales", []) %}
+        <tr>
+            <th>{{item}}</th>
+            <th>{{item["id"]}}</th>
+            <td>{{item["name"]}}</td>
+            <td>{{item["unity"]}}</td>
+            <td>{{item["qtd"]}}</td>
+            <td>{{item["price"]}}</td>
+            <td></td>
+        </tr>
+        {% endfor %}
+        <tr>
+    <tfoot>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <td>Subtotal R$ 0.00</td>
+        <th></th>
+        </tr>
+    </tfoot>
+    </tbody>
+</table>
+{% endmacro %}
