@@ -1,6 +1,6 @@
 import datetime as dt
 
-from flask_login import UserMixin
+from flask_login import UserMixin, current_user
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash
 
@@ -49,7 +49,7 @@ class Storage(db.Model):
 
     id = db.Column("id", db.Integer, primary_key=True)
     name = db.Column("name", db.Unicode)
-    price = db.Column("price", db.Numeric)
+    price = db.Column("price", db.Float)
     unity = db.Column("unity", db.Unicode)
     avaliable = db.Column("avaliable", db.Boolean)
 
@@ -84,9 +84,10 @@ class Order(db.Model):
     id = db.Column("id", db.Integer, primary_key=True)
     employee_id = db.Column("employee_id", db.Integer, db.ForeignKey("user.id"))
     register_id = db.Column("register_id", db.Integer, db.ForeignKey("register.id"))
-    date = db.Column("date", db.Date)
+    date = db.Column("date", db.Date, default=dt.datetime.utcnow())
     type_pgto = db.Column("type_pgto", db.Unicode)
     type = db.Column("type", db.Unicode)
+    is_finished = db.Column("is_finished", db.Boolean, default=False)
 
     user = db.relationship("User", foreign_keys=employee_id)
     register = db.relationship("Register", foreign_keys=register_id)
@@ -94,18 +95,92 @@ class Order(db.Model):
     def get_total_amount(self) -> float:
         return 0.0
 
+    @staticmethod
+    def get_current_user_order():
+        order = Order.query.filter_by(
+            employee_id=current_user.id, is_finished=False
+        ).first()
+
+        if order is None:
+            order = Order()
+            order.employee_id = current_user.id
+            order.save()
+
+        return order
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def add_item(self, item_id: int, amount: int) -> dict:
+        item = DescOrder(order_id=self, product_id=item_id, amount=amount)
+        item.save()
+        item_detail = {
+            "item_id": item.product_id,
+            "name": item.storage.name,
+            "amount": item.amount,
+            "price": item.storage.price,
+        }
+
+        return item_detail
+
+    def add_item_by_form(self, form) -> dict:
+        item = DescOrder()
+        form.populate_obj(item)
+        item.order_id = self.id
+
+        return item.save()
+
+    def get_details(self):
+        return DescOrder.query.filter_by(order_id=self.id).all()
+
+    @staticmethod
+    def remove_item(item_id: int) -> dict:
+        item = DescOrder.query.filter_by(id=item_id).first()
+
+        if item is not None:
+            item.remove()
+            response = {"success": True, "message": "Item excluido com sucesso!"}
+
+        else:
+            response = {
+                "success": False,
+                "message": f"Não foi possível localizar o item com o ID {item_id}",
+            }
+
+        return response
+
 
 class DescOrder(db.Model):
     __tablename__ = "desc_order"
     id = db.Column("id", db.Integer, primary_key=True)
     order_id = db.Column("order_id", db.Integer, db.ForeignKey("order.id"))
     product_id = db.Column("product_id", db.Integer, db.ForeignKey("storage.id"))
-    quant = db.Column("quant", db.Integer)
-    unity_value = db.Column("unity_value", db.Integer)
-    discount = db.Column("discount", db.Numeric)
+    amount = db.Column("amount", db.Integer)
 
     order = db.relationship("Order", foreign_keys=order_id)
     storage = db.relationship("Storage", foreign_keys=product_id)
+
+    def save(self) -> dict:
+        try:
+            db.session.add(self)
+            db.session.commit()
+
+        except IntegrityError:
+            db.session.rollback()
+            response = {
+                "success": False,
+                "message": "Não foi possível adicionar o item",
+            }
+
+        else:
+            response = {"success": True, "message": "Item criado com sucesso"}
+
+        return response
+
+    def remove(self):
+        db.session.delete(self)
+        db.session.commit()
 
 
 class Register(db.Model):

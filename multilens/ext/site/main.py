@@ -1,8 +1,7 @@
-from flask import (Blueprint, flash, redirect, render_template, request,
-                   session, url_for)
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from multilens.ext.db.models import Doctor, Institution, Storage
+from multilens.ext.db.models import Doctor, Institution, Order, Storage
 
 from .form import FormDoctor, FormInstitution, FormOrder
 
@@ -157,42 +156,51 @@ def sales():
     return render_template("site/sales.html")
 
 
-@bp.route("/vendas/nova", methods=["GET", "POST", "PUT", "DELETE"])
+@bp.route("/vendas/nova", methods=["GET", "POST", "DELETE"])
 @login_required
 def register_sale():
     status = 200
     form = FormOrder()
-
-    if "cart" not in session:
-        session["cart"] = dict()
+    user_order = Order.get_current_user_order()
 
     if request.method == "GET":
         pass
 
-    elif request.method == "PUT":
-        if request.json is not None:
-            for item_id, qtd in request.json.get("items", list()):
-                cart = session["cart"]
-                cart[item_id] = cart.get(item_id, 0) + qtd
-
-    elif request.method == "DELETE":
-        if request.json is not None:
-            for item_id in request.json.get("items", list()):
-                session["cart"].pop(item_id)
-
     elif request.method == "POST":
         if form.validate_on_submit():
-            if session["cart"] == dict():
-                flash(
-                    "Você precisa adicionar pelo menos um produto ao carrinho",
-                    "is-danger",
-                )
-
-            else:
-                flash("Venda cadastrada com sucesso!", "is-success")
+            response = user_order.add_item_by_form(form)
+            if not response["success"]:
+                flash(response["message"], "is-warning")
 
         else:
             for field in form.errors.values():
                 [flash(err, "is-danger") for err in field]
 
-    return render_template("forms/sale.html", form=form), status
+    elif request.method == "DELETE":
+        item_id = request.args.get("item_id")
+        if item_id is not None:
+            user_order.remove_item(item_id)
+
+            response = {
+                "success": True,
+                "message": "Item excluido com sucesso!",
+            }
+
+        else:
+            response = {
+                "success": False,
+                "message": "Não foi possível processar sua solicitação, verifique os parâmetros informados",
+            }
+
+        return response
+
+    return (
+        render_template("forms/sale.html", form=form, order=user_order.get_details()),
+        status,
+    )
+
+
+@bp.route("/vendas/finalizar", methods=["GET", "POST"])
+@login_required
+def finish_sale():
+    return render_template("site/finish_order.html")

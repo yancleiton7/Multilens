@@ -1,4 +1,4 @@
-{% macro render_table_sales() %}
+{% macro render_table_sales(order, button_delete=True) %}
 <table class="table is-striped is-hoverable is-fullwidth">
     <thead>
         <tr>
@@ -6,34 +6,28 @@
             <th>Produto</th>
             <th>Unid.</th>
             <th>Qtd.</th>
-            <th>Valor Unitario</th>
-            <th>Valor Total</th>
+            <th>Preço</th>
+            <th>Sub Total</th>
+            {% if button_delete %}
             <th></th>
+            {% endif %}
         </tr>
     </thead>
     <tbody>
-        {% for item in session.get("sales", []) %}
-        <tr>
-            <th>{{item}}</th>
-            <th>{{item["id"]}}</th>
-            <td>{{item["name"]}}</td>
-            <td>{{item["unity"]}}</td>
-            <td>{{item["qtd"]}}</td>
-            <td>{{item["price"]}}</td>
-            <td></td>
+        {% for item in order %}
+        <tr item_id="{{ item.id }}">
+            <th>{{ loop.index }}</th>
+            <td>{{ item.storage.name }}</td>
+            <td>{{ item.storage.unity }}</td>
+            <td>{{ item.amount }}</td>
+            <td>{{ item.storage.price }}</td>
+            <td>{{ item.storage.price * item.amount }}</td>
+            {% if button_delete %}
+            <td><a class="button is-danger is-small")>Excluir</a></td>
+            {% endif%}
         </tr>
         {% endfor %}
         <tr>
-    <tfoot>
-        <th></th>
-        <th></th>
-        <th></th>
-        <th></th>
-        <th></th>
-        <td>Subtotal R$ 0.00</td>
-        <th></th>
-        </tr>
-    </tfoot>
     </tbody>
 </table>
 {% endmacro %}

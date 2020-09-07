@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import FloatField, IntegerField, PasswordField, StringField
+from wtforms import FloatField, PasswordField, StringField
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import Email, Length, Optional, Regexp, Required
@@ -218,12 +218,22 @@ class FormInstitution(BaseForm):
 class FormOrder(BaseForm):
     product_id = QuerySelectField(
         "Produto",
+        validators=[Required("Selecione o produto para adicionar")],
         get_label="name",
         get_pk=lambda x: x.id,
         query_factory=lambda: Storage.query,
         allow_blank=True,
     )
-    quant = IntegerField("Quantidade", validators=[Optional()])
+    amount = StringField(
+        "Quantidade",
+        validators=[
+            Required("Informe a quantidade"),
+            Regexp("^[0-9]*$", message="Informe somente números"),
+        ],
+    )
+
+
+class FormFinishOrder(BaseForm):
     freight = FloatField("Frete", validators=[Required("O frete é obrigatorio")])
     type_of_sale = QuerySelectField(
         "Tipo de venda",

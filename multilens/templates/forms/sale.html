@@ -1,77 +1,62 @@
 {% extends "base.html" %}
 {% from "macros/sales.html" import render_table_sales %}
 {% from "macros/render_messages.html" import render_message %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/sales.js') }}" type="text/javascript"></script>
+{% endblock extra_scripts %}
+
 {% block body %}
 {{render_message()}}
 <article class="panel {{ color_theme }}">
     <div class="panel-heading">Fórmulario de venda</div>
     <div class="form-body">
-        <div class="field is-grouped is-grouped-multiline">
-            <div class="control">
-                <div class="field is-horizontal">
-                    <div class="field-label is-normal">
-                        <label class="label">{{ form.product_id.label}}</label>
+        <form method="POST">
+            {{ form.csrf_token }}
+
+            <div class="field is-grouped is-grouped-multiline">
+                <div class="control">
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal">
+                            <label class="label">{{ form.product_id.label}}</label>
+                        </div>
+                        <div class="control">
+                            <div class="select">
+                                {{ form.product_id(id="product") }}
+                            </div>
+                        </div>
                     </div>
-                    <div class="control">
-                        <div class="select">
-                            {{ form.product_id() }}
+                </div>
+                <div class="control">
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal">
+                            <label class="label">{{ form.amount.label}}</label>
+                        </div>
+                        <div class="control">
+                            {{ form.amount(class="input", id="amount") }}
+                        </div>
+                    </div>
+                </div>
+                <div class="control">
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal">
+                            <label class="label">ﾠ</label>
+                        </div>
+                        <div class="control">
+                            <button class="button {{ color_theme }}">Adicionar</button>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="control">
-                <div class="field is-horizontal">
-                    <div class="field-label is-normal">
-                        <label class="label">{{ form.quant.label}}</label>
-                    </div>
-                    <div class="control">
-                        {{ form.quant(class="input") }}
-                    </div>
-                </div>
-            </div>
-            <div class="control">
-                <div class="field is-horizontal">
-                    <div class="field-label is-normal">
-                        <label class="label">ﾠ</label>
-                    </div>
-                    <div class="control">
-                        <button class="button {{ color_theme }}">Adicionar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="field">
-            <form method="POST">
-                {{ form.csrf_token }}
+            <div class="field">
                 <div class="table-container">
-                    {{ render_table_sales() }}
-                </div>
-                <div class="field is-grouped is-grouped-multiline">
-                    <div class="control is-expanded">
-                        <label class="label">{{ form.register.label }}</label>
-                        <div class="select">
-                            {{ form.register() }}
-                        </div>
-                    </div>
-                    <div class="control is-expanded">
-                        <label class="label">{{ form.type_of_sale.label }}</label>
-                        <div class="select">
-                            {{ form.type_of_sale() }}
-                        </div>
-                    </div>
-                    <div class="control">
-                        <label class="label">{{ form.freight.label }}</label>
-                        {{ form.freight(class="input") }}
-                    </div>
-                    <div class="control">
-                        <label class="label">Total</label>
-                        <a class="button {{color_theme}} is-outlined">R$ 0.00</a>
-                    </div>
+                    {{ render_table_sales(order) }}
                 </div>
                 <div class="field">
                     <div class="control is-expanded">
                         <label class="label">ﾠ</label>
-                        <button class="button is-fullwidth {{ color_theme }}"> Finalizar pedido</button>
+                        <a href="{{ url_for('site.finish_sale') }}" class="button is-fullwidth {{ color_theme }}">
+                            Finalizar pedido</a>
                     </div>
                 </div>
             </div>
