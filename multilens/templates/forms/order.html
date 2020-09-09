@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% from "macros/sales.html" import render_table_sales %}
+{% from "macros/render_messages.html" import render_message %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/order.js') }}" type="text/javascript"></script>
+{% endblock extra_scripts %}
+
+{% block body %}
+{{render_message()}}
+<article class="panel {{ color_theme }}">
+    <div class="panel-heading">Pedido Nº {{ order_id }}</div>
+    <div class="form-body">
+        <form method="POST" id="item-form">
+            {{ form_items.csrf_token }}
+            <div class="field is-grouped is-grouped-multiline">
+                <div class="control">
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal">
+                            <label class="label">{{ form_items.product_id.label}}</label>
+                        </div>
+                        <div class="control">
+                            <div class="select">
+                                {{ form_items.product_id(id="product") }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="control">
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal">
+                            <label class="label">{{ form_items.amount.label }}</label>
+                        </div>
+                        <div class="control">
+                            {{ form_items.amount(class="input", id="amount") }}
+                        </div>
+                    </div>
+                </div>
+                <div class="control">
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal">
+                            <label class="label">ﾠ</label>
+                        </div>
+                        <div class="control">
+                            <a class="button {{ color_theme }} add-item">Adicionar</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <div class="field">
+            <div class="table-container">
+                {{ render_table_sales(order) }}
+            </div>
+            <form method="POST">
+                {{ form_items.csrf_token }}
+                <div class="field is-grouped is-grouped-multiline">
+                    <div class="control">
+                        <div class="field is-horizontal">
+                            <div class="field-label is-normal">
+                                <label class="label">{{ form_order.type_of_sale.label }}</label>
+                            </div>
+                            <div class="control">
+                                <div class="select">
+                                    {{ form_order.type_of_sale() }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="control">
+                        <div class="field is-horizontal">
+                            <div class="field-label is-normal">
+                                <label class="label"> {{ form_order.type_pgto.label }} </label>
+                            </div>
+                            <div class="control">
+                                <div class="select">
+                                    {{ form_order.type_pgto() }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="control">
+                        <div class="field is-horizontal">
+                            <div class="field-label is-normal">
+                                <label class="label">{{ form_order.freight.label }}</label>
+                            </div>
+                            <div class="control">
+                                {{form_order.freight(class="input")}}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="control">
+                        <div class="field is-horizontal">
+                            <div class="field-label is-normal">
+                                <label class="label"> {{ form_order.discount.label }} </label>
+                            </div>
+                            <div class="control">
+                                {{ form_order.discount(class="input") }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="control is-expanded">
+                        <label class="label">ﾠ</label>
+                        <input type="submit" class="button is-fullwidth {{ color_theme }}" value="Finalizar pedido">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</article>
+{% endblock body %}

@@ -4,7 +4,8 @@ from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import Email, Length, Optional, Regexp, Required
 
-from multilens.ext.db.models import Register, SaleType, Speciality, Storage
+from multilens.ext.db.models import (PaymentType, Register, SaleType,
+                                     Speciality, Storage)
 
 
 class BaseForm(FlaskForm):
@@ -95,7 +96,7 @@ class FormDoctor(BaseForm):
             Regexp("^[0-9]*$", message="Informe somente números"),
         ],
     )
-    country = StringField("Cidade", [Required("Informe uma cidade")])
+    city = StringField("Cidade", [Required("Informe uma cidade")])
     address = StringField(
         "Endereço",
         [
@@ -119,7 +120,7 @@ class FormDoctor(BaseForm):
             self.speciality_id.data = doctor.speciality
             self.zip.data = doctor.register.zip
             self.address.data = doctor.register.address
-            self.country.data = doctor.register.country
+            self.city.data = doctor.register.city
             self.district.data = doctor.register.district
 
 
@@ -190,7 +191,7 @@ class FormInstitution(BaseForm):
             Regexp("^[0-9]*$", message="Informe somente números"),
         ],
     )
-    country = StringField("Cidade", [Required("Informe uma cidade")])
+    city = StringField("Cidade", [Required("Informe uma cidade")])
     address = StringField(
         "Endereço",
         [
@@ -211,11 +212,32 @@ class FormInstitution(BaseForm):
         if institution.register is not None:
             self.zip.data = institution.register.zip
             self.address.data = institution.register.address
-            self.country.data = institution.register.country
+            self.city.data = institution.register.city
             self.district.data = institution.register.district
 
 
 class FormOrder(BaseForm):
+    freight = FloatField("Frete", validators=[Required("O frete é obrigatorio")])
+    type_of_sale = QuerySelectField(
+        "Tipo de venda",
+        validators=[Required("O tipo de venda é obrigatorio!")],
+        get_label="type_of_sale",
+        get_pk=lambda x: x.id,
+        query_factory=lambda: SaleType.query,
+        allow_blank=True,
+    )
+    type_pgto = QuerySelectField(
+        "Prazo Pgto.",
+        validators=[Required("O prazo do pagamento é obrigatorio!")],
+        get_label="type_of_payment",
+        get_pk=lambda x: x.id,
+        query_factory=lambda: PaymentType.query,
+        allow_blank=True,
+    )
+    discount = FloatField("Desconto")
+
+
+class FormOrderItems(BaseForm):
     product_id = QuerySelectField(
         "Produto",
         validators=[Required("Selecione o produto para adicionar")],
@@ -234,16 +256,7 @@ class FormOrder(BaseForm):
 
 
 class FormFinishOrder(BaseForm):
-    freight = FloatField("Frete", validators=[Required("O frete é obrigatorio")])
-    type_of_sale = QuerySelectField(
-        "Tipo de venda",
-        validators=[Required("O tipo de venda é obrigatorio!")],
-        get_label="type_of_sale",
-        get_pk=lambda x: x.id,
-        query_factory=lambda: SaleType.query,
-        allow_blank=True,
-    )
-    register = QuerySelectField(
+    register_id = QuerySelectField(
         "Médico/Instituição",
         validators=[Required("Informe para quem será feita a venda")],
         get_pk=lambda x: x.id,

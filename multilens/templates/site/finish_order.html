@@ -1,29 +1,115 @@
 {% extends "base.html" %}
-{% block body%}
-Tela para finalizar as vendas
-<!--
-                    <div class="field is-grouped is-grouped-multiline">
-                        <div class="control is-expanded">
-                        <label class="label">{{ form.register.label }}</label>
-                        <div class="select">
-                            {{ form.register() }}
-                        </div>
-                    </div>
-                    <div class="control is-expanded">
-                        <label class="label">{{ form.type_of_sale.label }}</label>
-                        <div class="select">
-                            {{ form.type_of_sale() }}
-                        </div>
-                    </div>
-                    <div class="control">
-                        <label class="label">{{ form.freight.label }}</label>
-                        {{ form.freight(class="input") }}
-                    </div>
-                    <div class="control">
-                        <label class="label">Total</label>
-                        <a class="button {{color_theme}} is-outlined">R$ 0.00</a>
+{% from "macros/sales.html" import render_table_sales %}
+{% from "macros/render_messages.html" import render_message %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/order.js') }}" type="text/javascript"></script>
+{% endblock extra_scripts %}
+
+{% block body %}
+{{ render_message() }}
+<form method="POST">
+    {{ form.csrf_token }}
+    <div class="field is-grouped is-grouped-multiline">
+        <div class="control">
+            <div class="field">
+                <div class="field-label is-normal">
+                    <label class="label">Pedido Nº {{ order.id }} </label>
+                </div>
+            </div>
+        </div>
+        <div class="control">
+            <div class="field is-grouped">
+                <div class="field-label is-normal">
+                    <label class="label"> {{ form.register_id.label }} </label>
+                </div>
+                <div class="control">
+                    <div class="select">
+                        {{ form.register_id(id="register") }}
                     </div>
                 </div>
--->
-
+            </div>
+        </div>
+    </div>
+    <div class="field is-grouped is-grouped-multiline">
+        <div class="control is-expanded">
+            <label class="label">Endereço</label>
+            <input class="input" id="address" disabled></input>
+        </div>
+        <div class="control">
+            <label class="label">Bairro</label>
+            <input class="input" id="district" disabled></input>
+        </div>
+        <div class="control">
+            <label class="label">Cidade</label>
+            <input class="input" id="city" disabled></input>
+        </div>
+        <div class="control">
+            <label class="label">CEP</label>
+            <input class="input" id="zip" disabled></input>
+        </div>
+    </div>
+    <div class="field">
+        <div class="control">
+            {{ render_table_sales(order_details, button_delete=False) }}
+        </div>
+    </div>
+    <div class="field is-grouped is-grouped-multiline">
+        <div class="control">
+            <div class="field is-grouped">
+                <div class="field-label">
+                    <label class="label">Total</label>
+                </div>
+                <div class="control">
+                    <label class=""> {{ order.get_total_amount()}}</label>
+                </div>
+            </div>
+        </div>
+        <div class="control">
+            <div class="field is-grouped">
+                <div class="field-label">
+                    <label class="label">Frete</label>
+                </div>
+                <div class="control">
+                    <label>R$ {{ order.freight }}</label>
+                </div>
+            </div>
+        </div>
+        <div class="control">
+            <div class="field is-grouped">
+                <div class="field-label">
+                    <label class="label">Desconto</label>
+                </div>
+                <div class="control">
+                    <label>R$ {{ order.discount }}</label>
+                </div>
+            </div>
+        </div>
+        <div class="control">
+            <div class="field is-grouped">
+                <div class="field-label">
+                    <label class="label">Tipo de pagamento</label>
+                </div>
+                <div class="control">
+                    <label>{{ order.payment_type }}</label>
+                </div>
+            </div>
+        </div>
+        <div class="control">
+            <div class="field is-grouped">
+                <div class="field-label">
+                    <label class="label">Tipo de venda</label>
+                </div>
+                <div class="control">
+                    <label>{{ order.sale_type }}</label>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="field">
+        <div class="control is-expanded">
+            <input class="button is-fullwidth {{ color_theme }}" type="submit" value="Confirmar Pedido">
+        </div>
+    </div>
+</form>
 {% endblock body%}

@@ -34,9 +34,7 @@
             </table>
         </section>
         <footer class="modal-card-foot">
-            {% set url = url_for('site.doctor', register=doctor.id ) %}
-            <button onclick="location.href= '{{ url }}'" class="button {{ color_theme }}">Editar</button>
-            <button onclick="location.href= '{{ url }}'" class="button">Excluir</button>
+            <a href={{ url_for('site.doctor', register=doctor.id )}} class="button {{ color_theme }}">Editar</a>
         </footer>
     </div>
 </div>
@@ -93,9 +91,7 @@
             </table>
         </section>
         <footer class="modal-card-foot">
-            {% set url = url_for('site.institution', register=institution.id ) %}
-            <button onclick="location.href= '{{ url }}'" class="button {{ color_theme }}">Editar</button>
-            <button class="button ">Excluir</button>
+            <a href={{ url_for('site.institution', register=institution.id )}} class="button {{ color_theme }}">Editar</a>
         </footer>
     </div>
 </div>

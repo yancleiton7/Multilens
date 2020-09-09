@@ -24,25 +24,19 @@ $(document).ready(function () {
 
         $(".navbar-burger").toggleClass("is-active");
         $(".navbar-menu").toggleClass("is-active");
-        
+
     });
 
     // Fim da navbar
-    
+
     // Modal
     $(".show-modal").click(function () {
         $(this).children(".modal").toggleClass("is-active");
     });
     // Fim do modal
+
+    // Notificações
+    $(".notification > button.delete").click(function () {
+        $(this).parent().remove()
+    })
 });
-
-
-// document.addEventListener('DOMContentLoaded', () => {
-//     (document.querySelectorAll('.notification .delete') || []).forEach(($delete) => {
-//       $notification = $delete.parentNode;
-  
-//       $delete.addEventListener('click', () => {
-//         $notification.parentNode.removeChild($notification);
-//       });
-//     });
-//   });

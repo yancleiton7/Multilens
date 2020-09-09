@@ -69,6 +69,15 @@ class Storage(db.Model):
         item = Storage.query.get(id)
         return {"name": item.name, "price": item.price, "unity": item.unity}
 
+    def to_dict(self) -> dict:
+        return dict((col, getattr(self, col)) for col in self.__table__.columns.keys())
+
+    @property
+    def details(self):
+        details = self.to_dict()
+        details.pop("avaliable")
+        return details
+
 
 class Balance(db.Model):
     __tablename__ = "balance"
@@ -84,16 +93,38 @@ class Order(db.Model):
     id = db.Column("id", db.Integer, primary_key=True)
     employee_id = db.Column("employee_id", db.Integer, db.ForeignKey("user.id"))
     register_id = db.Column("register_id", db.Integer, db.ForeignKey("register.id"))
+    type_pgto = db.Column("type_pgto", db.Integer)
+    type_of_sale = db.Column("type_of_sale", db.Integer)
     date = db.Column("date", db.Date, default=dt.datetime.utcnow())
-    type_pgto = db.Column("type_pgto", db.Unicode)
-    type = db.Column("type", db.Unicode)
+    freight = db.Column("freight", db.Float, default=0.00)
+    discount = db.Column("discount", db.Float, default=0.00)
     is_finished = db.Column("is_finished", db.Boolean, default=False)
 
     user = db.relationship("User", foreign_keys=employee_id)
     register = db.relationship("Register", foreign_keys=register_id)
 
     def get_total_amount(self) -> float:
-        return 0.0
+        return (
+            sum([i.storage.price * i.amount for i in self.get_details()])
+            + self.freight
+            - self.discount
+        )
+
+    @property
+    def details(self):
+        detail = self.to_dict()
+        detail.pop("employee_id")
+        detail.pop("register_id")
+        detail["date"] = str(self.date)
+        detail.update(
+            {
+                "employee": {"id": self.employee_id, "name": self.user.name},
+                "register": self.register.details,
+                "description": [i.details for i in self.get_details()],
+            }
+        )
+
+        return detail
 
     @staticmethod
     def get_current_user_order():
@@ -108,12 +139,16 @@ class Order(db.Model):
 
         return order
 
+    @staticmethod
+    def get(id: int):
+        return Order.query.filter_by(id=id).first()
+
     def save(self):
         db.session.add(self)
         db.session.commit()
 
     def add_item(self, item_id: int, amount: int) -> dict:
-        item = DescOrder(order_id=self, product_id=item_id, amount=amount)
+        item = DescOrder(order_id=self.id, product_id=item_id, amount=amount)
         item.save()
         item_detail = {
             "item_id": item.product_id,
@@ -134,6 +169,14 @@ class Order(db.Model):
     def get_details(self):
         return DescOrder.query.filter_by(order_id=self.id).all()
 
+    def finish(self):
+        self.is_finished = True
+        self.save()
+
+    @property
+    def item_count(self):
+        return len(DescOrder.query.filter_by(order_id=self.id).all())
+
     @staticmethod
     def remove_item(item_id: int) -> dict:
         item = DescOrder.query.filter_by(id=item_id).first()
@@ -149,6 +192,29 @@ class Order(db.Model):
             }
 
         return response
+
+    @property
+    def payment_type(self):
+        payment = PaymentType.get(self.type_pgto)
+
+        if payment is not None:
+            return payment.type_of_payment
+
+        else:
+            return ""
+
+    @property
+    def sale_type(self):
+        sale = SaleType.get(self.type_pgto)
+
+        if sale is not None:
+            return sale.type_of_sale
+
+        else:
+            return ""
+
+    def to_dict(self):
+        return dict((col, getattr(self, col)) for col in self.__table__.columns.keys())
 
 
 class DescOrder(db.Model):
@@ -182,15 +248,31 @@ class DescOrder(db.Model):
         db.session.delete(self)
         db.session.commit()
 
+    def to_dict(self):
+        return dict((col, getattr(self, col)) for col in self.__table__.columns.keys())
+
+    @property
+    def details(self) -> dict:
+        detail = self.storage.details
+        detail.update(
+            {"id": self.id, "item_id": self.storage.id, "amount": self.amount}
+        )
+
+        return detail
+
 
 class Register(db.Model):
     __tablename__ = "register"
     id = db.Column("id", db.Integer, primary_key=True)
     zip = db.Column("zip", db.Integer)
-    country = db.Column("country", db.Unicode)
+    city = db.Column("city", db.Unicode)
     address = db.Column("address", db.Unicode)
     district = db.Column("district", db.Unicode)
     type = db.Column("type", db.Unicode)
+
+    @staticmethod
+    def get(id):
+        return Register.query.filter_by(id=id).first()
 
     def save(self):
         db.session.add(self)
@@ -199,12 +281,35 @@ class Register(db.Model):
     def to_dict(self):
         return dict((col, getattr(self, col)) for col in self.__table__.columns.keys())
 
+    def remove(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    @property
+    def details(self):
+        address = self.to_dict()
+        if self.type == "doctor":
+            doctor = Doctor.query.filter_by(register_id=self.id).first()
+            address.update({"doctor": doctor.details if doctor is not None else {}})
+
+        elif self.type == "institution":
+            institution = Institution.query.filter_by(register_id=self.id).first()
+            address.update(
+                {
+                    "institution": institution.to_dict()
+                    if institution is not None
+                    else {}
+                }
+            )
+
+        return address
+
     def __repr__(self):
         if self.type == "institution":
-            return Institution.query.filter_by(register_id=self.id).first().name
+            return Institution.query.filter_by(register_id=self.id).first().name.capitalize()
 
         elif self.type == "doctor":
-            return Doctor.query.filter_by(register_id=self.id).first().name
+            return Doctor.query.filter_by(register_id=self.id).first().name.capitalize()
 
 
 class Doctor(db.Model):
@@ -278,6 +383,30 @@ class Doctor(db.Model):
     def get_all():
         return Doctor.query.all()
 
+    @staticmethod
+    def get(id: int):
+        return Doctor.query.filter_by(id=id).first()
+
+    def remove(self):
+        self.register.remove()
+
+        db.session.delete(self)
+        db.session.commit()
+        response = {"success": True, "message": "Registro excluido com sucesso!"}
+
+        return response
+
+    def to_dict(self) -> dict:
+        return dict((col, getattr(self, col)) for col in self.__table__.columns.keys())
+
+    @property
+    def details(self) -> dict:
+        details = self.to_dict()
+        details.pop("speciality_id")
+        details.pop("register_id")
+        details.update({"speciality": self.speciality.speciality})
+        return details
+
 
 class Institution(db.Model):
     __tablename__ = "institution"
@@ -299,6 +428,10 @@ class Institution(db.Model):
     @staticmethod
     def get_all():
         return Institution.query.all()
+
+    @staticmethod
+    def get(id: int):
+        return Institution.query.filter_by(id=id).first()
 
     def save(self):
         db.session.add(self)
@@ -334,6 +467,17 @@ class Institution(db.Model):
 
         return response
 
+    def remove(self) -> dict:
+        self.register.remove()
+        db.session.delete(self)
+        db.session.commit()
+        response = {"success": True, "message": "Registro excluido com sucesso!"}
+
+        return response
+
+    def to_dict(self):
+        return dict((col, getattr(self, col)) for col in self.__table__.columns.keys())
+
 
 class Speciality(db.Model):
     __tablename__ = "speciality"
@@ -344,3 +488,16 @@ class Speciality(db.Model):
 class SaleType(db.Model):
     id = db.Column("id", db.Integer, primary_key=True)
     type_of_sale = db.Column("type_of_sale", db.Unicode)
+
+    @staticmethod
+    def get(id: int):
+        return SaleType.query.filter_by(id=id).first()
+
+
+class PaymentType(db.Model):
+    id = db.Column("id", db.Integer, primary_key=True)
+    type_of_payment = db.Column("type_of_payment", db.Unicode)
+
+    @staticmethod
+    def get(id: int):
+        return PaymentType.query.filter_by(id=id).first()

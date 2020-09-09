@@ -79,6 +79,11 @@ class SaleTypeModelView(BaseView):
     column_labels = {"type_of_sale": "Tipo de venda"}
 
 
+class PaymentTypeModelView(BaseView):
+    column_editable_list = ["type_of_payment"]
+    column_labels = {"type_of_payment": "Tipo de pagamento"}
+
+
 class BalanceModelView(BaseView):
     column_editable_list = [
         "quant",
