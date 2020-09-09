@@ -1,1 +1,1 @@
-web: gunicorn run:app
+main: python "main.py"
