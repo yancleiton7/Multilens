@@ -7,4 +7,4 @@ flask-wtf
 flask-login
 flask-migrate
 flask-restful
-pytest
+gunicorn

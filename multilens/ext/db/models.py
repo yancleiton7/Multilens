@@ -52,6 +52,7 @@ class Storage(db.Model):
     price = db.Column("price", db.Float)
     unity = db.Column("unity", db.Unicode)
     avaliable = db.Column("avaliable", db.Boolean)
+    amount = db.Column("amount", db.Integer)
 
     @staticmethod
     def get_balance(id: int):
@@ -77,6 +78,10 @@ class Storage(db.Model):
         details = self.to_dict()
         details.pop("avaliable")
         return details
+
+    @staticmethod
+    def get_avaliable_items():
+        return Storage.query.filter_by(avaliable=True)
 
 
 class Balance(db.Model):

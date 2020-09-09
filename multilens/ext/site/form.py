@@ -243,7 +243,7 @@ class FormOrderItems(BaseForm):
         validators=[Required("Selecione o produto para adicionar")],
         get_label="name",
         get_pk=lambda x: x.id,
-        query_factory=lambda: Storage.query,
+        query_factory=lambda: Storage.get_avaliable_items(),
         allow_blank=True,
     )
     amount = StringField(

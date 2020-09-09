@@ -64,9 +64,9 @@ class StorageModelView(BaseView):
         "name",
     ]
     form_excluded_columns = [
-        "balance",
+        "balance", "amount"
     ]
-    column_labels = {"name": "Produto", "price": "Preço", "unity": "Unidade"}
+    column_labels = {"name": "Produto", "price": "Preço", "unity": "Unidade", "amount": "Quantidade"}
 
 
 class SpecialityModelView(BaseView):
