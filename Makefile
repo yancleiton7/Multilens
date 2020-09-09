@@ -11,9 +11,9 @@ deploy:
 reset-db:
 	export FLASK_APP=multilens/app.py
 	export FLASK_ENV=development
-	flask drop-db 
-	flask create-db 
-	flask add-user -u "uescarvalho" -p "ues11052011" -a 
+	flask drop-db
+	flask create-db
+	flask add-user -u "uescarvalho" -p "ues11052011" -a
 	flask add-user -u "ueslei" -p "11052011"
 
 clean:
