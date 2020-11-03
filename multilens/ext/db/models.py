@@ -43,8 +43,8 @@ class User(UserMixin, db.Model):
         return self.admin
 
 
-class Storage(db.Model):
-    __tablename__ = "storage"
+class Estoque(db.Model):
+    __tablename__ = "estoque"
     balance = db.relationship("Balance", backref="balance", lazy="dynamic")
 
     id = db.Column("id", db.Integer, primary_key=True)
@@ -67,7 +67,7 @@ class Storage(db.Model):
 
     @staticmethod
     def get_item_details(id: int):
-        item = Storage.query.get(id)
+        item = Estoque.query.get(id)
         return {"name": item.name, "price": item.price, "unity": item.unity}
 
     def to_dict(self) -> dict:
@@ -81,13 +81,13 @@ class Storage(db.Model):
 
     @staticmethod
     def get_avaliable_items():
-        return Storage.query.filter_by(avaliable=True)
+        return Estoque.query.filter_by(avaliable=True)
 
 
 class Balance(db.Model):
     __tablename__ = "balance"
     id = db.Column("id", db.Integer, primary_key=True)
-    item_id = db.Column("item_id", db.Integer, db.ForeignKey("storage.id"))
+    item_id = db.Column("item_id", db.Integer, db.ForeignKey("estoque.id"))
     quant = db.Column("quant", db.Integer)
     date = db.Column("date", db.Date, default=dt.datetime.now())
     event = db.Column("event", db.Unicode)
@@ -110,7 +110,7 @@ class Order(db.Model):
 
     def get_total_amount(self) -> float:
         return (
-            sum([i.storage.price * i.amount for i in self.get_details()])
+            sum([i.estoque.price * i.amount for i in self.get_details()])
             + self.freight
             - self.discount
         )
@@ -157,9 +157,9 @@ class Order(db.Model):
         item.save()
         item_detail = {
             "item_id": item.product_id,
-            "name": item.storage.name,
+            "name": item.estoque.name,
             "amount": item.amount,
-            "price": item.storage.price,
+            "price": item.estoque.price,
         }
 
         return item_detail
@@ -226,11 +226,11 @@ class DescOrder(db.Model):
     __tablename__ = "desc_order"
     id = db.Column("id", db.Integer, primary_key=True)
     order_id = db.Column("order_id", db.Integer, db.ForeignKey("order.id"))
-    product_id = db.Column("product_id", db.Integer, db.ForeignKey("storage.id"))
+    product_id = db.Column("product_id", db.Integer, db.ForeignKey("estoque.id"))
     amount = db.Column("amount", db.Integer)
 
     order = db.relationship("Order", foreign_keys=order_id)
-    storage = db.relationship("Storage", foreign_keys=product_id)
+    estoque = db.relationship("Estoque", foreign_keys=product_id)
 
     def save(self) -> dict:
         try:
@@ -258,9 +258,9 @@ class DescOrder(db.Model):
 
     @property
     def details(self) -> dict:
-        detail = self.storage.details
+        detail = self.estoque.details
         detail.update(
-            {"id": self.id, "item_id": self.storage.id, "amount": self.amount}
+            {"id": self.id, "item_id": self.estoque.id, "amount": self.amount}
         )
 
         return detail
@@ -293,16 +293,16 @@ class Register(db.Model):
     @property
     def details(self):
         address = self.to_dict()
-        if self.type == "doctor":
-            doctor = Doctor.query.filter_by(register_id=self.id).first()
-            address.update({"doctor": doctor.details if doctor is not None else {}})
+        if self.type == "cliente":
+            cliente = Cliente.query.filter_by(register_id=self.id).first()
+            address.update({"cliente": cliente.details if cliente is not None else {}})
 
-        elif self.type == "institution":
-            institution = Institution.query.filter_by(register_id=self.id).first()
+        elif self.type == "financeiro":
+            financeiro = Financeiro.query.filter_by(register_id=self.id).first()
             address.update(
                 {
-                    "institution": institution.to_dict()
-                    if institution is not None
+                    "financeiro": financeiro.to_dict()
+                    if financeiro is not None
                     else {}
                 }
             )
@@ -310,45 +310,39 @@ class Register(db.Model):
         return address
 
     def __repr__(self):
-        if self.type == "institution":
-            return Institution.query.filter_by(register_id=self.id).first().name.capitalize()
+        if self.type == "financeiro":
+            return Financeiro.query.filter_by(register_id=self.id).first().name.capitalize()
 
-        elif self.type == "doctor":
-            return Doctor.query.filter_by(register_id=self.id).first().name.capitalize()
+        elif self.type == "cliente":
+            return Cliente.query.filter_by(register_id=self.id).first().name.capitalize()
 
 
-class Doctor(db.Model):
-    __tablename__ = "doctor"
+class Cliente(db.Model):
+    __tablename__ = "cliente"
     id = db.Column("id", db.Integer, primary_key=True)
     register_id = db.Column("register_id", db.Integer, db.ForeignKey("register.id"))
-    speciality_id = db.Column(
-        "speciality_id", db.Integer, db.ForeignKey("speciality.id")
-    )
     name = db.Column("name", db.Unicode)
-    sex = db.Column("sex", db.Unicode)
-    cpf = db.Column("cpf", db.Integer, unique=True)
-    rg = db.Column("rg", db.Integer, unique=True)
-    crm = db.Column("crm", db.Integer, unique=True)
     cel = db.Column("cel", db.Integer)
     phone = db.Column("phone", db.Integer)
-    email = db.Column("email", db.Unicode)
+    aniversario = db.Column("aniversario", db.Unicode)
+    observacao = db.Column("observacao", db.Unicode)
 
-    speciality = db.relationship("Speciality", foreign_keys=speciality_id)
     register = db.relationship("Register", foreign_keys=register_id)
+
 
     @staticmethod
     def create_by_form(form):
-        doctor = Doctor()
+        cliente = Cliente()
         register = Register()
 
         form.populate_obj(register)
-        register.type = "doctor"
+        register.type = "cliente"
         register.save()
 
-        form.populate_obj(doctor)
-        doctor.register_id = register.id
+        form.populate_obj(cliente)
+        cliente.register_id = register.id
 
-        response = doctor.save()
+        response = cliente.save()
 
         if not response["success"]:
             register.delete()
@@ -378,7 +372,7 @@ class Doctor(db.Model):
         else:
             response = {
                 "success": True,
-                "message": "Doutor cadastrado com successo!",
+                "message": "Cliente cadastrado com successo!",
                 "object": self,
             }
 
@@ -386,11 +380,17 @@ class Doctor(db.Model):
 
     @staticmethod
     def get_all():
-        return Doctor.query.all()
+        return Cliente.query.all()
 
     @staticmethod
     def get(id: int):
-        return Doctor.query.filter_by(id=id).first()
+        return Cliente.query.filter_by(id=id).first()
+
+    @staticmethod
+    def get_aniversariantes(mes: int):
+        lista = [item for item in Cliente.query.all() if item.aniversario[3:5]==mes["mes"]]
+        return lista
+
 
     def remove(self):
         self.register.remove()
@@ -407,14 +407,12 @@ class Doctor(db.Model):
     @property
     def details(self) -> dict:
         details = self.to_dict()
-        details.pop("speciality_id")
         details.pop("register_id")
-        details.update({"speciality": self.speciality.speciality})
         return details
 
 
-class Institution(db.Model):
-    __tablename__ = "institution"
+class Financeiro(db.Model):
+    __tablename__ = "financeiro"
     id = db.Column("id", db.Integer, primary_key=True)
     register_id = db.Column("register_id", db.Integer, db.ForeignKey("register.id"))
     name = db.Column("name", db.Unicode)
@@ -432,11 +430,11 @@ class Institution(db.Model):
 
     @staticmethod
     def get_all():
-        return Institution.query.all()
+        return Financeiro.query.all()
 
     @staticmethod
     def get(id: int):
-        return Institution.query.filter_by(id=id).first()
+        return Financeiro.query.filter_by(id=id).first()
 
     def save(self):
         db.session.add(self)
@@ -447,17 +445,17 @@ class Institution(db.Model):
 
     @staticmethod
     def create_by_form(form):
-        institution = Institution()
+        financeiro = Financeiro()
         register = Register()
 
         form.populate_obj(register)
-        register.type = "institution"
+        register.type = "financeiro"
         register.save()
 
-        form.populate_obj(institution)
-        institution.register_id = register.id
+        form.populate_obj(financeiro)
+        financeiro.register_id = register.id
 
-        response = institution.save()
+        response = financeiro.save()
 
         if not response["success"]:
             register.delete()

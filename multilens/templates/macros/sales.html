@@ -17,11 +17,11 @@
         {% for item in order %}
         <tr item_id="{{ item.id }}">
             <th>{{ loop.index }}</th>
-            <td>{{ item.storage.name }}</td>
-            <td>{{ item.storage.unity }}</td>
+            <td>{{ item.estoque.name }}</td>
+            <td>{{ item.estoque.unity }}</td>
             <td>{{ item.amount }}</td>
-            <td>{{ item.storage.price }}</td>
-            <td>{{ item.storage.price * item.amount }}</td>
+            <td>{{ item.estoque.price }}</td>
+            <td>{{ item.estoque.price * item.amount }}</td>
             {% if button_delete %}
             <td><a class="button is-danger is-small")>Excluir</a></td>
             {% endif%}

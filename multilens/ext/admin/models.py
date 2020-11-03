@@ -58,7 +58,7 @@ class UserModelView(BaseView):
     column_labels = {"user": "Usuario", "name": "Nome", "password": "Senha"}
 
 
-class StorageModelView(BaseView):
+class EstoqueModelView(BaseView):
     page_size = 10
     column_searchable_list = [
         "name",

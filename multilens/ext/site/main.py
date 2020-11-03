@@ -6,9 +6,9 @@ from flask import (Blueprint, current_app, flash, redirect, render_template,
 from flask_login import current_user, login_required
 
 from multilens.ext.api.resources import ResourceOrder
-from multilens.ext.db.models import Doctor, Institution, Order, Storage
+from multilens.ext.db.models import Cliente, Financeiro, Order, Estoque
 
-from .form import (FormDoctor, FormFinishOrder, FormInstitution, FormOrder,
+from .form import (FormClientes, FormFinishOrder, FormFinanceiro, FormOrder,
                    FormOrderItems)
 
 bp = Blueprint("site", __name__)
@@ -21,23 +21,33 @@ def index():
 
     return render_template("site/index.html")
 
-
-@bp.route("/medicos/", methods=["GET", "DELETE"])
+'''
+@bp.route("/clientes/", methods=["GET"])
 @login_required
-def doctors():
-    return render_template("site/doctors.html", doctors=Doctor.get_all())
+def clientes_aniversariantes(mes: int):
+    return render_template("site/clientes.html", clientes=Cliente.get_aniversariantes(12))
+'''
 
 
-@bp.route("/medicos/cadastro", methods=["GET", "POST"])
+@bp.route("/clientes/", methods=["GET", "DELETE"])
 @login_required
-def form_doctor():
-    form = FormDoctor()
+def clientes():
+    if len(request.args) == 0:
+        return render_template("site/clientes.html", clientes=Cliente.get_all())
+    else:
+        return render_template("site/clientes.html", clientes=Cliente.get_aniversariantes(request.args))
+
+   
+@bp.route("/estoque/cadastro", methods=["GET", "POST"])
+@login_required
+def form_estoque():
+    form = FormClientes()
     if request.method == "GET":
-        return render_template("forms/doctor.html", form=form)
+        return render_template("forms/estoque.html", form=form)
 
     elif request.method == "POST":
         if form.validate_on_submit():
-            response = Doctor.create_by_form(form)
+            response = Cliente.create_by_form(form)
 
             if response["success"]:
                 flash(
@@ -52,26 +62,54 @@ def form_doctor():
             for field in form.errors.values():
                 [flash(err, "is-danger") for err in field]
 
-        return render_template("forms/doctor.html", form=form)
+        return render_template("forms/cliente.html", form=form)
 
 
-@bp.route("/medicos/<int:register>", methods=["GET", "POST", "DELETE"])
+
+@bp.route("/clientes/cadastro", methods=["GET", "POST"])
 @login_required
-def doctor(register: int):
-    doctor_register = Doctor.query.get_or_404(register)
-    form = FormDoctor()
+def form_cliente():
+    form = FormClientes()
+    if request.method == "GET":
+        return render_template("forms/cliente.html", form=form)
+
+    elif request.method == "POST":
+        if form.validate_on_submit():
+            response = Cliente.create_by_form(form)
+
+            if response["success"]:
+                flash(
+                    response["message"],
+                    "is-success",
+                )
+
+            else:
+                flash(response["message"], "is-danger")
+
+        else:
+            for field in form.errors.values():
+                [flash(err, "is-danger") for err in field]
+
+        return render_template("forms/cliente.html", form=form)
+
+
+@bp.route("/clientes/<int:register>", methods=["GET", "POST", "DELETE"])
+@login_required
+def cliente(register: int):
+    cliente_register = Cliente.query.get_or_404(register)
+    form = FormClientes()
 
     if request.method == "GET":
-        if doctor_register is None:
+        if cliente_register is None:
             flash("Cadastro não localizado!", "is-warning")
-            redirect(url_for("site.form_doctor"))
+            redirect(url_for("site.form_cliente"))
 
         else:
-            form.load(doctor_register)
+            form.load(cliente_register)
 
     elif request.method == "POST":
         if form.validate_on_submit():
-            response = doctor_register.update_by_form(form)
+            response = cliente_register.update_by_form(form)
 
             if response["success"]:
                 flash(response["message"], "is-success")
@@ -84,35 +122,35 @@ def doctor(register: int):
                 [flash(err, "is-danger") for err in field]
 
     elif request.method == "DELETE":
-        doctor_register = Doctor.get(register)
+        cliente_register = Cliente.get(register)
 
-        if doctor_register is not None:
-            response = doctor_register.remove()
+        if cliente_register is not None:
+            response = cliente_register.remove()
 
         else:
             response = {"success": False, "message": "Informe um registro valido"}
 
         return response
 
-    return render_template("forms/doctor.html", form=form)
+    return render_template("forms/cliente.html", form=form)
 
 
-@bp.route("/instituicoes/", methods=["GET"])
+@bp.route("/financeiro/", methods=["GET"])
 @login_required
-def institutions():
-    return render_template("site/institution.html", institutions=Institution.get_all())
+def financeiros():
+    return render_template("site/financeiro.html", financeiros=Financeiro.get_all())
 
 
-@bp.route("/instituicoes/cadastro", methods=["GET", "POST"])
+@bp.route("/financeiro/cadastro", methods=["GET", "POST"])
 @login_required
-def form_institution():
-    form = FormInstitution()
+def form_financeiro():
+    form = FormFinanceiro()
     if request.method == "GET":
-        return render_template("forms/institution.html", form=form)
+        return render_template("forms/financeiro.html", form=form)
 
     elif request.method == "POST":
         if form.validate_on_submit():
-            response = Institution.create_by_form(form)
+            response = Financeiro.create_by_form(form)
 
             if response["success"]:
                 flash(response["message"], "is-success")
@@ -124,21 +162,21 @@ def form_institution():
             for field in form.errors.values():
                 [flash(err, "is-danger") for err in field]
 
-    return render_template("forms/institution.html", form=form)
+    return render_template("forms/financeiro.html", form=form)
 
 
-@bp.route("/instituicoes/<int:register>", methods=["GET", "POST", "DELETE"])
+@bp.route("/financeiro/<int:register>", methods=["GET", "POST", "DELETE"])
 @login_required
-def institution(register: int):
-    form = FormInstitution()
-    institution_register = Institution.query.get_or_404(register)
+def financeiro(register: int):
+    form = FormFinanceiro()
+    financeiro_register = Financeiro.query.get_or_404(register)
 
     if request.method == "GET":
-        form.load(institution_register)
+        form.load(financeiro_register)
 
     elif request.method == "POST":
         if form.validate_on_submit():
-            response = institution_register.update_by_form(form)
+            response = financeiro_register.update_by_form(form)
 
             if response["success"]:
                 flash(response["message"], "is-success")
@@ -151,17 +189,17 @@ def institution(register: int):
                 [flash(err, "is-danger") for err in field]
 
     elif request.method == "DELETE":
-        institution_register = Institution.get(register)
+        financeiro_register = Financeiro.get(register)
 
-        if institution is not None:
-            response = institution_register.remove()
+        if financeiro is not None:
+            response = financeiro_register.remove()
 
         else:
             response = {"success": False, "message": "Informe um registro valido"}
 
         return response
 
-    return render_template("forms/institution.html", form=form)
+    return render_template("forms/financeiro.html", form=form)
 
 
 @bp.route("/vendas/<int:order_id>", methods=["GET", "POST"])
@@ -172,9 +210,9 @@ def order(order_id: int):
 
 @bp.route("/estoque", methods=["GET"])
 @login_required
-def storage():
+def estoque():
     return render_template(
-        "site/storage.html", products=Storage.query.filter_by(avaliable=True).all()
+        "site/estoque.html", products=Estoque.query.filter_by(avaliable=True).all()
     )
 
 

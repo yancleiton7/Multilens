@@ -9,7 +9,7 @@ def read(filename: str) -> list:
 setup(
     name="multilens",
     version="0.1.0",
-    description="Site para controle de clientes e estoque da multilens",
+    description="Site para controle de clientes e pedidos da Doceriah",
     packages=find_packages(),
     include_package_data=True,
     install_requires=read("requirements.txt"),

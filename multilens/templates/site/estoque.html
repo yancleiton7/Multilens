@@ -2,15 +2,20 @@
 
 {% block body %}
 <article class="panel {{ color_theme }}">
-    <div class="panel-heading">Estoque</div>
-    <div class="panel-block">
-        <div class="control is-expanded has-icons-left">
-            <input class="input {{ color_theme}}" type="search" placeholder="Nome do Produto">
-            <span class="icon is-left">
-                <i class="fas fa-search" aria-hidden="true"></i>
-            </span>
+
+
+
+    <div class="navbar {{ color_theme }}">
+        <div class="navbar-item"><strong>Estoque</strong></div>
+
+            <div class="navbar-end">
+                <div class="buttons">
+                <a href="{{url_for('site.form_estoque')}}" class="button is-success ">Cadastrar</a>
+            </div>
         </div>
     </div>
+
+
     <div class="form-body">
         <div class="table-container">
             <table class="table is-striped is-fullwidth is-hoverable">

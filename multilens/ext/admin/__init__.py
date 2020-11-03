@@ -2,10 +2,10 @@ from flask_admin import Admin
 
 from multilens.ext.db import db
 from multilens.ext.db.models import (Balance, PaymentType, SaleType,
-                                     Speciality, Storage, User)
+                                     Speciality, Estoque, User)
 
 from .models import (AdminView, BalanceModelView, PaymentTypeModelView,
-                     SaleTypeModelView, SpecialityModelView, StorageModelView,
+                     SaleTypeModelView, SpecialityModelView, EstoqueModelView,
                      UserModelView)
 
 admin = Admin(index_view=AdminView())
@@ -20,7 +20,7 @@ def init_app(app):
     admin.add_view(SpecialityModelView(Speciality, db.session, "Especialidade"))
     admin.add_view(SaleTypeModelView(SaleType, db.session, "Tipos de venda"))
     admin.add_view(PaymentTypeModelView(PaymentType, db.session, "Tipo de pagamento"))
-    admin.add_view(StorageModelView(Storage, db.session, "Produtos"))
+    admin.add_view(EstoqueModelView(Estoque, db.session, "Produtos"))
     admin.add_view(BalanceModelView(Balance, db.session, "Estoque"))
 
     admin.init_app(app)

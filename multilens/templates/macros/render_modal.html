@@ -1,10 +1,10 @@
 {%set color_theme = config.get("COLOR_THEME", "is-primary") %}
-{% macro render_doctor_modal(doctor) %}
+{% macro render_cliente_modal(cliente) %}
 <div class="modal">
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
-            <p class="modal-card-title">Médico</p>
+            <p class="modal-card-title">Cliente</p>
             <button class="delete" aria-label="close"></button>
         </header>
         <section class="modal-card-body">
@@ -12,35 +12,32 @@
                 <tbody>
                     <tr>
                         <th>Nome</th>
-                        <td>{{ doctor.name.title() }}</td>
+                        <td>{{ cliente.name.title() }}</td>
                     </tr>
-                    <tr>
-                        <th>Especialidade</th>
-                        <td>{{ doctor.speciality.speciality.title() }}</td>
-                    </tr>
+                 
                     <tr>
                         <th>Email</th>
-                        <td>{{ doctor.email }}</td>
+                        <td>{{ cliente.email }}</td>
                     </tr>
                     <tr>
                         <th>Celular</th>
-                        <td>{{ doctor.cel }}</td>
+                        <td>{{ cliente.cel }}</td>
                     </tr>
                     <tr>
                         <th>Telefone</th>
-                        <td>{{ doctor.phone }}</td>
+                        <td>{{ cliente.phone }}</td>
                     </tr>
                 </tbody>
             </table>
         </section>
         <footer class="modal-card-foot">
-            <a href={{ url_for('site.doctor', register=doctor.id )}} class="button {{ color_theme }}">Editar</a>
+            <a href={{ url_for('site.clientes', register=cliente.id )}} class="button {{ color_theme }}">Editar</a>
         </footer>
     </div>
 </div>
 {% endmacro %}
 
-{% macro render_institution_modal(institution) %}
+{% macro render_financeiro_modal(financeiro) %}
 <div class="modal">
     <div class="modal-background"></div>
     <div class="modal-card">
@@ -53,45 +50,103 @@
                 <tbody>
                     <tr>
                         <th>Nome</th>
-                        <td>{{ institution.name.title() }}</td>
+                        <td>{{ financeiro.name.title() }}</td>
                     </tr>
                     <tr>
                         <th>Administração</th>
-                        <td>{{ institution.adm_name }}</td>
+                        <td>{{ financeiro.adm_name }}</td>
                     </tr>
                     <tr>
                         <th>Adm. Email</th>
-                        <td>{{ institution.adm_email }}</td>
+                        <td>{{ financeiro.adm_email }}</td>
                     </tr>
                     <tr>
                         <th>Adm. Celular</th>
-                        <td>{{ institution.adm_cel }}</td>
+                        <td>{{ financeiro.adm_cel }}</td>
                     </tr>
                     <tr>
                         <th>Adm. Telefone</th>
-                        <td>{{ institution.adm_phone }}</td>
+                        <td>{{ financeiro.adm_phone }}</td>
                     </tr>
                     <tr>
                         <th>Enfermagem</th>
-                        <td>{{ institution.enf_name }}</td>
+                        <td>{{ financeiro.enf_name }}</td>
                     </tr>
                     <tr>
                         <th>Enf. Email</th>
-                        <td>{{ institution.enf_email }}</td>
+                        <td>{{ financeiro.enf_email }}</td>
                     </tr>
                     <tr>
                         <th>Enf. Celular</th>
-                        <td>{{ institution.enf_cel }}</td>
+                        <td>{{ financeiro.enf_cel }}</td>
                     </tr>
                     <tr>
                         <th>Enf. Telefone</th>
-                        <td>{{ institution.enf_phone }}</td>
+                        <td>{{ financeiro.enf_phone }}</td>
                     </tr>
                 </tbody>
             </table>
         </section>
         <footer class="modal-card-foot">
-            <a href={{ url_for('site.institution', register=institution.id )}} class="button {{ color_theme }}">Editar</a>
+            <a href={{ url_for('site.financeiro', register=financeiro.id )}} class="button {{ color_theme }}">Editar</a>
+        </footer>
+    </div>
+</div>
+{% endmacro %}
+
+
+{% macro render_estoque_modal(estoque) %}
+<div class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Instituição</p>
+            <button class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+            <table class="table">
+                <tbody>
+                    <tr>
+                        <th>Nome</th>
+                        <td>{{ financeiro.name.title() }}</td>
+                    </tr>
+                    <tr>
+                        <th>Administração</th>
+                        <td>{{ financeiro.adm_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Adm. Email</th>
+                        <td>{{ financeiro.adm_email }}</td>
+                    </tr>
+                    <tr>
+                        <th>Adm. Celular</th>
+                        <td>{{ financeiro.adm_cel }}</td>
+                    </tr>
+                    <tr>
+                        <th>Adm. Telefone</th>
+                        <td>{{ financeiro.adm_phone }}</td>
+                    </tr>
+                    <tr>
+                        <th>Enfermagem</th>
+                        <td>{{ financeiro.enf_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Enf. Email</th>
+                        <td>{{ financeiro.enf_email }}</td>
+                    </tr>
+                    <tr>
+                        <th>Enf. Celular</th>
+                        <td>{{ financeiro.enf_cel }}</td>
+                    </tr>
+                    <tr>
+                        <th>Enf. Telefone</th>
+                        <td>{{ financeiro.enf_phone }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <footer class="modal-card-foot">
+            <a href={{ url_for('site.financeiro', register=financeiro.id )}} class="button {{ color_theme }}">Editar</a>
         </footer>
     </div>
 </div>

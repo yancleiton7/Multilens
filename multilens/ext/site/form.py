@@ -5,7 +5,7 @@ from wtforms.fields.html5 import EmailField
 from wtforms.validators import Email, Length, Optional, Regexp, Required
 
 from multilens.ext.db.models import (PaymentType, Register, SaleType,
-                                     Speciality, Storage)
+                                     Speciality, Estoque)
 
 
 class BaseForm(FlaskForm):
@@ -21,7 +21,7 @@ class FormLogin(BaseForm):
     passwd = PasswordField("Senha", [Required()])
 
 
-class FormDoctor(BaseForm):
+class FormClientes(BaseForm):
     name = StringField(
         "Nome",
         [
@@ -29,36 +29,14 @@ class FormDoctor(BaseForm):
             Length(min=5, max=50, message="O nome deve conter de 5 a 50 caracters"),
         ],
     )
-    cpf = StringField(
-        "CPF",
-        [
-            Required("Informe o CPF"),
-            Length(min=11, max=11, message="O CPF deve conter exatamente 11 números"),
-            Regexp("^[0-9]*$", message="Informe somente números"),
-        ],
-    )
-    rg = StringField(
-        "RG",
-        [
-            Required("Informe o RG"),
-            Length(min=10, max=10, message="O RG precisa conter exatamente 10 números"),
-            Regexp("^[0-9]*$", message="Informe somente números"),
-        ],
-    )
-    crm = StringField(
-        "CRM",
-        [
-            Required("Informe o CRM"),
-            Length(min=5, max=12, message="O CRM precisa conter de 5 a 12 números"),
-            Regexp("^[0-9]*$", message="Informe somente números"),
-        ],
-    )
+
+
     cel = StringField(
         "Celular",
         [
             Required("Informe um número de celular valido"),
             Length(
-                min=11, max=11, message="O celular precisa conter exatamente 11 números"
+                min=11, max=11, message="O celular precisa conter exatamente 11 números 2 do DDD 9 do número"
             ),
             Regexp("^[0-9]*$", message="Informe somente números"),
         ],
@@ -68,24 +46,29 @@ class FormDoctor(BaseForm):
         [
             Required("Informe um telefone validio"),
             Length(
-                min=10,
-                max=10,
-                message="O telefone precisa conter exatamente 10 números",
+                min=11,
+                max=11,
+                message="O telefone precisa conter exatamente 11 números 2 do DDD 9 do número ",
             ),
             Regexp("^[0-9]*$", message="Informe somente números"),
         ],
     )
-    email = EmailField(
-        "Email", [Required("Informe o Email"), Email("Informe um e-mail valido")]
+
+    aniversario = StringField(
+        "Aniversário",
+        [
+            Regexp("\d{2}/\d{2}/\d{4}", message="Aniversário de ser no formato 01/01/2000"),
+        ],
     )
-    speciality_id = QuerySelectField(
-        "Especialidade",
-        [Required("Selecione a especialidade")],
-        get_label="speciality",
-        get_pk=lambda x: x.id,
-        query_factory=lambda: Speciality.query,
-        allow_blank=True,
+
+    observacao = StringField(
+        "Observação",
+        [
+            Required("Caso não tenha observação preencher com -"),
+        ],
     )
+
+
     zip = StringField(
         "CEP",
         [
@@ -96,7 +79,7 @@ class FormDoctor(BaseForm):
             Regexp("^[0-9]*$", message="Informe somente números"),
         ],
     )
-    city = StringField("Cidade", [Required("Informe uma cidade")])
+    city = StringField("Cidade - Estado", [Required("Informe uma cidade")])
     address = StringField(
         "Endereço",
         [
@@ -113,18 +96,17 @@ class FormDoctor(BaseForm):
         ],
     )
 
-    def load(self, doctor):
-        self.process(obj=doctor)
+    def load(self, cliente):
+        self.process(obj=cliente)
 
-        if doctor.register is not None:
-            self.speciality_id.data = doctor.speciality
-            self.zip.data = doctor.register.zip
-            self.address.data = doctor.register.address
-            self.city.data = doctor.register.city
-            self.district.data = doctor.register.district
+        if cliente.register is not None:
+            self.zip.data = cliente.register.zip
+            self.address.data = cliente.register.address
+            self.city.data = cliente.register.city
+            self.district.data = cliente.register.district
 
 
-class FormInstitution(BaseForm):
+class FormFinanceiro(BaseForm):
     name = StringField("Nome", [Required("O nome da instituição é obrigatorio")])
     cnpj = StringField(
         "CNPJ",
@@ -206,14 +188,14 @@ class FormInstitution(BaseForm):
         ],
     )
 
-    def load(self, institution):
-        self.process(obj=institution)
+    def load(self, financeiro):
+        self.process(obj=financeiro)
 
-        if institution.register is not None:
-            self.zip.data = institution.register.zip
-            self.address.data = institution.register.address
-            self.city.data = institution.register.city
-            self.district.data = institution.register.district
+        if financeiro.register is not None:
+            self.zip.data = financeiro.register.zip
+            self.address.data = financeiro.register.address
+            self.city.data = financeiro.register.city
+            self.district.data = financeiro.register.district
 
 
 class FormOrder(BaseForm):
@@ -243,7 +225,7 @@ class FormOrderItems(BaseForm):
         validators=[Required("Selecione o produto para adicionar")],
         get_label="name",
         get_pk=lambda x: x.id,
-        query_factory=lambda: Storage.get_avaliable_items(),
+        query_factory=lambda: Estoque.get_avaliable_items(),
         allow_blank=True,
     )
     amount = StringField(
@@ -257,7 +239,7 @@ class FormOrderItems(BaseForm):
 
 class FormFinishOrder(BaseForm):
     register_id = QuerySelectField(
-        "Médico/Instituição",
+        "Cliente/Instituição",
         validators=[Required("Informe para quem será feita a venda")],
         get_pk=lambda x: x.id,
         query_factory=lambda: Register.query,

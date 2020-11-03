@@ -6,7 +6,7 @@
   {% block head %}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Multilens</title>
+  <title>Doceriah</title>
   <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css">
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/base.css') }}">
@@ -36,19 +36,19 @@
   {% block menu %}
   <div id="navbarBasicExample" class="navbar-menu">
     <div class="navbar-start">
-      <a class="navbar-item" href="{{ url_for('site.doctors') }}">
-        Médicos
+      <a class="navbar-item" href="{{ url_for('site.clientes') }}">
+        Clientes
       </a>
-      <a class="navbar-item" href="{{ url_for('site.institutions') }}">
-        Instituições
+      <a class="navbar-item" href="{{ url_for('site.financeiros') }}">
+        Financeiro
       </a>
 
-      <a class="navbar-item" href="{{ url_for('site.storage') }}">
+      <a class="navbar-item" href="{{ url_for('site.estoque') }}">
         Estoque
       </a>
 
       <a class="navbar-item" href="{{ url_for('site.register_sale') }}">
-        Nova Venda
+        Pedido
       </a>
       <a class="navbar-item" href="{{ url_for('site.sales') }}">
         Historico de vendas
@@ -85,7 +85,7 @@
   <footer class="footer">
     <div class="content has-text-left	is-size-6">
       <p>
-        <strong>Multilens</strong> desenvolvido por <a href="https://www.linkedin.com/in/uesleicarvalhoo/">Ueslei
+        <strong>Doceriah</strong> desenvolvido por <a href="https://www.linkedin.com/in/uesleicarvalhoo/">Ueslei
           Carvalho</a>.
       </p>
     </div>

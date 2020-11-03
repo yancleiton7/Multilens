@@ -9,7 +9,7 @@
 {% block body %}
 {{render_message()}}
 <article class="panel {{ color_theme }}">
-    <div class="panel-heading">Pedido Nº {{ order_id }}</div>
+    <div class="panel-heading">Cliente Nº {{ order_id }}</div>
     <div class="form-body">
         <form method="POST" id="item-form">
             {{ form_items.csrf_token }}
@@ -103,7 +103,7 @@
                 <div class="field">
                     <div class="control is-expanded">
                         <label class="label">ﾠ</label>
-                        <input type="submit" class="button is-fullwidth {{ color_theme }}" value="Finalizar pedido">
+                        <input type="submit" class="button is-fullwidth {{ color_theme }}" value="Finalizar cliente">
                     </div>
                 </div>
             </form>
