@@ -4,8 +4,8 @@ from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import Email, Length, Optional, Regexp, Required
 
-from multilens.ext.db.models import (PaymentType, Register, SaleType,
-                                     Speciality, Estoque)
+from multilens.ext.db.models import ( Register, Estoque, Produto,Tipo, Retirada, Pagamento,
+                                     Grupo,  Cliente)
 
 
 class BaseForm(FlaskForm):
@@ -106,6 +106,197 @@ class FormClientes(BaseForm):
             self.district.data = cliente.register.district
 
 
+class FormBalanceEntrada(BaseForm):
+    produto = QuerySelectField(
+        "Nome do Produto",
+        validators=[Required("O produto é obrigatorio!")],
+        get_label="nome_produto",
+        get_pk=lambda x: x.id,
+        query_factory=lambda: Produto.query,
+        allow_blank=True,  
+        
+    )
+
+    quantidade = StringField(
+        "Quantidade",
+        [        
+            Regexp("^[0-9]*$", message="Informe somente números"),
+        ],
+    )
+
+    observacao = StringField(
+        "Observação",
+        [
+            Required("Caso não tenha observação preencher com -"),
+        ],
+    )
+
+    preco = StringField(
+        "Preço",
+        [
+            Required("Preencher o preço utilizado"),
+            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe somente números"),
+        ],
+    )
+
+    date = StringField(
+        "Data",
+        [
+            Regexp("\d{2}/\d{2}/\d{4}", message="Aniversário de ser no formato 01/01/2000"),
+        ],
+    )
+
+    event = StringField(
+        "evento",
+        [
+
+        ]
+    )
+
+    item_id = StringField(
+        "item_id",
+        [
+
+        ]
+    )
+
+    def limpar(self):
+        self.date.data = ""
+        self.quantidade.data = ""
+        self.observacao.data = ""
+        self.preco.data = ""
+        self.produto.data = ""
+
+class FormBalanceSaida(BaseForm):
+    produto = QuerySelectField(
+        "Nome do Produto",
+        validators=[Required("O produto é obrigatorio!")],
+        get_label="nome_produto",
+        get_pk=lambda x: x.id,
+        query_factory=lambda: Produto.query,
+        allow_blank=True,  
+        
+    )
+
+    quantidade = StringField(
+        "Quantidade",
+        [        
+            Regexp("^[0-9]*$", message="Informe somente números"),
+        ],
+    )
+
+    observacao = StringField(
+        "Observação",
+        [
+            Required("Caso não tenha observação preencher com -"),
+        ],
+    )
+
+
+    date = StringField(
+        "Data",
+        [
+            Regexp("\d{2}/\d{2}/\d{4}", message="Aniversário de ser no formato 01/01/2000"),
+        ],
+    )
+
+    event = StringField(
+        "evento",
+        [
+
+        ]
+    )
+    
+    item_id = StringField(
+        "item_id",
+        [
+
+        ]
+    )
+
+    def limpar(self):
+        self.date.data = ""
+        self.produto.data = ""
+        self.quantidade.data = ""
+        self.observacao.data = ""
+        
+
+class FormProduto(BaseForm):
+
+    nome_produto = StringField(
+        "Nome do Produto",
+        [
+            Required("Informe o nome"),
+        ],
+    )
+
+
+    grupo = QuerySelectField(
+        "Grupo",
+        validators=[Required("O grupo é obrigatorio!")],
+        get_label="grupo",
+        get_pk=lambda x: x.id,
+        query_factory=lambda: Grupo.query,
+        allow_blank=True,
+        
+        
+    )
+
+    tipo = QuerySelectField(
+        "Tipo Produto",
+        validators=[Required("O tipo de produto é obrigatorio!")],
+        get_label="tipo",
+        get_pk=lambda x: x.id,
+        query_factory=lambda: Tipo.query,
+        allow_blank=True,
+        
+    )
+
+
+    unidade = StringField(
+        "Unidade",
+        [
+            Required("Informe a unidade utilizada para esse produto."),
+        ],
+    )
+
+    estoque_minimo = StringField(
+        "Estoque mínimo",
+        [
+            
+            Regexp("^[0-9]*$", message="Informe somente números"),
+        ],
+    )
+
+    observacao = StringField(
+        "Observação",
+        [
+            Required("Caso não tenha observação preencher com -"),
+        ],
+    )
+
+    
+
+    def load(self, produto):
+        self.process(obj=produto)
+
+        if id is not None:
+            self.nome_produto.data = produto.nome_produto
+            self.estoque_minimo.data = produto.estoque_minimo
+            self.tipo.selected = Tipo.get(Produto.get(produto.id).tipo).tipo
+            #self.grupo.select () Grupo.get(Produto.get(produto.id).tipo).grupo
+            self.observacao.data = produto.observacao
+            
+
+    def limpar(self):
+        self.nome_produto.data = ""
+        self.estoque_minimo.data = ""
+        self.observacao.data = ""
+        self.grupo.data = ""
+        self.tipo.data = ""
+        self.unidade.data = ""
+
+
 class FormFinanceiro(BaseForm):
     name = StringField("Nome", [Required("O nome da instituição é obrigatorio")])
     cnpj = StringField(
@@ -198,8 +389,110 @@ class FormFinanceiro(BaseForm):
             self.district.data = financeiro.register.district
 
 
+
+class FormPedido(BaseForm):
+
+    data_pedido = StringField(
+        "Data pedido",
+        [
+            Regexp("\d{2}/\d{2}/\d{4}", message="Datas seguem o formato 01/01/2000"),
+        ],
+    )
+    data_entrega = StringField(
+        "Data entrega",
+        [
+            Regexp("\d{2}/\d{2}/\d{4}", message="Datas seguem o formato 01/01/2000"),
+        ],
+    )
+    hora_entrega = StringField(
+        "Hora da Entrega",
+        [
+            Required("Por favor preencher hora da entrega."),
+        ],
+    )
+    produto = QuerySelectField(
+        "Nome do Produto",
+        validators=[Required("O produto é obrigatorio!")],
+        get_label="nome_produto",
+        get_pk=lambda x: x.id,
+        query_factory=lambda: Produto.query,
+        allow_blank=True,  
+        
+    )
+    quantidade = StringField(
+        "Quantidade",
+        [        
+            Required("Por favor preencher hora da entrega."),
+        ],
+    )
+    observacoes = StringField(
+        "Observacões",
+        [        
+            Required("Por favor, preecher com observações, caso não tenha colocar '*."),
+        ],
+    )
+
+    #Depois que selecionar o cliente, aparecer telefone, aniversário e endereço.
+    nome_cliente = QuerySelectField(
+        "Nome do Produto",
+        validators=[Required("O nome do cliente é obrigatorio!")],
+        get_label="name",
+        get_pk=lambda x: x.id,
+        query_factory=lambda: Cliente.query,
+        allow_blank=True,  
+        
+    )
+
+    retirada = QuerySelectField(
+        "Forma de Retirada",
+        validators=[Required("A forma de retirada é obrigatoria!")],
+        get_label="tipo_retirada",
+        get_pk=lambda x: x.id,
+        query_factory=lambda: Retirada.query,
+        allow_blank=True,  
+        
+    )
+    #Caso o seja Delivery
+    Endereco_entrega = StringField(
+        "Endereço Entrega",
+        [        
+            Required("Por favor, preecher o endereço."),
+        ],
+    )
+    pagamento = QuerySelectField(
+        "Forma de Pagamento",
+        validators=[Required("A forma de Pagamento é obrigatoria!")],
+        get_label="tipo_retirada",
+        get_pk=lambda x: x.id,
+        query_factory=lambda: Pagamento.query,
+        allow_blank=True,  
+        
+    )
+
+
+
+
+'''
+No cadastro do Pedido: 
+#data do atendimento,
+#data entrega,
+#hora entrega,
+#produto (caixa p/ selecionar a partir dos produtos cadastrados),
+#quantidade de cada produto,
+#observações,
+#nome do cliente,
+#tipo de entrega (para selecionar: retira, delivery),
+#local de entrega se for delivery,
+#forma de pagamento (transferência, boleto).
+Deste pedido é importante sair a programação das entregas da semana para cada dia.
+
+'''
+
+
+
 class FormOrder(BaseForm):
     freight = FloatField("Frete", validators=[Required("O frete é obrigatorio")])
+    '''
     type_of_sale = QuerySelectField(
         "Tipo de venda",
         validators=[Required("O tipo de venda é obrigatorio!")],
@@ -216,6 +509,7 @@ class FormOrder(BaseForm):
         query_factory=lambda: PaymentType.query,
         allow_blank=True,
     )
+    '''
     discount = FloatField("Desconto")
 
 

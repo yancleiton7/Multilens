@@ -1,0 +1,22 @@
+{% block menu_estoque %}
+
+<div class="navbar {{ color_theme }}">
+    <div class="navbar-item"><strong>Estoque</strong></div>
+    <div class="navbar-start">
+        <a class="navbar-item" href="{{ url_for('site.produtos') }}">
+          Produtos
+        </a>
+    </div>
+
+        <div class="navbar-end">
+            <div class="buttons">
+            
+            <a href="{{url_for('site.form_estoque')}}" class="button is-success is-rounded">Entrada</a>
+            <a href="{{url_for('site.form_estoque')}}" class="button is-danger is-rounded">Saída</a>
+            <a href="{{url_for('site.form_estoque')}}" class="button is-rounded">Cadastrar Produto</a>
+            <strong>   </strong>
+        </div>
+    </div>
+</div>
+
+{% endblock menu_estoque%}

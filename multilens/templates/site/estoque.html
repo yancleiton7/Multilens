@@ -6,11 +6,24 @@
 
 
     <div class="navbar {{ color_theme }}">
-        <div class="navbar-item"><strong>Estoque</strong></div>
+
+        <div class="navbar-start">
+            <a class="navbar-item" href="{{ url_for('site.estoques') }}">
+                <strong>Estoque</strong>
+              </a>
+            <a class="navbar-item" href="{{ url_for('site.produtos') }}">
+              Produtos
+            </a>
+
+        </div>
 
             <div class="navbar-end">
                 <div class="buttons">
-                <a href="{{url_for('site.form_estoque')}}" class="button is-success ">Cadastrar</a>
+                
+                <a href="{{url_for('site.form_produto_entrada')}}" class="button is-success is-rounded">Entrada</a>
+                <a href="{{url_for('site.form_produto_saida')}}" class="button is-danger is-rounded">Saída</a>
+                <a href="{{url_for('site.form_produto')}}" class="button is-rounded">Cadastrar Produto</a>
+                <strong>   </strong>
             </div>
         </div>
     </div>
@@ -21,20 +34,26 @@
             <table class="table is-striped is-fullwidth is-hoverable">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Produto</th>
+                        <th><strong>Produto</strong></th>
                         <th>Unidade</th>
-                        <th>Preço (R$)</th>
+                        <th>Preço última entrada</th>
                         <th>Disponível</th>
+                        <th>Mínimo aceitável</th>
+                        <th>Estoque</th>
                     </tr>
                 </thead>
                 {% for product in products %}
                 <tr>
-                    <th>{{product.id}}</th>
-                    <td>{{product.name}}</td>
-                    <td>{{product.unity}}</td>
-                    <td>{{"%.2f" % product.price}}</td>
+                    <td><strong>{{product.nome_produto}}</strong> </td>
+                    <td>{{product.unidade}}</td>
+                    <td>{{product.get_preco(product.id)}}</td>
                     <td>{{product.get_balance(product.id)}}</td>
+                    <td>{{product.get_minimo(product.id)}}</td>
+                        {% if product.necessita_compra(product.id) %}
+                        <td><strong> Precisa comprar </strong></td>
+                        {% else %}
+                        <td>Produto Disponível</td>
+                        {% endif %}
                 </tr>
                 {% endfor %}
             </table>

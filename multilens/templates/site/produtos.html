@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% from "macros/render_modal.html" import render_cliente_modal %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/modals.js') }}" type="text/javascript"></script>
+{% endblock extra_scripts %}
+
+{% block body %}
+<article class="panel {{ color_theme }}">
+
+
+
+    <div class="navbar {{ color_theme }}">
+        <div class="navbar-start">
+            <a class="navbar-item" href="{{ url_for('site.estoques') }}">
+                Estoque
+              </a>
+            <a class="navbar-item" href="{{ url_for('site.produtos') }}">
+              <strong>Produtos</strong>
+            </a>
+        </div>
+
+            <div class="navbar-end">
+                <div class="buttons">
+                
+                <a href="{{url_for('site.form_produto_entrada')}}" class="button is-success is-rounded">Entrada</a>
+                <a href="{{url_for('site.form_produto_saida')}}" class="button is-danger is-rounded">Saída</a>
+                <a href="{{url_for('site.form_produto')}}" class="button is-rounded">Cadastrar Produto</a>
+                <strong>   </strong>
+            </div>
+        </div>
+    </div>
+
+    
+
+    <div class="form-body" >
+        <div class="table-container">
+            <table class="table is-fullwidth is-bordered" >     
+                <thead>
+                    <tr>
+                        <th>Nome do Produto</th>
+                        <th>Tipo</th>
+                        <th>Grupo</th>
+                        <th>Observação</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                {% for produto in produtos %}
+                
+                <tbody>
+                <thead>
+                    <tr id={{ produto.id }}>
+                        <th>{{ produto.nome_produto.title() }}</th>
+                        <td>{{ produto.get_tipo(produto.id) }}</td>
+                        <td>{{ produto.get_grupo(produto.id)}}</td>
+                        <td>{{ produto.observacao }}</td>
+                        <td>
+                            <div class="control buttons">
+                                <strong> <a class="button {{ color_theme }} is-small"
+                                            href="{{ url_for('site.produto', register= produto.id ) }}">Editar/Ver</a>
+                                        <a class="button is-danger is-small remove">Excluir</a>
+                                </strong>
+                            </div>
+                        </td>
+                    </tr>     
+                </thead>
+
+                {% endfor %}
+                </tbody>
+        
+            </table>
+        </div>
+    </div>
+
+    </div>
+</article>
+{% endblock body %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% from "macros/render_messages.html" import render_message %}
+
+{% block body %}
+{{ render_message() }}
+<form method="POST">
+    {{ form.csrf_token }}
+    <article class="panel is-danger">
+        <div class="panel-heading">Saida de Produto</div>
+        <div class="form-body">
+
+
+            <div class="field is-grouped">
+                <div class="control">
+                    <label class="label"> {{ form.produto.label }} </label>
+                        <div class="control">
+                            <div class="select">
+                                {{ form.produto() }}
+                            </div>
+                        </div>
+                </div>
+               
+
+                <div class="control is-expanded">
+                    <label class="label"> {{ form.quantidade.label }} </label>
+                    
+                        <div class="control">
+                            {{ form.quantidade(class="input", type="text", placeholder="") }}
+                        </div>
+                </div>
+
+                
+                <div class="control is-expanded">
+                    <label class="label"> {{ form.date.label }} </label>              
+                        <div class="control">
+                            {{ form.date( class="input", type="text", placeholder="Data compra") }}
+                        </div>
+                </div>
+                
+                
+            </div>
+
+            <div class="control is-expanded">
+                <label class="label"> {{ form.observacao.label }} </label>              
+                    <div class="control">
+                        {{ form.observacao( class="textarea", rows="10",placeholder="Campo de Observações") }}
+                    </div>
+                </div>
+            </div>
+            
+
+
+            
+            <div class="field is-grouped">
+                <div class="control is-expanded">
+                    <input class="button is-fullwidth is-danger" type="submit" value="Computar Saida" > 
+                    
+                </div>
+                <div class="control">
+                    <a href="{{url_for('site.estoques')}}" class="button is-success">Voltar</a>
+                </div>
+            </div>
+        </div>
+    </article>
+</form>
+{% endblock body %}

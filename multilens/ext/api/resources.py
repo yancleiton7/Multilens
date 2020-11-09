@@ -1,12 +1,12 @@
 from flask_login import login_required
 from flask_restful import Resource
 
-from multilens.ext.db.models import Order, Register
+from multilens.ext.db.models import Register
 
 
 class ResourceRegister(Resource):
-    @login_required
-    def get(self, id: int):
+    #@login_required
+    def get_RR(self, id: int):
         register = Register.get(id)
 
         if register is not None:
@@ -19,9 +19,9 @@ class ResourceRegister(Resource):
 
 
 class ResourceOrder(Resource):
-    @login_required
-    def get(self, id: int):
-        order = Order.get(id)
+    #@login_required
+    def get_RO(self, id: int):
+        #order = Order.get(id)
         if order is not None:
             response = order.details
 

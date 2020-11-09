@@ -61,14 +61,14 @@ class UserModelView(BaseView):
 class EstoqueModelView(BaseView):
     page_size = 10
     column_searchable_list = [
-        "name",
+        "nome_produto",
     ]
     form_excluded_columns = [
-        "balance", "amount"
+        "Quantidadei", "quantidade"
     ]
-    column_labels = {"name": "Produto", "price": "Preço", "unity": "Unidade", "amount": "Quantidade"}
+    column_labels = {"nome_produto": "Produto", "valor_pago": "Preço", "data_compra": "Data da Compra", "quantidade": "Quantidade"}
 
-
+'''
 class SpecialityModelView(BaseView):
     column_editable_list = ["speciality"]
     column_labels = {"speciality": "Especialidade"}
@@ -82,18 +82,18 @@ class SaleTypeModelView(BaseView):
 class PaymentTypeModelView(BaseView):
     column_editable_list = ["type_of_payment"]
     column_labels = {"type_of_payment": "Tipo de pagamento"}
-
+'''
 
 class BalanceModelView(BaseView):
     column_editable_list = [
-        "quant",
+        "quantidade",
     ]
-    column_list = ["balance", "quant", "event", "date"]
-    form_columns = ["balance", "quant", "event"]
+    column_list = ["balance", "quantidade", "event", "date"]
+    form_columns = ["balance", "quantidade", "event"]
 
     column_labels = {
         "item_id": "Item ID",
-        "quant": "Quantidade",
+        "quantidade": "Quantidade",
         "date": "Data",
         "event": "Entrada/Saida",
         "balance": "Produto",

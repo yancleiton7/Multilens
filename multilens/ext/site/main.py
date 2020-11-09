@@ -6,10 +6,9 @@ from flask import (Blueprint, current_app, flash, redirect, render_template,
 from flask_login import current_user, login_required
 
 from multilens.ext.api.resources import ResourceOrder
-from multilens.ext.db.models import Cliente, Financeiro, Order, Estoque
+from multilens.ext.db.models import Cliente, Estoque, Produto, Balance
 
-from .form import (FormClientes, FormFinishOrder, FormFinanceiro, FormOrder,
-                   FormOrderItems)
+from .form import (FormClientes, FormFinishOrder, FormBalanceEntrada, FormBalanceSaida,FormProduto, FormFinanceiro, FormOrderItems)
 
 bp = Blueprint("site", __name__)
 
@@ -21,49 +20,18 @@ def index():
 
     return render_template("site/index.html")
 
-'''
-@bp.route("/clientes/", methods=["GET"])
-@login_required
-def clientes_aniversariantes(mes: int):
-    return render_template("site/clientes.html", clientes=Cliente.get_aniversariantes(12))
-'''
 
 
 @bp.route("/clientes/", methods=["GET", "DELETE"])
 @login_required
 def clientes():
-    if len(request.args) == 0:
-        return render_template("site/clientes.html", clientes=Cliente.get_all())
-    else:
-        return render_template("site/clientes.html", clientes=Cliente.get_aniversariantes(request.args))
-
-   
-@bp.route("/estoque/cadastro", methods=["GET", "POST"])
-@login_required
-def form_estoque():
-    form = FormClientes()
     if request.method == "GET":
-        return render_template("forms/estoque.html", form=form)
-
-    elif request.method == "POST":
-        if form.validate_on_submit():
-            response = Cliente.create_by_form(form)
-
-            if response["success"]:
-                flash(
-                    response["message"],
-                    "is-success",
-                )
-
-            else:
-                flash(response["message"], "is-danger")
-
+        if len(request.args)==0:
+            return render_template("site/clientes.html", clientes=Cliente.get_all())
         else:
-            for field in form.errors.values():
-                [flash(err, "is-danger") for err in field]
-
-        return render_template("forms/cliente.html", form=form)
-
+            return render_template("site/clientes.html", clientes=Cliente.get_aniversariantes(request.args))
+    else:
+        return render_template("site/clientes.html", clientes=Cliente.get_all())
 
 
 @bp.route("/clientes/cadastro", methods=["GET", "POST"])
@@ -202,18 +170,203 @@ def financeiro(register: int):
     return render_template("forms/financeiro.html", form=form)
 
 
+@bp.route("/estoque", methods=["GET"])
+@login_required
+def estoques():
+    return render_template(
+        "site/estoque.html", products=Produto.query.all()
+    )
+
+
+@bp.route("/estoque/<int:produto>", methods=["GET", "POST", "DELETE"])
+@login_required
+def estoque(produto: int):
+    
+    form = FormProduto()
+    produto = Produto.query.get_or_404(produto)
+
+    if request.method == "GET":
+        if produto is None:
+            flash("Cadastro não localizado!", "is-warning")
+            redirect(url_for("site.form_estoque"))
+
+        else:
+            form.load(produto)
+
+    elif request.method == "POST":
+        if form.validate_on_submit():
+            response = produto.update_by_form(form)
+
+            if response["success"]:
+                flash(response["message"], "is-success")
+
+            else:
+                flash(response["message"], "is-danger")
+
+        else:
+            for field in form.errors.values():
+                [flash(err, "is-danger") for err in field]
+
+    elif request.method == "DELETE":
+        produto = Produto.get(produto)
+
+        if produto is not None:
+            response = produto.remove()
+
+        else:
+            response = {"success": False, "message": "Informe um registro valido"}
+
+        return response
+
+    return render_template("forms/estoque.html", form=form)
+
+@bp.route("/produtos/", methods=["GET", "DELETE"])
+@login_required
+def produtos():
+        return render_template("site/produtos.html", produtos=Produto.get_all())
+
+@bp.route("/produto/cadastro", methods=["GET", "POST"])
+@login_required
+def form_produto():
+    form = FormProduto()
+    if request.method == "GET":
+        return render_template("forms/produto.html", form=form)
+
+    elif request.method == "POST":
+        if form.validate_on_submit():
+            response = Produto.create_by_form(form)
+
+            if response["success"]:
+                flash(
+                    response["message"],
+                    "is-success",
+                )
+                form.limpar()
+                return render_template("forms/produto.html", form=form)
+                
+            
+
+            else:
+                flash(response["message"], "is-danger")
+
+        else:
+            for field in form.errors.values():
+                [flash(err, "is-danger") for err in field]
+
+        return render_template("forms/produto.html", form=form)
+
+
+@bp.route("/produtos/<int:register>", methods=["GET", "POST", "DELETE"])
+@login_required
+def produto(register: int):
+    produto = Produto.query.get_or_404(register)
+    form = FormProduto()
+
+    if request.method == "GET":
+        if produto is None:
+            flash("Produto não localizado!", "is-warning")
+            redirect(url_for("site.produto"))
+
+        else:
+            form.load(produto)
+
+    elif request.method == "POST":
+        if form.validate_on_submit():
+            response = produto.update_by_form(form)
+
+            if response["success"]:
+                flash(response["message"], "is-success")
+
+            else:
+                flash(response["message"], "is-danger")
+
+        else:
+            for field in form.errors.values():
+                [flash(err, "is-danger") for err in field]
+
+    elif request.method == "DELETE":
+        produto = Produto.get(register)
+
+        if produto is not None:
+            response = produto.remove()
+
+        else:
+            response = {"success": False, "message": "Informe um registro valido"}
+
+        return response
+
+    return render_template("forms/produto.html", form=form)
+
+
+@bp.route("/balance/entrada", methods=["GET", "POST", "DELETE"])
+@login_required
+def form_produto_entrada():
+    form = FormBalanceEntrada()
+    if request.method == "GET":
+        return render_template("forms/entrada.html", form=form)
+
+    elif request.method == "POST":
+        if form.validate_on_submit():
+            form.event.data = "Entrada"
+            form.item_id.data = Produto.get_id(form.produto.data.nome_produto)
+            response = Balance.create_by_form(form)
+            form.limpar()
+            if response["success"]:
+                flash(
+                    response["message"],
+                    "is-success",
+                )
+                return render_template("forms/entrada.html", form=form)
+                
+            
+
+            else:
+                flash(response["message"], "is-danger")
+
+        else:
+            for field in form.errors.values():
+                [flash(err, "is-danger") for err in field]
+
+        return render_template("forms/entrada.html", form=form)
+
+@bp.route("/balance/saida", methods=["GET", "POST", "DELETE"])
+@login_required
+def form_produto_saida():
+    form = FormBalanceSaida()
+    if request.method == "GET":
+        return render_template("forms/saida.html", form=form)
+
+    elif request.method == "POST":
+        if form.validate_on_submit():
+            form.event.data = "Saida"
+            form.item_id.data = Produto.get_id(form.produto.data.nome_produto)
+            response = Balance.create_by_form(form)
+            form.limpar()
+            if response["success"]:
+                flash(
+                    response["message"],
+                    "is-success",
+                )
+                return render_template("forms/saida.html", form=form)
+                
+            
+
+            else:
+                flash(response["message"], "is-danger")
+
+        else:
+            for field in form.errors.values():
+                [flash(err, "is-danger") for err in field]
+
+        return render_template("forms/saida.html", form=form)
+
+
+
 @bp.route("/vendas/<int:order_id>", methods=["GET", "POST"])
 @login_required
 def order(order_id: int):
     return render_template("auth/order.html")
 
-
-@bp.route("/estoque", methods=["GET"])
-@login_required
-def estoque():
-    return render_template(
-        "site/estoque.html", products=Estoque.query.filter_by(avaliable=True).all()
-    )
 
 
 @bp.route("/vendas/", methods=["GET"])
@@ -226,9 +379,9 @@ def sales():
 @login_required
 def register_sale():
     status = 200
-    form_order = FormOrder()
+    #form_order = FormOrder()
     form_items = FormOrderItems()
-    user_order = Order.get_current_user_order()
+    #user_order = Order.get_current_user_order()
 
     if request.method == "GET":
         pass
