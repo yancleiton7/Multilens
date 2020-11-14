@@ -30,105 +30,77 @@
     
     
     <div class="form-body" >
-
-        <div class="control is-expanded has-icons-left">
-            <input class="input {{ color_theme}}" id="filtro" type="search" placeholder="Nome do Cliente">
-            <span class="icon is-left">
-                <i class="fas fa-search" aria-hidden="true"></i>
-            </span>
-        </div>
-        <div class="control">
-        <table class="table is-fullwidth" id="tabela"> 
-            <thead>
-              <tr>
-                <th>Id</th>  
-                <th>Nome do Cliente</th>
-                <th>Aniversário</th>
-                <th>Telefone</th>
-                <th>Celular</th>
-                <th>Observação</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-
-            <tbody>
-            {% for cliente in clientes %}
-
-                <tr id={{ cliente.id }} >
-                  <th>{{ cliente.id }}</th>
-                  <th>{{ cliente.name.title() }}</th>
-                  <td>{{ cliente.get_aniversario() }}</td>
-                  <td>{{ cliente.phone }}</td>
-                  <td>{{ cliente.cel }}</td>
-                  <td>{{ cliente.observacao }}</td>
-                  <td>
-                    <div class="control buttons">
-                        <strong> <a class="button {{ color_theme }} is-small"
-                                    href="{{ url_for('site.cliente', register= cliente.id ) }}">Editar/Ver</a>
-                                    {% if current_user.is_admin %}
-                                    <a class="button is-danger is-small remove">Excluir</a>
-                                    {% endif %}
-                        </strong>
-                    </div>
-                 </td>
-                </tr>
-
-            {% endfor %}
-            </tbody>
-        </table>
-        </div>
-    </div>
-
-
-        
-        
-        <div class="panel-block">
-            <div class="field is-grouped ">
-                
-                <div class="control">
-                    <a href="{{url_for('site.clientes')}}" class="button is-danger">Limpar</a>
-                </div>
-
-                <div class="control">
-                    <a href="{{url_for('site.clientes', mes= '01' )}}" class="button {{ color_theme }}">Janeiro</a>
-                </div>
-                <div class="control">
-                    <a href="{{url_for('site.clientes', mes= '02' )}}" class="button {{ color_theme }}">Fevereiro</a>
-                </div>
-                <div class="control">
-                    <a href="{{url_for('site.clientes', mes= '03' )}}" class="button {{ color_theme }}">Março</a>
-                </div>
-                <div class="control">
-                    <a href="{{url_for('site.clientes', mes= '04' )}}" class="button {{ color_theme }}">Abril</a>
-                </div>
-                <div class="control">
-                    <a href="{{url_for('site.clientes', mes= '05' )}}" class="button {{ color_theme }}">Maio</a>
-                </div>
-                <div class="control">
-                    <a href="{{url_for('site.clientes', mes= '06' )}}" class="button {{ color_theme }}">Junho</a>
-                </div>
-                <div class="control">
-                    <a href="{{url_for('site.clientes', mes= '07' )}}" class="button {{ color_theme }}">Julho</a>
-                </div>
-                <div class="control">
-                    <a href="{{url_for('site.clientes', mes= '08' )}}" class="button {{ color_theme }}">Agosto</a>
-                </div>
-                <div class="control">
-                    <a href="{{url_for('site.clientes', mes= '09' )}}" class="button {{ color_theme }}">Setembro</a>
-                </div>
-                <div class="control">
-                    <a href="{{url_for('site.clientes', mes= '10' )}}" class="button {{ color_theme }}">Outubro</a>
-                </div>
-                <div class="control">
-                    <a href="{{url_for('site.clientes', mes= '11' )}}" class="button {{ color_theme }}">Novembro</a>
-                </div>
-                <div class="control">
-                    <a href="{{url_for('site.clientes', mes= '12' )}}" class="button {{ color_theme }}">Dezembro</a>
-                </div>
-
+        <div class="panel-block" id="desaparecer">
+            <div class="control is-expanded has-icons-left">
+                <input class="input {{ color_theme}}" id="filtro" type="search" placeholder="Nome do Cliente">
+                <span class="icon is-left">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                </span>
             </div>
-        </div>  
+            <div class="select" >
+                <select class="is-hovered" id="filtro_Mes">
+                    <option> </option>
+                    <option value="/01/">Janeiro</option>
+                    <option value="/02/">Fevereiro</option>
+                    <option value="/03/">Março</option>
+                    <option value="/04/">Abril</option>
+                    <option value="/05/">Maio</option>
+                    <option value="/06/">Junho</option>
+                    <option value="/07/">Julho</option>
+                    <option value="/08/">Agosto</option>
+                    <option value="/09/">Setembro</option>
+                    <option value="/10/">Outubro</option>
+                    <option value="/11/">Novembro</option>
+                    <option value="/12/">Dezembro</option>
+                </select>
+            </div>
+        </div>
 
+
+
+        <div class="control">
+            <table class="table is-fullwidth" id="tabela"> 
+                <thead>
+                <tr>
+                    <th>Id</th>  
+                    <th>Nome do Cliente</th>
+                    <th>Aniversário</th>
+                    <th>Telefone</th>
+                    <th>Celular</th>
+                    <th>Observação</th>
+                    <th>Ações</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for cliente in clientes %}
+
+                    <tr id={{ cliente.id }} >
+                    <th>{{ cliente.id }}</th>
+                    <th>{{ cliente.name.title() }}</th>
+                    <td>{{ cliente.get_aniversario() }}</td>
+                    <td>{{ cliente.phone }}</td>
+                    <td>{{ cliente.cel }}</td>
+                    <td>{{ cliente.observacao }}</td>
+                    <td>
+                        <div class="control buttons">
+                            <strong> <a class="button {{ color_theme }} is-small"
+                                        href="{{ url_for('site.cliente', register= cliente.id ) }}">Editar/Ver</a>
+                                        {% if current_user.is_admin %}
+                                        <a class="button is-danger is-small remove">Excluir</a>
+                                        {% endif %}
+                            </strong>
+                        </div>
+                    </td>
+                    </tr>
+
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
+
+
+    
 </article>
 {% endblock body%}

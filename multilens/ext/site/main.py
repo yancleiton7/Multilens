@@ -461,7 +461,7 @@ def pedido(pedido: int):
 
         if pedido_obj is not None:
             pedido_obj.remove()
-            response = {"success": True, "message": "Informe um registro valido"}
+            response = {"success": True, "message": "Pedido exc"}
 
         else:
             
