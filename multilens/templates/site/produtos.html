@@ -47,9 +47,10 @@
             <table class="table is-fullwidth" id="tabela">     
                 <thead>
                     <tr>
+                        <th>Data Cadastro</th>
                         <th>Nome do Produto</th>
                         <th>Grupo</th>
-                        <th>Observação</th>
+                        <th>Fornecedores</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -58,16 +59,26 @@
                     
                     
                         <tr id={{ produto.id }}>
+                            <td>{{ produto.get_data_cadastro()}}</td>
                             <th>{{ produto.nome_produto.title() }}</th>
                             <td>{{ produto.get_grupo(produto.id)}}</td>
-                            <td>{{ produto.observacao }}</td>
-                            <td>
+                            
+                            <td >
+                                {% for item in produto.fornecedor %}
+                                    <p><b>{{item.nome_fornecedor}}:</b> R$: {{item.valor}}
+                                {% endfor %}      
+                            </td>
+                            <td width="20%">
                                 <div class="control buttons">
                                     <strong> <a class="button {{ color_theme }} is-small"
-                                                href="{{ url_for('site.produto', register= produto.id ) }}">Editar/Ver</a>
+                                                href="{{ url_for('site.produto', register= produto.id ) }}">Editar</a>
+                                               
                                             <a class="button is-danger is-small remove">Excluir</a>
+                                            <a class="button is-small is-fullwidth"
+                                            href="{{ url_for('site.fornecedores', produto= produto.id ) }}">Fornecedores</a>
                                     </strong>
                                 </div>
+     
                             </td>
                         </tr>     
                     

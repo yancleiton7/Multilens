@@ -6,13 +6,13 @@
 <form method="POST">
     {{ form.csrf_token }}
     <article class="panel {{ color_theme }}">
-        <div class="panel-heading">Instituição</div>
+        <div class="panel-heading">Financeiro</div>
         <div class="form-body">
             <div class="field is-grouped is-grouped-multiline">
                 <div class="control is-expanded">
                     <label class="label">{{ form.name.label }}</label>
                     <div class="control has-icons-left">
-                        {{ form.name(class="input", type="text", placeholder="Nome da Instituição") }}
+                        {{ form.name(class="input", type="text", placeholder="Nome da Financeiro") }}
                         <span class="icon is-small is-left">
                             <i class="fas fa-hospital"></i>
                         </span>

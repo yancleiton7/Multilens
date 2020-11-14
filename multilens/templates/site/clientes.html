@@ -76,16 +76,18 @@
                 {% for cliente in clientes %}
 
                     <tr id={{ cliente.id }} >
-                    <th>{{ cliente.id }}</th>
+                    <td width=10% ><b>Id: {{ cliente.id }} </b><p>
+                        Cadastrado: {{ cliente.get_data_cadastro() }}
+                    </td>
                     <th>{{ cliente.name.title() }}</th>
                     <td>{{ cliente.get_aniversario() }}</td>
                     <td>{{ cliente.phone }}</td>
                     <td>{{ cliente.cel }}</td>
-                    <td>{{ cliente.observacao }}</td>
+                    <td width=30% >{{ cliente.observacao }}</td>
                     <td>
                         <div class="control buttons">
                             <strong> <a class="button {{ color_theme }} is-small"
-                                        href="{{ url_for('site.cliente', register= cliente.id ) }}">Editar/Ver</a>
+                                        href="{{ url_for('site.cliente', register= cliente.id ) }}">Editar</a>
                                         {% if current_user.is_admin %}
                                         <a class="button is-danger is-small remove">Excluir</a>
                                         {% endif %}

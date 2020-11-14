@@ -6,11 +6,11 @@ from flask import (Blueprint, current_app, flash, redirect, render_template,
                    request, send_file, url_for)
 from flask_login import current_user, login_required
 
-from multilens.ext.api.resources import ResourceOrder
-from multilens.ext.db.models import Cliente, Estoque, Produto, Balance, Pedidos
+from multilens.ext.api.resources import ResourcePedido
+from multilens.ext.db.models import Cliente, Estoque, Produto, Balance, Pedidos, Financeiro
 
-from .form import (FormClientes, FormFinishOrder, FormBalanceEntrada, FormPedido,
-                     FormBalanceSaida, FormProduto, FormFinanceiro, FormOrderItems)
+from .form import (FormClientes, FormFinishOrder, FormBalanceEntrada, FormPedido, FormFornecedor,
+                     FormBalanceSaida, FormProduto, FormFinanceiro, FormPedidoItens)
 
 bp = Blueprint("site", __name__)
 
@@ -177,7 +177,6 @@ def estoques():
         "site/estoque.html", products=Produto.query.all()
     )
 
-
 @bp.route("/estoque/<int:produto>", methods=["GET", "POST", "DELETE"])
 @login_required
 def estoque(produto: int):
@@ -223,18 +222,22 @@ def estoque(produto: int):
 @bp.route("/produtos/", methods=["GET", "DELETE"])
 @login_required
 def produtos():
+        
         return render_template("site/produtos.html", produtos=Produto.get_all())
 
 @bp.route("/produto/cadastro", methods=["GET", "POST"])
 @login_required
 def form_produto():
+    
     form = FormProduto()
+        
     if request.method == "GET":
-        return render_template("forms/produto.html", form=form)
+        return render_template("forms/produto.html", form=form, cadastro=True)
 
     elif request.method == "POST":
         if form.validate_on_submit():
             response = Produto.create_by_form(form)
+
 
             if response["success"]:
                 flash(
@@ -253,7 +256,7 @@ def form_produto():
             for field in form.errors.values():
                 [flash(err, "is-danger") for err in field]
 
-        return render_template("forms/produto.html", form=form)
+        return render_template("forms/produto.html", form=form, cadastro=True)
 
 
 @bp.route("/produtos/<int:register>", methods=["GET", "POST", "DELETE"])
@@ -272,7 +275,20 @@ def produto(register: int):
 
     elif request.method == "POST":
         if form.validate_on_submit():
-            response = produto.update_by_form(form)
+            lista_fornecedores = {}
+             
+            for i in range(21):
+                  
+                try:
+                  lista_fornecedores["nome_fornecedor"+str(i)] =request.form["nome_fornecedor"+str(i)]
+                  lista_fornecedores["valor"+str(i)] =request.form["valor"+str(i)]
+                  lista_fornecedores["descricao"+str(i)] =request.form["descricao"+str(i)]
+                except Exception as e:
+                    print(e)
+                    pass
+
+                   
+            response = produto.update_by_form(form, lista_fornecedores)
 
             if response["success"]:
                 flash(response["message"], "is-success")
@@ -295,39 +311,76 @@ def produto(register: int):
 
         return response
 
-    return render_template("forms/produto.html", form=form)
+    return render_template("forms/produto.html", form=form, produto=produto)
 
 
-@bp.route("/balance/entrada", methods=["GET", "POST", "DELETE"])
+@bp.route("/produto/fornecedor/<int:produto>", methods=["GET", "POST", "DELETE"])
 @login_required
-def form_produto_entrada():
-    form = FormBalanceEntrada()
+def fornecedores(produto: int):
+    produto_selecionado = Produto.query.get_or_404(produto)
+    form = FormFornecedor()
+    form_fornecedores = []
+
     if request.method == "GET":
-        return render_template("forms/entrada.html", form=form)
+        if produto_selecionado is None:
+            flash("Produto não localizado!", "is-warning")
+            redirect(url_for("site.produto"))
+
+        else:    
+            for fornecedores in produto_selecionado.fornecedor: 
+                form.load(fornecedores)
+                form_fornecedores.append(form)
+                form = FormFornecedor()
+            
+           
 
     elif request.method == "POST":
         if form.validate_on_submit():
-            form.event.data = "Entrada"
-            form.item_id.data = Produto.get_id(form.produto.data.nome_produto)
-            response = Balance.create_by_form(form)
-            form.limpar()
+           
+            lista_fornecedores = {}
+            lista_fornecedores["nome_fornecedor"] =request.form["nome_fornecedor"]
+            lista_fornecedores["valor"] =request.form["valor"]
+            lista_fornecedores["descricao"] =request.form["descricao"]
+            print(request.form) 
+            for i in range(21):
+                  
+                try:
+                  lista_fornecedores["nome_fornecedor"+str(i)] =request.form["nome_fornecedor"+str(i)]
+                  lista_fornecedores["valor"+str(i)] =request.form["valor"+str(i)]
+                  lista_fornecedores["descricao"+str(i)] =request.form["descricao"+str(i)]
+                except:
+                    pass
+            
+            
+            response = produto_selecionado.update_fornecedores(lista_fornecedores)
+
             if response["success"]:
                 flash(
                     response["message"],
                     "is-success",
                 )
-                return render_template("forms/entrada.html", form=form)
+                for fornecedores in produto_selecionado.fornecedor: 
+                    form.load(fornecedores)
+                    form_fornecedores.append(form)
+                    form = FormFornecedor()
+                return render_template("forms/fornecedores.html", form=form_fornecedores, produto=produto_selecionado)
                 
             
 
             else:
+                
                 flash(response["message"], "is-danger")
 
         else:
             for field in form.errors.values():
                 [flash(err, "is-danger") for err in field]
 
-        return render_template("forms/entrada.html", form=form)
+    if len(form_fornecedores) ==0:
+        form_fornecedores.append(form)
+               
+
+    return render_template("forms/fornecedores.html", form=form_fornecedores, produto=produto_selecionado)
+
 
 @bp.route("/balance/saida", methods=["GET", "POST", "DELETE"])
 @login_required
@@ -360,6 +413,37 @@ def form_produto_saida():
 
         return render_template("forms/saida.html", form=form)
 
+@bp.route("/balance/entrada", methods=["GET", "POST", "DELETE"])
+@login_required
+def form_produto_entrada():
+    form = FormBalanceEntrada()
+    if request.method == "GET":
+        return render_template("forms/entrada.html", form=form)
+
+    elif request.method == "POST":
+        if form.validate_on_submit():
+            form.event.data = "Entrada"
+            form.item_id.data = Produto.get_id(form.produto.data.nome_produto)
+            response = Balance.create_by_form(form)
+            form.limpar()
+            if response["success"]:
+                flash(
+                    response["message"],
+                    "is-success",
+                )
+                return render_template("forms/entrada.html", form=form)
+                
+            
+
+            else:
+                flash(response["message"], "is-danger")
+
+        else:
+            for field in form.errors.values():
+                [flash(err, "is-danger") for err in field]
+
+        return render_template("forms/entrada.html", form=form)
+
 
 
 @bp.route("/cozinha/", methods=["GET"])
@@ -377,20 +461,13 @@ def pagamentos():
 def pedidos():
     return render_template("site/pedidos.html", pedidos=Pedidos.get_all())
 
-'''
-@bp.route("/vendas/", methods=["GET"])
-@login_required
-def sales():
-    return render_template("site/cozinha.html", pedidos=Pedidos.get_pendentes())
-'''
 
-
-@bp.route("/vendas/nova", methods=["GET", "POST", "PUT", "DELETE"])
+@bp.route("/pedido/novo", methods=["GET", "POST", "PUT", "DELETE"])
 @login_required
 def novo_pedido():
     form = FormPedido()
     if request.method == "GET":
-        return render_template("forms/novo_pedido.html", form=form)
+        return render_template("forms/novo_pedido.html", form=form, cadastro=True)
 
     elif request.method == "POST":
         if form.validate_on_submit():
@@ -413,7 +490,8 @@ def novo_pedido():
                     "is-success",
                 )
                 form.limpar()
-                return render_template("forms/novo_pedido.html", form=form)
+                return redirect(url_for("site.itens_pedido", pedido_id=response["id"]))
+                #return render_template("forms/novo_pedido.html", form=form, cadastro=True)
                 
             
 
@@ -424,7 +502,7 @@ def novo_pedido():
             for field in form.errors.values():
                 [flash(err, "is-danger") for err in field]
 
-        return render_template("forms/novo_pedido.html", form=form)
+        return render_template("forms/novo_pedido.html", form=form, cadastro=True)
 
 @bp.route("/pedidos/<int:pedido>", methods=["GET", "POST", "DELETE"])
 @login_required
@@ -442,6 +520,7 @@ def pedido(pedido: int):
             form.load(pedido_obj)
 
     elif request.method == "POST":
+        form.load(pedido_obj)
         if form.validate_on_submit():
             response = pedido_obj.update_by_form(form)
 
@@ -461,7 +540,7 @@ def pedido(pedido: int):
 
         if pedido_obj is not None:
             pedido_obj.remove()
-            response = {"success": True, "message": "Pedido exc"}
+            response = {"success": True, "message": "Pedido excuído com acesso."}
 
         else:
             
@@ -473,57 +552,69 @@ def pedido(pedido: int):
 
 
 
-@bp.route("/vendas/<int:order_id>/checkout", methods=["GET", "POST"])
+@bp.route("/pedidos/itens/<int:pedido_id>", methods=["GET", "POST"])
 @login_required
-def finish_sale(order_id: int):
-    form = FormFinishOrder()
-    order = Order.get(order_id)
+def itens_pedido(pedido_id: int):
+    pedido_selecionado = Pedidos.query.get_or_404(pedido_id)
+    form = FormPedidoItens()
+    form_pedidos = []
 
-    if order is None:
-        flash(f"Não foi possível localizar a venda de Número {order_id}", "is-danger")
+    if request.method == "GET":
+        if pedido_selecionado is None:
+            flash("Pedido não localizado!", "is-warning")
+            redirect(url_for("site.pedidos"))
 
-        return redirect(url_for("site.register_sale"))
+        else:    
+            for pedido in pedido_selecionado.pedidos_itens: 
+                form.load(pedido)
+                form_pedidos.append(form)
+                form = FormPedidoItens()
+            
+           
 
-    else:
-        if order.is_finished:
-            flash(
-                f"A venda com o registro {order.id} já foi finalizada.",
-                "is-warning",
-            )
-            return redirect(url_for("site.sales"))
+    elif request.method == "POST":
+        if form.validate_on_submit():
+            
+            lista_pedidos_itens = {}
+            lista_pedidos_itens["produto"] =request.form["produto"]
+            lista_pedidos_itens["quantidade"] =request.form["quantidade"]
+            lista_pedidos_itens["descricao"] =request.form["descricao"]
 
-        elif request.method == "GET":
-            return render_template(
-                "site/finish_order.html",
-                form=form,
-                order=order,
-                order_details=order.get_details(),
-            )
+            for i in range(21):
+                  
+                try:
+                  lista_pedidos_itens["produto"+str(i)] =request.form["produto"+str(i)]
+                  lista_pedidos_itens["quantidade"+str(i)] =request.form["quantidade"+str(i)]
+                  lista_pedidos_itens["descricao"+str(i)] =request.form["descricao"+str(i)]
+                except:
+                    pass
+            
+            
+            response = pedido_selecionado.update_pedidos(lista_pedidos_itens)
 
-        elif request.method == "POST":
-            if form.validate_on_submit():
-                file_path = os.path.join(
-                    current_app.root_path,
-                    f"{current_app.config.get('ORDER_FOLDER', 'order')}/{order.id}.json",
+            if response["success"]:
+                flash(
+                    response["message"],
+                    "is-success",
                 )
-                form.populate_obj(order)
-                order.finish()
-
-                with open(file_path, "w", encoding="UTF-8") as f:
-                    json.dump(
-                        ResourceOrder().get(order.id), f, ensure_ascii=False, indent=4
-                    )
-
-                flash("Venda cadastrada com sucesso!", "is-success")
-                return send_file(file_path, as_attachment=True)
+                for pedido in pedido_selecionado.pedidos_itens: 
+                    form.load(pedido)
+                    form_pedidos.append(form)
+                    form = FormPedidoItens()
+                return render_template("forms/pedido_itens.html", form=form_pedidos, pedido=pedido_selecionado)
+                
+            
 
             else:
-                for field in form.errors.values():
-                    [flash(err, "is-danger") for err in field]
+                
+                flash(response["message"], "is-danger")
 
-        return render_template(
-            "site/finish_order.html",
-            form=form,
-            order=order,
-            order_details=order.get_details(),
-        )
+        else:
+            for field in form.errors.values():
+                [flash(err, "is-danger") for err in field]
+
+    if len(form_pedidos) ==0:
+        form_pedidos.append(form)
+               
+
+    return render_template("forms/pedido_itens.html", form=form_pedidos, pedido=pedido_selecionado)

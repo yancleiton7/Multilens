@@ -9,6 +9,19 @@ from . import db
 
 db.metadata.clear()
 
+def converter_data(data_a_converter):
+    data_convertida = data_a_converter[-2:]+"/"+data_a_converter[5:7]+"/"+data_a_converter[:4]
+    return data_convertida
+
+def encriptar_telefone(telefone):
+        telefone_encriptado = ""
+        for indice, valor in enumerate(telefone):
+            if indice<2 or indice>6:
+                telefone_encriptado = telefone_encriptado+valor
+            else:
+                telefone_encriptado = telefone_encriptado+"*"
+        return telefone_encriptado
+
 
 
 class User(UserMixin, db.Model):
@@ -81,12 +94,15 @@ class Produto(db.Model):
     balance = db.relationship("Balance", backref="balance", lazy="dynamic")
 
     id = db.Column("id", db.Integer, primary_key=True)
-    data_cadastro = db.Column("data_cadastro", db.Unicode, default=dt.datetime.now().strftime("%m/%d/%Y"))
     nome_produto = db.Column("nome_produto", db.Unicode)
     grupo = db.Column("grupo", db.Unicode)
     observacao = db.Column("observacao", db.Unicode)
     estoque_minimo = db.Column("estoque_minimo", db.Unicode)
     unidade = db.Column("unidade", db.Unicode)
+    data_cadastro = db.Column("data_cadastro", db.Unicode, default=datetime.now().strftime('%Y-%m-%d'))
+    fornecedor = db.relationship("Fornecedor", backref="owner")
+
+    
 
     @staticmethod
     def necessita_compra(id: int):
@@ -122,7 +138,9 @@ class Produto(db.Model):
 
         return entry - sale
 
- 
+    def get_data_cadastro(self):
+        return converter_data(self.data_cadastro)
+
     @staticmethod
     def get_grupo(id: int):
         produto = Produto.query.filter_by(id=id).first()
@@ -141,9 +159,11 @@ class Produto(db.Model):
 
     @staticmethod
     def create_by_form(form):
+
         produto = Produto()
         form.populate_obj(produto)
         response = produto.save()
+
         return response
 
     def save(self):
@@ -155,7 +175,7 @@ class Produto(db.Model):
             db.session.rollback()
             response = {
                 "success": False,
-                "message": "Aconteceu algo errado, por favor tente novamente",
+                "message": "Aconteceu algo errado, verificar se produto já existe.",
             }
 
         else:
@@ -167,13 +187,67 @@ class Produto(db.Model):
 
         return response
     
-    def update_by_form(self, form):
+    def update_by_form(self, form, lista_fornecedores):
+        fornecedor = self.fornecedor
+        
         form.populate_obj(self)
         response = self.save()
-        response["message"] = "Produto editado com successo!"
+        
+        
+        form.populate_obj(fornecedor[0])
+        fornecedor[0].id_produto = self.id
+        fornecedor[0].save()
+
+        for i in (range(int(len(lista_fornecedores)/3))):
+            fornecedor.append(Fornecedor())
+            form.populate_obj(fornecedor[i+1])
+            fornecedor[i+1].id_produto = self.id
+            fornecedor[i+1].valor = lista_fornecedores["valor"+str(i)]
+            fornecedor[i+1].nome_fornecedor = lista_fornecedores["nome_fornecedor"+str(i)]
+            fornecedor[i+1].descricao = lista_fornecedores["descricao"+str(i)]
+            fornecedor[i+1].save()
+        
+
+
+        if not response["success"]:
+            for i in (range(1+int(len(lista_fornecedores)/3))):
+                fornecedor[i].remove()
+        else:        
+            response["message"] = "Produto editado com successo!"
 
         return response
-    
+
+    def update_fornecedores(self, lista_fornecedores):
+        for fornecedor in self.fornecedor:
+            fornecedor.remove()
+        
+        fornecedores = []
+        fornecedores.append(Fornecedor())
+        fornecedores[0].id_produto = self.id
+        fornecedores[0].valor = lista_fornecedores["valor"]
+        fornecedores[0].nome_fornecedor = lista_fornecedores["nome_fornecedor"]
+        fornecedores[0].descricao = lista_fornecedores["descricao"]
+        fornecedores[0].save()
+
+        quantidade_repeticao = int(len(lista_fornecedores)/3)-1
+
+        for i in range(quantidade_repeticao):
+            fornecedores.append(Fornecedor())
+            fornecedores[i+1].id_produto = self.id
+            fornecedores[i+1].valor = lista_fornecedores["valor"+str(i)]
+            fornecedores[i+1].nome_fornecedor = lista_fornecedores["nome_fornecedor"+str(i)]
+            fornecedores[i+1].descricao = lista_fornecedores["descricao"+str(i)]
+            fornecedores[i+1].save()
+        
+
+        
+
+        response={}  
+        response["success"] = "ok"
+        response["message"] = "Fornecedores editados com successo!"
+        return response
+        
+
     def remove(self):
         db.session.delete(self)
         db.session.commit()
@@ -185,19 +259,48 @@ class Produto(db.Model):
     def get_all():
         return Produto.query.all()
 
+class Fornecedor(db.Model):
+    __tablename__ = "fornecedor"
+    id = db.Column("id", db.Integer, primary_key=True)
+    nome_fornecedor = db.Column("nome_fornecedor", db.Unicode)
+    descricao = db.Column("descricao", db.Unicode)
+    id_produto = db.Column(db.Integer, db.ForeignKey("produtos.id"))
+    valor = db.Column("valor", db.Integer)
+    
+
+    def remove(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
 class Pedido_item(db.Model):
     __tablename__ = "pedidos_itens"
     id = db.Column("id", db.Integer, primary_key=True)
-    pedido = db.Column("pedido", db.Unicode, db.ForeignKey("tipo.id"))
+    produto = db.Column("produto", db.Unicode, db.ForeignKey("tipo.id"))
     descricao = db.Column("descricao", db.Unicode)
     id_pedido = db.Column(db.Integer, db.ForeignKey("pedidos.id"))
     quantidade = db.Column("quantidade", db.Integer)
 
-    pedido_nome = db.relationship("Tipo", foreign_keys=pedido)
+    pedido_nome = db.relationship("Tipo", foreign_keys=produto)
     
     @staticmethod
     def get_itens(id_pedido):
         return Pedido_item.query.filter_by(id_pedido=id_pedido)
+
+    def get(id: int):
+        return Pedido_item.query.filter_by(id=id).first()
+    
+    def to_dict(self) -> dict:
+        return dict((col, getattr(self, col)) for col in self.__table__.columns.keys())
+
+
+    @property
+    def details(self) -> dict:
+        details = self.to_dict()
+        return details
 
     def remove(self):
         db.session.delete(self)
@@ -228,6 +331,15 @@ class Pedidos(db.Model):
     @staticmethod
     def get(id: int):
         return Pedidos.query.filter_by(id=id).first()
+
+    def to_dict(self) -> dict:
+        return dict((col, getattr(self, col)) for col in self.__table__.columns.keys())
+
+    @property
+    def details(self) -> dict:
+        details = self.to_dict()
+        #details.pop("register_id")
+        return details
 
     @staticmethod
     def get_all():
@@ -264,8 +376,7 @@ class Pedidos(db.Model):
         form.populate_obj(pedido_item[0])
         pedido_item[0].id_pedido = pedido.id
         pedido_item[0].save()
-
-        
+      
         for i in (range(int(len(lista_pedidos)/3))):
             pedido_item.append(Pedido_item())
             form.populate_obj(pedido_item[i+1])
@@ -279,10 +390,10 @@ class Pedidos(db.Model):
 
         if not response["success"]:
             for i in (range(1+int(len(lista_pedidos)/3))):
-                pedido_item[i].delete()
+                pedido_item[i].remove()
 
 
-
+        
         return response
 
     def save(self):
@@ -300,10 +411,11 @@ class Pedidos(db.Model):
         else:
             response = {
                 "success": True,
-                "message": "Pedido cadastrado com successo!",
+                "message": "Pedido cadastrado com successo, cadastre agora os produtos!",
+                "id": self.id,
                 "object": self,
             }
-
+       
         return response
     
     def update_by_form(self, form):
@@ -312,7 +424,42 @@ class Pedidos(db.Model):
         response["message"] = "Pedido atualizado!"
 
         return response
-    
+
+    def update_pedidos(self, lista_pedido_itens):
+        print(self.id)
+        
+        for pedido_item in self.pedidos_itens:
+            pedido_item.remove()
+        
+        pedido_itens = []
+        pedido_itens.append(Pedido_item())
+        pedido_itens[0].id_pedido = self.id
+        pedido_itens[0].quantidade = lista_pedido_itens["quantidade"]
+        pedido_itens[0].produto = lista_pedido_itens["produto"]
+        pedido_itens[0].descricao = lista_pedido_itens["descricao"]
+        pedido_itens[0].save()
+
+        quantidade_repeticao = int(len(lista_pedido_itens)/3)-1
+        
+        for i in range(quantidade_repeticao):
+            
+            pedido_itens.append(Pedido_item())
+            pedido_itens[i+1].id_pedido = self.id
+            pedido_itens[i+1].quantidade = lista_pedido_itens["quantidade"+str(i)]
+            pedido_itens[i+1].produto = lista_pedido_itens["produto"+str(i)]
+            pedido_itens[i+1].descricao = lista_pedido_itens["descricao"+str(i)]
+            pedido_itens[i+1].save()
+            print(pedido_itens[i+1])
+        
+
+        
+
+        response={}  
+        response["success"] = "ok"
+        response["message"] = "Produtos atualizado com successo!"
+        return response
+        
+
     def remove(self):
         for itens in self.pedidos_itens:
             itens.remove()
@@ -449,26 +596,26 @@ class Financeiro(db.Model):
 
     @staticmethod
     def get_all():
-        return Institution.query.all()
+        return Financeiro.query.all()
 
     @staticmethod
     def get(id: int):
-        return Institution.query.filter_by(id=id).first()
+        return Financeiro.query.filter_by(id=id).first()
 
     def save(self):
         db.session.add(self)
         db.session.commit()
-        response = {"success": True, "message": "Instituiçao cadastrada com successo!"}
+        response = {"success": True, "message": "Financeiro cadastrada com successo!"}
 
         return response
 
     @staticmethod
     def create_by_form(form):
-        institution = Institution()
+        institution = Financeiro()
         register = Register()
 
         form.populate_obj(register)
-        register.type = "institution"
+        register.type = "finaceiro"
         register.save()
 
         form.populate_obj(institution)
@@ -483,8 +630,6 @@ class Financeiro(db.Model):
 
     def update_by_form(self, form):
         form.populate_obj(self)
-        form.populate_obj(self.register)
-        self.register.save()
         response = self.save()
 
         return response
@@ -547,7 +692,7 @@ class Register(db.Model):
             address.update({"cliente": cliente.details if cliente is not None else {}})
 
         elif self.type == "institution":
-            institution = Institution.query.filter_by(register_id=self.id).first()
+            institution = Financeiro.query.filter_by(register_id=self.id).first()
             address.update(
                 {
                     "institution": institution.to_dict()
@@ -561,7 +706,7 @@ class Register(db.Model):
     
     def __repr__(self):
         if self.type == "institution":
-            return Institution.query.filter_by(register_id=self.id).first().name.capitalize()
+            return Financeiro.query.filter_by(register_id=self.id).first().name.capitalize()
 
         elif self.type == "cliente":
             return Register.query.filter_by(id=self.id).first()
@@ -576,6 +721,7 @@ class Cliente(db.Model):
     phone = db.Column("phone", db.Integer)
     aniversario = db.Column("aniversario", db.Unicode)
     observacao = db.Column("observacao", db.Unicode)
+    data_cadastro = db.Column("data_cadastro", db.Unicode, default=datetime.now().strftime('%Y-%m-%d'))
 
     register = db.relationship("Register", foreign_keys=register_id)
     pedidos = db.relationship("Pedidos", backref="owner")
@@ -645,6 +791,8 @@ class Cliente(db.Model):
     def get_all():
         return Cliente.query.order_by(Cliente.id.desc()).all()
 
+    
+
     @staticmethod
     def get(id: int):
         return Cliente.query.filter_by(id=id).first()
@@ -655,21 +803,13 @@ class Cliente(db.Model):
         return lista
 
     def get_aniversario(self):
-        data_convertida = self.aniversario[-2:]+"/"+self.aniversario[5:7]+"/"+self.aniversario[:4]
-        return data_convertida
-
+        return converter_data(self.aniversario)
     
     def get_telefone_encrypted(self):
-        telefone = str(self.cel)
-        telefone_encriptado = ""
-        for indice, valor in enumerate(telefone):
-            if indice<2 or indice>6:
-                telefone_encriptado = telefone_encriptado+valor
-            else:
-                telefone_encriptado = telefone_encriptado+"*"
-        return telefone_encriptado
+        return encriptar_telefone(str(self.cel))
 
-
+    def get_data_cadastro(self):
+        return converter_data(self.data_cadastro)
 
     def to_dict(self) -> dict:
         return dict((col, getattr(self, col)) for col in self.__table__.columns.keys())

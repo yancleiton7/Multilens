@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% from "macros/render_messages.html" import render_message %}
+
+{% block extra_scripts %}
+<!--<script src="{{ url_for('static', filename='js/pedidos.js') }}" type="text/javascript"></script> -->
+<script src="{{ url_for('static', filename='js/carregar_pedidos.js') }}" type="text/javascript"></script>
+{% endblock extra_scripts %}
+
+{% block body %}
+{{ render_message() }}
+<form method="POST">
+    {{ form[0].csrf_token }}
+    <article class="panel {{ color_theme }}">
+
+        <div class="panel-heading">{{pedido.cliente.name}}</div>
+
+        <div name="load" id={{form|length}}></div>
+        <div name="pedido_id" id={{pedido.id}}></div>
+        
+
+        <div class="form-body">
+            
+           {% for pedido in form %}
+           <div name="id_pedido-{{loop.index0}}" id={{pedido.pedido_id}}></div>
+           <div class="field" id="item-{{loop.index0}}">
+                <div class="field is-grouped">
+                    <div class="control">
+                        <label class="label"> {{ pedido.produto.label }} </label>
+                            <div class="control">
+                                <div class="select">
+                                    {{ pedido.produto() }}
+                                </div>
+                            </div>
+                    </div>
+                
+
+                    <div class="control is-expanded">
+                        <label class="label"> {{ pedido.quantidade.label }} </label>
+                        
+                            <div class="control">
+                                {{ pedido.quantidade(class="input", type="text", placeholder="") }}
+                            </div>
+                    </div>
+                    <div class="control is-expanded">
+                        <label class="label"> {{ pedido.descricao.label }} </label>
+                    
+                        <div class="control">
+                            {{ pedido.descricao(class="input", type="text", placeholder="") }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div class="field" id="form_principal"></div>
+             
+ 
+            <div class="field is-grouped">
+                
+                <div class="control is-expanded">
+                    <a class="button is-fullwidth is-info" id="novo_produto">Novo Item </a>
+                </div>
+                <div class="control is-expanded">
+                    <a class="button is-fullwidth is-warning" id="excluir_item"> Excluir Item</a>
+                </div>
+            </div>
+
+
+            
+
+        </div>
+            <div class="field is-grouped">
+                <div class="control is-expanded">
+                    <input class="button is-fullwidth {{ color_theme }}" type="submit" value="Salvar" > 
+                    
+                </div>
+                <div class="control">
+                    <a href="{{url_for('site.pedidos')}}"   class="button is-success" >Voltar</a>
+                </div>
+            </div>
+        </div>
+    </article>
+</form>
+{% endblock body %}

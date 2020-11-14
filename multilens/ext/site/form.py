@@ -198,9 +198,36 @@ class FormBalanceSaida(BaseForm):
         self.produto.data = ""
         self.quantidade.data = ""
         self.observacao.data = ""
-        
-class FormProduto(BaseForm):
 
+class FormFornecedor(BaseForm):
+    nome_fornecedor = StringField(
+        "Fornecedor",
+        [
+            Required("Colocar o Fornecedor."),
+        ],
+    ) 
+
+    valor = StringField(
+        "Preço",
+        [
+            Required("Preencher com o preço desse fornecedor"),
+            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe somente números"),
+        ],
+    )
+
+    descricao = StringField(
+        "Informação adicional",
+        [
+           Required("Colocar informação adicional sobre esse fornecedor"),
+        ],
+    )
+
+    def load(self, fornecedor):
+        self.process(obj=fornecedor)
+
+class FormProduto(BaseForm):
+    
+    fornecedor = []
     nome_produto = StringField(
         "Nome do Produto",
         [
@@ -243,10 +270,18 @@ class FormProduto(BaseForm):
         ],
     )
 
-    
 
     def load(self, produto):
+        form_fornecedor = FormFornecedor()
+        self.fornecedor = []
+
+        for fornecedor in produto.fornecedor:
+            form_fornecedor.load(fornecedor)
+            self.fornecedor.append(form_fornecedor)
+
+          
         self.process(obj=produto)
+        
        
 
     def limpar(self):
@@ -255,6 +290,7 @@ class FormProduto(BaseForm):
         self.observacao.data = ""
         self.grupo.data = ""
         self.unidade.data = ""
+        self.fornecedor = []
 
 class FormFinanceiro(BaseForm):
     name = StringField("Nome", [Required("O nome da instituição é obrigatorio")])
@@ -348,7 +384,7 @@ class FormFinanceiro(BaseForm):
             self.district.data = financeiro.register.district
 
 class FormPedido(BaseForm):
-
+    
     data_pedido = StringField(
         "Data pedido",
         [
@@ -368,25 +404,11 @@ class FormPedido(BaseForm):
         ],
     )
 
-    pedido = QuerySelectField(
-        "Produto",
-        validators=[Required("O produto é obrigatorio!")],
-        get_label="tipo",
-        get_pk=lambda x: x.id,
-        query_factory=lambda: Tipo.query,
-        allow_blank=True
-        
-    )
-    quantidade = StringField(
-        "Quantidade",
-        [        
-            Regexp("^[0-9]*$", message="Informe somente números"),
-        ],
-    )
-    descricao = StringField(
-        "Descrição do Pedido",
-        [        
-            Required("Por favor, preecher com observações, caso não tenha colocar '*."),
+    valor_total = StringField(
+        "Valor total do pedido",
+        [
+            Required("Preencher o preço utilizado"),
+            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe somente números"),
         ],
     )
 
@@ -410,6 +432,7 @@ class FormPedido(BaseForm):
         allow_blank=True,  
         
     )
+    
     #Caso o seja Delivery
     endereco_entrega = StringField(
         "Endereço Entrega",
@@ -438,16 +461,16 @@ class FormPedido(BaseForm):
     
     def load(self, pedido):
         self.process(obj=pedido)
+        self.id = pedido.id
+
+
 
     def limpar(self):
         self.data_pedido.data = ""
         self.data_entrega.data = ""
         self.hora_entrega.data = ""
         self.endereco_entrega.data = ""
-        self.quantidade.data = ""
-        self.descricao.data = ""
         self.id_cliente.data = ""
-        self.pedido.data = ""
         self.tipo_retirada.data = ""
         self.tipo_pagamento.data = ""
         self.status_pagamento.data = ""
@@ -474,24 +497,33 @@ class FormOrder(BaseForm):
     '''
     discount = FloatField("Desconto")
 
-
-class FormOrderItems(BaseForm):
-    product_id = QuerySelectField(
+class FormPedidoItens(BaseForm):
+    produto = QuerySelectField(
         "Produto",
-        validators=[Required("Selecione o produto para adicionar")],
-        get_label="name",
+        validators=[Required("O produto é obrigatorio!")],
+        get_label="tipo",
         get_pk=lambda x: x.id,
-        query_factory=lambda: Estoque.get_avaliable_items(),
-        allow_blank=True,
+        query_factory=lambda: Tipo.query,
+        allow_blank=True
+        
     )
-    amount = StringField(
+    quantidade = StringField(
         "Quantidade",
-        validators=[
-            Required("Informe a quantidade"),
+        [        
             Regexp("^[0-9]*$", message="Informe somente números"),
         ],
     )
+    descricao = StringField(
+        "Descrição do Pedido",
+        [        
+            Required("Por favor, preecher com observações, caso não tenha colocar '*."),
+        ],
+    )
 
+    
+    def load(self, pedido_itens):
+        self.process(obj=pedido_itens)
+        self.pedido_id = pedido_itens.id
 
 class FormFinishOrder(BaseForm):
     register_id = QuerySelectField(

@@ -16,16 +16,20 @@
 
             <div class="navbar-start">
                 <a class="navbar-item">
-                    <strong>Novo Produto</strong>
+                    <strong>Novo Pedido</strong>
                 </a>
             </div>
 
         </div>   
 
+        <div name="load" id={{form.id_cliente.data}}></div>
+        <div name="id_pedido" id={{form.id}}></div>
 
         <div class="form-body">
-
+            
             <div class="field is-grouped">
+
+                {% if cadastro %}
                 <div class="control">
                     <label class="label"> Id Cliente </label>
                         <div class="control">
@@ -34,6 +38,9 @@
                             </div>
                         </div>
                 </div>
+                {%endif%}
+
+
 
                 <div class="control is-expanded">
                     <label class="label"> Nome Cliente </label>
@@ -91,6 +98,7 @@
                     <label class="label"> {{ form.tipo_pagamento.label }} </label>              
                     <div class="select">
                         {{ form.tipo_pagamento() }}
+
                     </div>
                 </div>
                 <div class="control">
@@ -113,78 +121,29 @@
                 <div class="control is-expanded">
                     <label class="label"> {{ form.endereco_entrega.label }} </label>              
                     <div class="control">
-                        {{ form.endereco_entrega(class="input", type="text", placeholder="") }}
+                            {{ form.endereco_entrega(class="input", type="text", placeholder="") }}
                     </div>
                 </div>
-            </div>
-
-            <div class="field" id="repete">
-
-                    <div class="field is-grouped">
-                        <div class="control">
-                            <label class="label"> {{ form.pedido.label }} </label>
-                                <div class="control">
-                                    <div class="select">
-                                        {{ form.pedido() }}
-                                    </div>
-                                </div>
-                        </div>
-                        <div class="control">
-                            <label class="label"> {{ form.quantidade.label }} </label>
-                            
-                                <div class="control">
-                                    {{ form.quantidade(class="input", type="text", placeholder="") }}
-                                </div>
-                        </div>    
-                        <div class="control is-expanded">
-                            <label class="label"> {{ form.descricao.label }} </label>              
-                                <div class="control">
-                                    {{ form.descricao(class="input", type="text", placeholder="") }}
-                                </div>
-                        </div>
-                    </div>    
-            </div>
-
-                    <div class="field" id="pedidos-0"></div>
-                    <div class="field" id="pedidos-1"></div>
-                    <div class="field" id="pedidos-2"></div>
-                    <div class="field" id="pedidos-3"></div>
-                    <div class="field" id="pedidos-4"></div>
-                    <div class="field" id="pedidos-5"></div>
-                    <div class="field" id="pedidos-6"></div>
-                    <div class="field" id="pedidos-7"></div>
-                    <div class="field" id="pedidos-8"></div>
-                    <div class="field" id="pedidos-9"></div>
-                    <div class="field" id="pedidos-10"></div>
-                    <div class="field" id="pedidos-11"></div>
-                    <div class="field" id="pedidos-12"></div>
-                    <div class="field" id="pedidos-13"></div>
-                    <div class="field" id="pedidos-14"></div>
-                    <div class="field" id="pedidos-15"></div>
-                    <div class="field" id="pedidos-16"></div>
-                    <div class="field" id="pedidos-17"></div>
-                    <div class="field" id="pedidos-18"></div>
-                    <div class="field" id="pedidos-19"></div>
-                    <div class="field" id="pedidos-20"></div>
+                <div class="control is-expanded">
+                    <label class="label"> {{ form.valor_total.label }} </label>              
+                    <div class="control">
+                            {{ form.valor_total(class="input", type="text", placeholder="Valor total do pedido") }}
+                    </div>
+                </div>
 
 
-            <div class="field is-grouped">
                 
-                <div class="control is-expanded">
-                    <a class="button is-fullwidth is-info" id="novo_item">Novo item</a>
-                </div>
-                <div class="control is-expanded">
-                    <a class="button is-fullwidth is-warning" id="excluir_item">Excluir item</a>
-                </div>
             </div>
-            
+               
+          
+
             <div class="field is-grouped">
                 <div class="control is-expanded">
                     <input class="button is-fullwidth {{ color_theme }}" id="btn_salvar" type="submit" value="Salvar" > 
                     
                 </div>
                 <div class="control">
-                    <a href="{{url_for('site.produtos')}}" class="button is-success">Voltar</a>
+                    <a href="{{url_for('site.pedidos')}}" class="button is-success">Voltar</a>
                 </div>
             </div>
         </div>

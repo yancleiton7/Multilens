@@ -87,11 +87,14 @@
                             </td>
                             <td >
                                 <div class="control buttons" >
-                                    <strong> <a class="button {{ color_theme }} is-small"
-                                                href="{{ url_for('site.pedido', pedido= pedido.id ) }}">Editar/Ver</a>
+                                    <strong> <a class="button {{ color_theme }} is-small is-fullwidth"
+                                                href="{{ url_for('site.pedido', pedido= pedido.id ) }}">Editar</a>
                                                 {% if current_user.is_admin %}
-                                                <a class="button is-danger is-small remove" >Excluir</a>
+                                                <a class="button is-danger is-small is-fullwidth remove" >Excluir</a>
                                                 {% endif %}
+                                                <a class="button is-small is-fullwidth"
+                                            href="{{ url_for('site.itens_pedido', pedido_id= pedido.id ) }}">Editar Pedidos</a>
+                                            
                                     </strong>
                                 </div>
                              </td>

@@ -1,7 +1,7 @@
 from flask_login import login_required
 from flask_restful import Resource
 
-from multilens.ext.db.models import Register, Cliente
+from multilens.ext.db.models import Register, Cliente, Pedidos, Pedido_item
 
 
 class ResourceCliente(Resource):
@@ -34,13 +34,25 @@ class ResourceRegister(Resource):
         return response
 
 
-class ResourceOrder(Resource):
+class ResourcePedido(Resource):
     #@login_required
-    def get_RO(self, id: int):
-        #order = Order.get(id)
-        if order is not None:
-            response = order.details
+    def get(self, id: int):
+        pedido = Pedidos.get(id)
+        if pedido is not None:
+            response = pedido.details
+            for pedido_item in pedido.pedidos_itens:
+                response[pedido_item.id] = pedido_item.produto
+        else:
+            response = {}
 
+        return response
+
+class ResourcePedidoItens(Resource):
+    #@login_required
+    def get(self, id: int):
+        pedido_item = Pedido_item.get(id)
+        if pedido_item is not None:
+            response = pedido_item.details
         else:
             response = {}
 
