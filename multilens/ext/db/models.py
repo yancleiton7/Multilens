@@ -9,6 +9,8 @@ from . import db
 
 db.metadata.clear()
 
+
+
 class User(UserMixin, db.Model):
     __tablename__ = "user"
     id = db.Column("id", db.Integer, primary_key=True)
@@ -82,7 +84,6 @@ class Produto(db.Model):
     data_cadastro = db.Column("data_cadastro", db.Unicode, default=dt.datetime.now().strftime("%m/%d/%Y"))
     nome_produto = db.Column("nome_produto", db.Unicode)
     grupo = db.Column("grupo", db.Unicode)
-    tipo = db.Column("tipo", db.Unicode)
     observacao = db.Column("observacao", db.Unicode)
     estoque_minimo = db.Column("estoque_minimo", db.Unicode)
     unidade = db.Column("unidade", db.Unicode)
@@ -121,11 +122,7 @@ class Produto(db.Model):
 
         return entry - sale
 
-    @staticmethod
-    def get_tipo(id: int):
-        produto = Produto.query.filter_by(id=id).first()
-        tipo = Tipo.get(produto.tipo).tipo
-        return tipo
+ 
     @staticmethod
     def get_grupo(id: int):
         produto = Produto.query.filter_by(id=id).first()
@@ -137,6 +134,7 @@ class Produto(db.Model):
         produto = Produto.query.filter_by(nome_produto=nome_produto).first()
         id = produto.id
         return id
+
     @staticmethod
     def get(id: int):
         return Produto.query.filter_by(id=id).first()
@@ -187,24 +185,143 @@ class Produto(db.Model):
     def get_all():
         return Produto.query.all()
 
+class Pedido_item(db.Model):
+    __tablename__ = "pedidos_itens"
+    id = db.Column("id", db.Integer, primary_key=True)
+    pedido = db.Column("pedido", db.Unicode, db.ForeignKey("tipo.id"))
+    descricao = db.Column("descricao", db.Unicode)
+    id_pedido = db.Column(db.Integer, db.ForeignKey("pedidos.id"))
+    quantidade = db.Column("quantidade", db.Integer)
+
+    pedido_nome = db.relationship("Tipo", foreign_keys=pedido)
+    
+    @staticmethod
+    def get_itens(id_pedido):
+        return Pedido_item.query.filter_by(id_pedido=id_pedido)
+
+    def remove(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
 class Pedidos(db.Model):
     __tablename__ = "pedidos"
     id = db.Column("id", db.Integer, primary_key=True)
-    pedido = db.Column("pedido", db.Unicode)
     data_pedido = db.Column("data_pedido", db.Unicode)
-    data_entrega = db.Column("data_pedido", db.Unicode)
+    data_entrega = db.Column("data_entrega", db.Unicode)
     hora_entrega = db.Column("hora_entrega", db.Unicode)
-    quantidade = db.Column("quantidade", db.Integer)
-    id_cliente = db.Column("id_cliente", db.Integer)
-    tipo_retirada = db.Column("tipo_retirada", db.Integer)
-    tipo_pagamento = db.Column("tipo_pagamento", db.Integer)
+    id_cliente = db.Column(db.Integer, db.ForeignKey("cliente.id"))
+    tipo_retirada = db.Column("tipo_retirada", db.Integer, db.ForeignKey("retirada.id"))
+    tipo_pagamento = db.Column("tipo_pagamento", db.Integer, db.ForeignKey("pagamento.id"))
     endereco_entrega = db.Column("endereco_entrega", db.Unicode)
-    observacao = db.Column("observacao", db.Unicode)
-    status_pagamento = db.Column("status_pagamento", db.Unicode)     
+    status_pagamento = db.Column("status_pagamento", db.Integer, db.ForeignKey("status_pagamento.id"))   
+    status_entrega = db.Column("status_entrega", db.Unicode, default="Pendente") 
+
+    cliente = db.relationship("Cliente", foreign_keys=id_cliente)
+    pagamento = db.relationship("Pagamento", foreign_keys=tipo_pagamento)
+    pedidos_itens = db.relationship("Pedido_item", backref="owner")
+    s_pagamento = db.relationship("Status_pagamento", foreign_keys=status_pagamento)
+
+    @staticmethod
+    def get(id: int):
+        return Pedidos.query.filter_by(id=id).first()
+
+    @staticmethod
+    def get_all():
+        return Pedidos.query.order_by(Pedidos.data_entrega.asc(), Pedidos.hora_entrega.asc()).all()
+    
+    def get_pendentes_entrega():
+        return Pedidos.query.order_by(Pedidos.data_entrega.asc(), Pedidos.hora_entrega.asc()).filter_by(status_entrega="Pendente")
+
+    def get_pendentes_pagamentos():
+        return Pedidos.query.order_by(Pedidos.data_entrega.asc(), Pedidos.hora_entrega.asc()).filter(Pedidos.status_pagamento!=3)
+
+    def get_descricao_computada(self):
+        descricao_computada = ""
+        for pedidos_item in self.pedidos_itens:
+            descricao_computada = descricao_computada + str(pedidos_item.quantidade) + " " + pedidos_item.descricao + "\n"
+        
+        return descricao_computada
+
+    def get_data_entrega(self):
+        data_convertida = self.data_entrega[-2:]+"/"+self.data_entrega[5:7]+"/"+self.data_entrega[:4]
+        return data_convertida
+            
+    @staticmethod
+    def create_by_form(form, lista_pedidos):
+
+        pedido = Pedidos()
+        pedido_item = []
+        pedido_item.append(Pedido_item())
+
+        form.populate_obj(pedido)
+        response = pedido.save()
+
+
+        form.populate_obj(pedido_item[0])
+        pedido_item[0].id_pedido = pedido.id
+        pedido_item[0].save()
+
+        
+        for i in (range(int(len(lista_pedidos)/3))):
+            pedido_item.append(Pedido_item())
+            form.populate_obj(pedido_item[i+1])
+            pedido_item[i+1].id_pedido = pedido.id
+            pedido_item[i+1].quantidade = lista_pedidos["quantidade"+str(i)]
+            pedido_item[i+1].pedido = lista_pedidos["pedido"+str(i)]
+            pedido_item[i+1].descricao = lista_pedidos["descricao"+str(i)]
+            pedido_item[i+1].save()
+        
+
+
+        if not response["success"]:
+            for i in (range(1+int(len(lista_pedidos)/3))):
+                pedido_item[i].delete()
 
 
 
+        return response
 
+    def save(self):
+        try:
+            db.session.add(self)
+            db.session.commit()
+
+        except:
+            db.session.rollback()
+            response = {
+                "success": False,
+                "message": "Aconteceu algo errado, por favor tente novamente",
+            }
+
+        else:
+            response = {
+                "success": True,
+                "message": "Pedido cadastrado com successo!",
+                "object": self,
+            }
+
+        return response
+    
+    def update_by_form(self, form):
+        form.populate_obj(self)
+        response = self.save()
+        response["message"] = "Pedido atualizado!"
+
+        return response
+    
+    def remove(self):
+        for itens in self.pedidos_itens:
+            itens.remove()
+
+        db.session.delete(self)
+        db.session.commit()
+        response = {"success": True, "message": "Pedido excluido com sucesso!"}
+
+        return response
 
 class Balance(db.Model):
     __tablename__ = "balance"
@@ -304,6 +421,15 @@ class Pagamento(db.Model):
     def get(id: int):
         return Pagamento.query.filter_by(id=id).first()
 
+class Status_pagamento(db.Model):
+    __tablename__ = "status_pagamento"
+    id = db.Column("id", db.Integer, primary_key=True)
+    status_pagamento = db.Column("status_pagamento", db.Unicode)
+
+    @staticmethod
+    def get(id: int):
+        return Status_pagamento.query.filter_by(id=id).first()
+
 class Financeiro(db.Model):
     __tablename__ = "institution"
     id = db.Column("id", db.Integer, primary_key=True)
@@ -377,16 +503,31 @@ class Financeiro(db.Model):
 class Register(db.Model):
     __tablename__ = "register"
     id = db.Column("id", db.Integer, primary_key=True)
-    zip = db.Column("zip", db.Integer)
     city = db.Column("city", db.Unicode)
     address = db.Column("address", db.Unicode)
     district = db.Column("district", db.Unicode)
+    numero = db.Column("numero", db.Integer)
+    estado = db.Column("estado", db.Unicode)
+    complemento = db.Column("complemento", db.Unicode)
+
     type = db.Column("type", db.Unicode)
 
     @staticmethod
     def get(id):
         return Register.query.filter_by(id=id).first()
 
+    @staticmethod
+    def get_all():
+        return Register.query.all()
+
+    @staticmethod
+    def get_endereco(id):
+        register = Register.query.filter_by(id=id).first().to_dict()
+        endereco = register["address"] + " - " + register["district"] + " - " + register["numero"] + " - " + register["complemento"]
+        endereco = endereco + " - " + register["city"] +"/"+ register["estado"] 
+        return endereco
+
+        
     def save(self):
         db.session.add(self)
         db.session.commit()
@@ -417,13 +558,15 @@ class Register(db.Model):
 
         return address
 
+    
     def __repr__(self):
         if self.type == "institution":
             return Institution.query.filter_by(register_id=self.id).first().name.capitalize()
 
         elif self.type == "cliente":
-            return Cliente.query.filter_by(register_id=self.id).first().name.capitalize()
-
+            return Register.query.filter_by(id=self.id).first()
+            #return Register.query.filter_by(register_id=self.id).first().name.capitalize()
+    
 class Cliente(db.Model):
     __tablename__ = "cliente"
     id = db.Column("id", db.Integer, primary_key=True)
@@ -435,6 +578,7 @@ class Cliente(db.Model):
     observacao = db.Column("observacao", db.Unicode)
 
     register = db.relationship("Register", foreign_keys=register_id)
+    pedidos = db.relationship("Pedidos", backref="owner")
 
 
     @staticmethod
@@ -485,9 +629,21 @@ class Cliente(db.Model):
 
         return response
 
+    def remove(self):
+        
+        for pedido in self.pedidos:
+            pedido.remove()
+
+        self.register.remove()
+        db.session.delete(self)
+        db.session.commit()
+        response = {"success": True, "message": "Registro excluido com sucesso!"}
+
+        return response
+
     @staticmethod
     def get_all():
-        return Cliente.query.all()
+        return Cliente.query.order_by(Cliente.id.desc()).all()
 
     @staticmethod
     def get(id: int):
@@ -498,15 +654,22 @@ class Cliente(db.Model):
         lista = [item for item in Cliente.query.all() if item.aniversario[3:5]==mes["mes"]]
         return lista
 
+    def get_aniversario(self):
+        data_convertida = self.aniversario[-2:]+"/"+self.aniversario[5:7]+"/"+self.aniversario[:4]
+        return data_convertida
 
-    def remove(self):
-        self.register.remove()
+    
+    def get_telefone_encrypted(self):
+        telefone = str(self.cel)
+        telefone_encriptado = ""
+        for indice, valor in enumerate(telefone):
+            if indice<2 or indice>6:
+                telefone_encriptado = telefone_encriptado+valor
+            else:
+                telefone_encriptado = telefone_encriptado+"*"
+        return telefone_encriptado
 
-        db.session.delete(self)
-        db.session.commit()
-        response = {"success": True, "message": "Registro excluido com sucesso!"}
 
-        return response
 
     def to_dict(self) -> dict:
         return dict((col, getattr(self, col)) for col in self.__table__.columns.keys())

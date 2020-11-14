@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/filtro.js') }}" type="text/javascript"></script>
+{% endblock extra_scripts %}
+
+{% from "macros/render_messages.html" import render_message %}
+{% block body %}
+{{ render_message() }}
+
+<article class="panel {{ color_theme }}">
+    
+    <div class="navbar {{ color_theme }}" id="desaparecer3">
+
+        <div class="navbar-start">
+            <a class="navbar-item" >
+                <strong>Gestão Pedido - Cozinha</strong>
+              </a>
+        </div>
+
+            <div class="navbar-end">
+                <div class="buttons">
+                
+                <a href="{{url_for('site.cozinha')}}" class="button is-success is-rounded">Pedidos Cozinha</a>
+                <a href="{{url_for('site.pagamentos')}}" class="button {{color_theme}} is-rounded">Pagamentos Pendentes</a>
+                <a href="{{url_for('site.pedidos')}}" class="button {{color_theme}} is-rounded">Todos os Pedidos</a>
+                <strong>   </strong>
+            </div>
+        </div>
+
+        
+    </div>
+    <div class="panel-block" id="desaparecer">
+        <div class="control is-expanded has-icons-left">
+            <input class="input {{ color_theme}}" type="search" id="filtro" placeholder="Procure informação aqui">
+            <span class="icon is-left">
+                <i class="fas fa-search" aria-hidden="true"></i>
+            </span>
+        </div>
+        
+        <div>
+            <input class="input" type="date" id="data_de">
+        </div>
+
+        
+
+        <div>
+            <input class="input" type="date" id="data_ate">
+        </div>
+        <strong>  </strong>
+        <div class="navbar-end">
+            <div id="imprimir" class="buttons">
+            <a class="button is-success is-rounded">Imprimir</a>
+            <strong>   </strong>
+            </div>
+        </div>
+    </div>
+    <div class="form-body">
+        <div class="table-container">
+            <table class="table is-striped is-fullwidth is-hoverable"  id="tabela">
+                <thead>
+                    <tr>
+                        <th width=30% style="text-align: center; background-color: rgb(215, 215, 215);">Pedido</th>
+                              <th style="text-align: center; background-color: rgb(215, 215, 215);">Descrição total do Pedido</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pedido in pedidos %}
+                        <tr>
+                            <td style="vertical-align: middle">
+                                    <b>{{pedido.cliente.name}}</b>
+                                <p>  {{pedido.get_data_entrega()}} às {{ pedido.hora_entrega}}
+                                <p> <b>Telefone:</b> {{pedido.cliente.get_telefone_encrypted()}}
+                            </td>
+
+                            
+                            <td td style="vertical-align: middle; text-align: center">
+                                {% for item in pedido.pedidos_itens %}
+                                    <p> {{item.quantidade}} {{item.pedido_nome.tipo}} - {{item.descricao}}
+                                {% endfor %}      
+
+                            </td>
+                        </tr>    
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</article>
+
+
+{% endblock body %}

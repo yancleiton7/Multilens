@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 {% from "macros/render_messages.html" import render_message %}
 
+
 {% block body %}
 {{ render_message() }}
 <form method="POST">
     {{ form.csrf_token }}
     <article class="panel {{ color_theme }}">
-        <div class="panel-heading">Cliente</div>
+        <div class="panel-heading">Novo Cliente</div>
         <div class="form-body">
 
             <div class="field is-grouped">
@@ -31,11 +32,17 @@
                         </span>
                     </div>
                 </div>
+                <div class="control">
+                    <label class="label"> {{ form.numero.label }} </label>
+                    <div class="control">
+                        {{ form.numero(class="input", placeholder="01") }}
+                    </div>
+                </div>
             </div>
 
 
-            <div class="field is-grouped is-grouped-multiline">
-                <div class="control is-expanded">
+            <div class="field is-grouped is-expanded">
+                <div class="control">
                     <label class="label"> {{ form.district.label }} </label>
                     <div class="control">
                         {{ form.district(class="input", placeholder="Brotas") }}
@@ -44,16 +51,28 @@
                 <div class="control">
                     <label class="label"> {{ form.city.label }} </label>
                     <div class="control has-icons-left">
-                        {{ form.city(class="input", placeholder="Salvador - Bahia") }}
+                        {{ form.city(class="input", placeholder="Salvador") }}
                         <span class="icon is-left">
                             <i class="fas fa-city"></i>
                         </span>
                     </div>
                 </div>
                 <div class="control">
-                    <label class="label"> {{ form.zip.label }} </label>
-                    <div class="control">
-                        {{ form.zip(class="input", placeholder="40000000") }}
+                    <label class="label"> {{ form.estado.label }} </label>
+                    <div class="control has-icons-left">
+                        {{ form.estado(class="input", placeholder="Bahia") }}
+                        <span class="icon is-left">
+                            <i class="fas fa-city"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="control is-expanded">
+                    <label class="label"> {{ form.complemento.label }} </label>
+                    <div class="control has-icons-left">
+                        {{ form.complemento(class="input", placeholder="Informação adicional") }}
+                        <span class="icon is-left">
+                            <i class="fas fa-city"></i>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -62,7 +81,8 @@
 
             <div class="field is-grouped is-grouped-multiline">
 
-                <div class="control is-expanded">
+
+                <div class="control">
                     <label class="label"> {{ form.cel.label }} </label>
                     <div class="field has-addons">
                         <div class="control">
@@ -74,7 +94,7 @@
                     </div>
                 </div>
 
-                <div class="control is-expanded">
+                <div class="control">
                     <label class="label"> {{ form.phone.label }} </label>
                     <div class="field has-addons">
                         <div class="control">
@@ -91,7 +111,7 @@
                     <div class="field has-addons">
                         
                         <div class="control">
-                            {{ form.aniversario(class="input", type="text", placeholder="01/01/2000") }}
+                            {{ form.aniversario(class="input", type="date", placeholder="01/01/2000") }}
                         </div>
                     </div>
                 </div>

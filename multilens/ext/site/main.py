@@ -1,14 +1,16 @@
 import json
 import os
+import time
 
 from flask import (Blueprint, current_app, flash, redirect, render_template,
                    request, send_file, url_for)
 from flask_login import current_user, login_required
 
 from multilens.ext.api.resources import ResourceOrder
-from multilens.ext.db.models import Cliente, Estoque, Produto, Balance
+from multilens.ext.db.models import Cliente, Estoque, Produto, Balance, Pedidos
 
-from .form import (FormClientes, FormFinishOrder, FormBalanceEntrada, FormBalanceSaida,FormProduto, FormFinanceiro, FormOrderItems)
+from .form import (FormClientes, FormFinishOrder, FormBalanceEntrada, FormPedido,
+                     FormBalanceSaida, FormProduto, FormFinanceiro, FormOrderItems)
 
 bp = Blueprint("site", __name__)
 
@@ -46,10 +48,8 @@ def form_cliente():
             response = Cliente.create_by_form(form)
 
             if response["success"]:
-                flash(
-                    response["message"],
-                    "is-success",
-                )
+                return redirect(url_for("site.clientes"))
+                
 
             else:
                 flash(response["message"], "is-danger")
@@ -362,113 +362,115 @@ def form_produto_saida():
 
 
 
-@bp.route("/vendas/<int:order_id>", methods=["GET", "POST"])
+@bp.route("/cozinha/", methods=["GET"])
 @login_required
-def order(order_id: int):
-    return render_template("auth/order.html")
+def cozinha():
+    return render_template("site/cozinha.html", pedidos=Pedidos.get_pendentes_entrega())
 
+@bp.route("/pagamentos/", methods=["GET"])
+@login_required
+def pagamentos():
+    return render_template("site/pagamentos.html", pedidos=Pedidos.get_pendentes_pagamentos())
 
+@bp.route("/pedidos/", methods=["GET"])
+@login_required
+def pedidos():
+    return render_template("site/pedidos.html", pedidos=Pedidos.get_all())
 
+'''
 @bp.route("/vendas/", methods=["GET"])
 @login_required
 def sales():
-    return render_template("site/order.html")
+    return render_template("site/cozinha.html", pedidos=Pedidos.get_pendentes())
+'''
 
 
 @bp.route("/vendas/nova", methods=["GET", "POST", "PUT", "DELETE"])
 @login_required
-def register_sale():
-    status = 200
-    #form_order = FormOrder()
-    form_items = FormOrderItems()
-    #user_order = Order.get_current_user_order()
-
+def novo_pedido():
+    form = FormPedido()
     if request.method == "GET":
-        pass
+        return render_template("forms/novo_pedido.html", form=form)
 
     elif request.method == "POST":
-        if form_order.validate_on_submit():
-            if user_order.item_count > 0:
-                form_order.populate_obj(user_order)
-                user_order.save()
-                return redirect(url_for("site.finish_sale", order_id=user_order.id))
+        if form.validate_on_submit():
+
+            lista_pedidos = {}
+            for i in range(21):
+                try:
+                  lista_pedidos["quantidade"+str(i)] =request.form["quantidade"+str(i)]
+                  lista_pedidos["pedido"+str(i)] =request.form["pedido"+str(i)]
+                  lista_pedidos["descricao"+str(i)] =request.form["descricao"+str(i)]
+                except:
+                    pass
+
+
+            response = Pedidos.create_by_form(form, lista_pedidos)
+
+            if response["success"]:
+                flash(
+                    response["message"],
+                    "is-success",
+                )
+                form.limpar()
+                return render_template("forms/novo_pedido.html", form=form)
+                
+            
 
             else:
-                flash(
-                    "Você precisa adicionar pelo menos um produto ao carrinho",
-                    "is-warning",
-                )
+                flash(response["message"], "is-danger")
 
         else:
-            for field in form_order.errors.values():
+            for field in form.errors.values():
                 [flash(err, "is-danger") for err in field]
 
-    elif request.method == "PUT":
-        data = request.json
+        return render_template("forms/novo_pedido.html", form=form)
 
-        if data is not None:
-            item_id = data.get("item_id")
-            amount = data.get("amount")
+@bp.route("/pedidos/<int:pedido>", methods=["GET", "POST", "DELETE"])
+@login_required
+def pedido(pedido: int):
+    pedido_obj = Pedidos.query.get_or_404(pedido)
+    form = FormPedido()
+   
+    if request.method == "GET":
+        if pedido_obj is None:
+            flash("Cadastro não localizado!", "is-warning")
+            redirect(url_for("site.pedidos"))
+            
 
-            if item_id is None:
-                response = {
-                    "success": False,
-                    "message": "Selecione o Produto que deve ser adicionado",
-                }
+        else:
+            form.load(pedido_obj)
 
-            elif amount is None:
-                response = {"success": False, "message": "Informe a quantidade"}
+    elif request.method == "POST":
+        if form.validate_on_submit():
+            response = pedido_obj.update_by_form(form)
+
+            if response["success"]:
+                flash(response["message"], "is-success")
 
             else:
-                try:
-                    amount = int(amount)
-
-                except ValueError:
-                    response = {
-                        "success": False,
-                        "message": "A quantidade precisa ser um número",
-                    }
-
-                else:
-                    user_order.add_item(item_id, amount)
-                    response = {
-                        "success": True,
-                        "message": "Item adicionado com sucesso!",
-                    }
+                flash(response["message"], "is-danger")
 
         else:
-            response = {"success": False, "message": "Informe o produto e a quantidade"}
-
-        return response, status
+            for field in form.errors.values():
+                [flash(err, "is-danger") for err in field]
 
     elif request.method == "DELETE":
-        item_id = request.args.get("item_id")
-        if item_id is not None:
-            user_order.remove_item(item_id)
+        
+        pedido_obj = Pedidos.get(pedido)
 
-            response = {
-                "success": True,
-                "message": "Item excluido com sucesso!",
-            }
+        if pedido_obj is not None:
+            pedido_obj.remove()
+            response = {"success": True, "message": "Informe um registro valido"}
 
         else:
-            response = {
-                "success": False,
-                "message": "Não foi possível processar sua solicitação, verifique os parâmetros informados",
-            }
+            
+            response = {"success": False, "message": "Informe um registro valido"}
 
         return response
 
-    return (
-        render_template(
-            "forms/order.html",
-            form_order=form_order,
-            form_items=form_items,
-            order=user_order.get_details(),
-            order_id=user_order.id,
-        ),
-        status,
-    )
+    return render_template("forms/novo_pedido.html", form=form)
+
 
 
 @bp.route("/vendas/<int:order_id>/checkout", methods=["GET", "POST"])

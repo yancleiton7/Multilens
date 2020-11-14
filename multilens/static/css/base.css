@@ -13,3 +13,8 @@
 .form-body{
     padding: 1rem;
 }
+
+.td {
+    text-align: center;
+    color: black;
+}

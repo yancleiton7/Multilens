@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/filtro.js') }}" type="text/javascript"></script>
+{% endblock extra_scripts %}
+
 {% block body %}
 <article class="panel {{ color_theme }}">
 
@@ -26,36 +30,48 @@
                 <strong>   </strong>
             </div>
         </div>
+
+        
     </div>
 
 
     <div class="form-body">
+
+        <div class="control is-expanded has-icons-left">
+            <input class="input {{ color_theme}}" id="filtro" type="search" placeholder="Pesquise na tabela">
+            <span class="icon is-left">
+                <i class="fas fa-search" aria-hidden="true"></i>
+            </span>
+        </div>
+
         <div class="table-container">
-            <table class="table is-striped is-fullwidth is-hoverable">
+            <table class="table is-striped is-fullwidth is-hoverable" id="tabela">
                 <thead>
                     <tr>
                         <th><strong>Produto</strong></th>
                         <th>Unidade</th>
                         <th>Preço última entrada</th>
                         <th>Disponível</th>
-                        <th>Mínimo aceitável</th>
-                        <th>Estoque</th>
+                        <th>Estoque Mínimo</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
-                {% for product in products %}
-                <tr>
-                    <td><strong>{{product.nome_produto}}</strong> </td>
-                    <td>{{product.unidade}}</td>
-                    <td>{{product.get_preco(product.id)}}</td>
-                    <td>{{product.get_balance(product.id)}}</td>
-                    <td>{{product.get_minimo(product.id)}}</td>
-                        {% if product.necessita_compra(product.id) %}
-                        <td><strong> Precisa comprar </strong></td>
-                        {% else %}
-                        <td>Produto Disponível</td>
-                        {% endif %}
-                </tr>
-                {% endfor %}
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td><strong>{{product.nome_produto}}</strong> </td>
+                        <td>{{product.unidade}}</td>
+                        <td>{{product.get_preco(product.id)}}</td>
+                        <td>{{product.get_balance(product.id)}}</td>
+                        <td>{{product.get_minimo(product.id)}}</td>
+                            {% if product.necessita_compra(product.id) %}
+                            <td><strong> Precisa comprar </strong></td>
+                            {% else %}
+                            <td>Produto Disponível</td>
+                            {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
             </table>
         </div>
     </div>

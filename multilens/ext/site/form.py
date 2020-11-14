@@ -5,7 +5,8 @@ from wtforms.fields.html5 import EmailField
 from wtforms.validators import Email, Length, Optional, Regexp, Required
 
 from multilens.ext.db.models import ( Register, Estoque, Produto,Tipo, Retirada, Pagamento,
-                                     Grupo,  Cliente)
+                                     Grupo,  Cliente, Status_pagamento)
+
 
 
 class BaseForm(FlaskForm):
@@ -55,55 +56,33 @@ class FormClientes(BaseForm):
     )
 
     aniversario = StringField(
-        "Aniversário",
+        "Nascimento",
         [
-            Regexp("\d{2}/\d{2}/\d{4}", message="Aniversário de ser no formato 01/01/2000"),
+            Regexp("\d{4}-\d{2}-\d{2}", message="Data de nascimento deve ser no formato 01/01/2000"),
         ],
     )
 
-    observacao = StringField(
-        "Observação",
-        [
-            Required("Caso não tenha observação preencher com -"),
-        ],
-    )
+    observacao = StringField("Observação", [Required("Caso não tenha observação preencher com -")])
 
 
-    zip = StringField(
-        "CEP",
-        [
-            Required("Informe um CEP valido"),
-            Length(
-                min=8, max=8, message="O CEP precisa conter exatamente 8 caracters."
-            ),
-            Regexp("^[0-9]*$", message="Informe somente números"),
-        ],
-    )
-    city = StringField("Cidade - Estado", [Required("Informe uma cidade")])
-    address = StringField(
-        "Endereço",
-        [
-            Required("Informe o endereço"),
-            Length(
-                min=1, max=70, message="O endereço precisa ter no máximo 70 caracters"
-            ),
-        ],
-    )
-    district = StringField(
-        "Bairro",
-        [
-            Required("Informe o bairro"),
-        ],
-    )
 
+    city = StringField("Cidade", [Required("Informe uma cidade")])
+    estado = StringField("Estado", [Required("Informe um estado")])
+    numero = StringField("Número", [Required("Necessário o número"), Regexp("^[0-9]*$", message="Informe somente números")])
+    address = StringField("Endereço", [Required("Informe o endereço")])
+    district = StringField("Bairro", [Required("Informe o bairro")])
+    complemento = StringField("Complemento", [Required("Caso não haja complemento, colocar *.")])
+    
     def load(self, cliente):
         self.process(obj=cliente)
 
         if cliente.register is not None:
-            self.zip.data = cliente.register.zip
             self.address.data = cliente.register.address
             self.city.data = cliente.register.city
             self.district.data = cliente.register.district
+            self.numero.data = cliente.register.numero
+            self.estado.data = cliente.register.estado
+            self.complemento.data = cliente.register.complemento
 
 
 class FormBalanceEntrada(BaseForm):
@@ -142,7 +121,7 @@ class FormBalanceEntrada(BaseForm):
     date = StringField(
         "Data",
         [
-            Regexp("\d{2}/\d{2}/\d{4}", message="Aniversário de ser no formato 01/01/2000"),
+            Regexp("\d{4}-\d{2}-\d{2}", message="Aniversário de ser no formato 01/01/2000"),
         ],
     )
 
@@ -196,7 +175,7 @@ class FormBalanceSaida(BaseForm):
     date = StringField(
         "Data",
         [
-            Regexp("\d{2}/\d{2}/\d{4}", message="Aniversário de ser no formato 01/01/2000"),
+            Regexp("\d{4}-\d{2}-\d{2}", message="Aniversário de ser no formato 01/01/2000"),
         ],
     )
 
@@ -220,7 +199,6 @@ class FormBalanceSaida(BaseForm):
         self.quantidade.data = ""
         self.observacao.data = ""
         
-
 class FormProduto(BaseForm):
 
     nome_produto = StringField(
@@ -239,16 +217,6 @@ class FormProduto(BaseForm):
         query_factory=lambda: Grupo.query,
         allow_blank=True,
         
-        
-    )
-
-    tipo = QuerySelectField(
-        "Tipo Produto",
-        validators=[Required("O tipo de produto é obrigatorio!")],
-        get_label="tipo",
-        get_pk=lambda x: x.id,
-        query_factory=lambda: Tipo.query,
-        allow_blank=True,
         
     )
 
@@ -279,23 +247,14 @@ class FormProduto(BaseForm):
 
     def load(self, produto):
         self.process(obj=produto)
-
-        if id is not None:
-            self.nome_produto.data = produto.nome_produto
-            self.estoque_minimo.data = produto.estoque_minimo
-            self.tipo.selected = Tipo.get(Produto.get(produto.id).tipo).tipo
-            #self.grupo.select () Grupo.get(Produto.get(produto.id).tipo).grupo
-            self.observacao.data = produto.observacao
-            
+       
 
     def limpar(self):
         self.nome_produto.data = ""
         self.estoque_minimo.data = ""
         self.observacao.data = ""
         self.grupo.data = ""
-        self.tipo.data = ""
         self.unidade.data = ""
-
 
 class FormFinanceiro(BaseForm):
     name = StringField("Nome", [Required("O nome da instituição é obrigatorio")])
@@ -388,20 +347,18 @@ class FormFinanceiro(BaseForm):
             self.city.data = financeiro.register.city
             self.district.data = financeiro.register.district
 
-
-
 class FormPedido(BaseForm):
 
     data_pedido = StringField(
         "Data pedido",
         [
-            Regexp("\d{2}/\d{2}/\d{4}", message="Datas seguem o formato 01/01/2000"),
+            Regexp("\d{4}-\d{2}-\d{2}", message="Datas seguem o formato 01/01/2000"),
         ],
     )
     data_entrega = StringField(
         "Data entrega",
         [
-            Regexp("\d{2}/\d{2}/\d{4}", message="Datas seguem o formato 01/01/2000"),
+            Regexp("\d{4}-\d{2}-\d{2}", message="Datas seguem o formato 01/01/2000"),
         ],
     )
     hora_entrega = StringField(
@@ -410,40 +367,41 @@ class FormPedido(BaseForm):
             Required("Por favor preencher hora da entrega."),
         ],
     )
-    produto = QuerySelectField(
-        "Nome do Produto",
+
+    pedido = QuerySelectField(
+        "Produto",
         validators=[Required("O produto é obrigatorio!")],
-        get_label="nome_produto",
+        get_label="tipo",
         get_pk=lambda x: x.id,
-        query_factory=lambda: Produto.query,
-        allow_blank=True,  
+        query_factory=lambda: Tipo.query,
+        allow_blank=True
         
     )
     quantidade = StringField(
         "Quantidade",
         [        
-            Required("Por favor preencher hora da entrega."),
+            Regexp("^[0-9]*$", message="Informe somente números"),
         ],
     )
-    observacoes = StringField(
-        "Observacões",
+    descricao = StringField(
+        "Descrição do Pedido",
         [        
             Required("Por favor, preecher com observações, caso não tenha colocar '*."),
         ],
     )
 
     #Depois que selecionar o cliente, aparecer telefone, aniversário e endereço.
-    nome_cliente = QuerySelectField(
-        "Nome do Produto",
+    id_cliente = QuerySelectField(
+        "Id do cliente",
         validators=[Required("O nome do cliente é obrigatorio!")],
-        get_label="name",
+        get_label="id",
         get_pk=lambda x: x.id,
         query_factory=lambda: Cliente.query,
         allow_blank=True,  
         
     )
 
-    retirada = QuerySelectField(
+    tipo_retirada = QuerySelectField(
         "Forma de Retirada",
         validators=[Required("A forma de retirada é obrigatoria!")],
         get_label="tipo_retirada",
@@ -453,42 +411,46 @@ class FormPedido(BaseForm):
         
     )
     #Caso o seja Delivery
-    Endereco_entrega = StringField(
+    endereco_entrega = StringField(
         "Endereço Entrega",
         [        
             Required("Por favor, preecher o endereço."),
         ],
     )
-    pagamento = QuerySelectField(
+    tipo_pagamento = QuerySelectField(
         "Forma de Pagamento",
         validators=[Required("A forma de Pagamento é obrigatoria!")],
-        get_label="tipo_retirada",
+        get_label="tipo_pagamento",
         get_pk=lambda x: x.id,
         query_factory=lambda: Pagamento.query,
         allow_blank=True,  
         
     )
+    status_pagamento = QuerySelectField(
+        "Status do Pagamento",
+        validators=[Required("O status do pagamento é obrigatoria!")],
+        get_label="status_pagamento",
+        get_pk=lambda x: x.id,
+        query_factory=lambda: Status_pagamento.query,
+        allow_blank=True,  
+        
+    )
+    
+    def load(self, pedido):
+        self.process(obj=pedido)
 
-
-
-
-'''
-No cadastro do Pedido: 
-#data do atendimento,
-#data entrega,
-#hora entrega,
-#produto (caixa p/ selecionar a partir dos produtos cadastrados),
-#quantidade de cada produto,
-#observações,
-#nome do cliente,
-#tipo de entrega (para selecionar: retira, delivery),
-#local de entrega se for delivery,
-#forma de pagamento (transferência, boleto).
-Deste pedido é importante sair a programação das entregas da semana para cada dia.
-
-'''
-
-
+    def limpar(self):
+        self.data_pedido.data = ""
+        self.data_entrega.data = ""
+        self.hora_entrega.data = ""
+        self.endereco_entrega.data = ""
+        self.quantidade.data = ""
+        self.descricao.data = ""
+        self.id_cliente.data = ""
+        self.pedido.data = ""
+        self.tipo_retirada.data = ""
+        self.tipo_pagamento.data = ""
+        self.status_pagamento.data = ""
 
 class FormOrder(BaseForm):
     freight = FloatField("Frete", validators=[Required("O frete é obrigatorio")])

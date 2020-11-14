@@ -1,3 +1,8 @@
+
+
+
+
+
 $(document).ready(function () {
     // Atualiza os elementos para o tamanho correto
     var $width = $(window).width();
@@ -39,4 +44,8 @@ $(document).ready(function () {
     $(".notification > button.delete").click(function () {
         $(this).parent().remove()
     })
+
+
 });
+
+
