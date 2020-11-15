@@ -1,7 +1,6 @@
 
 $(document).ready(function() {
 
-   
     (function ($) {
         $.fn.myfunction = function() {
                
@@ -127,8 +126,15 @@ $(document).ready(function() {
             $("#Status_pagamento").show()
         } 
         
+        
 
 });
+
+
+
+
+
+        
 
 })
 

@@ -64,8 +64,8 @@
                         <td>{{product.get_preco(product.id)}}</td>
                         <td>{{product.get_balance(product.id)}}</td>
                         <td>{{product.get_minimo(product.id)}}</td>
-                            {% if product.necessita_compra(product.id) %}
-                            <td><strong> Precisa comprar </strong></td>
+                            {% if product.necessita_compra(product.id)[0] %}
+                            <td><strong> {{product.necessita_compra(product.id)[1]}} </strong></td>
                             {% else %}
                             <td>Produto Disponível</td>
                             {% endif %}

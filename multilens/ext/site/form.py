@@ -60,7 +60,7 @@ class FormClientes(BaseForm):
         ],
     )
 
-    observacao = StringField("Observação", [Required("Caso não tenha observação preencher com -")])
+    observacao = StringField("Observação")
 
 
 
@@ -101,10 +101,7 @@ class FormBalanceEntrada(BaseForm):
     )
 
     observacao = StringField(
-        "Observação",
-        [
-            Required("Caso não tenha observação preencher com -"),
-        ],
+        "Observação"
     )
 
     preco = StringField(
@@ -162,10 +159,7 @@ class FormBalanceSaida(BaseForm):
     )
 
     observacao = StringField(
-        "Observação",
-        [
-            Required("Caso não tenha observação preencher com -"),
-        ],
+        "Observação"
     )
 
 
@@ -261,10 +255,7 @@ class FormProduto(BaseForm):
     )
 
     observacao = StringField(
-        "Observação",
-        [
-            Required("Caso não tenha observação preencher com -"),
-        ],
+        "Observação"
     )
 
 
@@ -375,12 +366,7 @@ class FormPedido(BaseForm):
         ],
     )
 
-    observacao = StringField(
-        "Observações",
-        [
-            Required("Caso não tenha observações, colocar *"),
-        ],
-    )
+    observacao = StringField("Observações")
 
     id_cliente = StringField(
         "ID",
@@ -483,7 +469,7 @@ class FormPedidoItens(BaseForm):
     descricao = StringField(
         "Descrição do Pedido",
         [        
-            Required("Por favor, preecher com observações, caso não tenha colocar '*."),
+            Required("Por favor, preecher com a descrição do pedido."),
         ],
     )
 

@@ -274,10 +274,13 @@ class Produto(db.Model):
 
     @staticmethod
     def necessita_compra(id: int):
-        if Produto.get_minimo(id)<Produto.get_balance(id):
-            return False
+        minimo = Produto.get_minimo(id)
+        estoque = Produto.get_balance(id)
+
+        if estoque>minimo:
+            return [False, "Prodtuo Disponível"]
         else:
-            return True
+            return [True, "Precisa comprar: "+str(minimo-estoque)]
 
     @staticmethod
     def get_preco(id: int):
