@@ -23,25 +23,21 @@
         </div>   
 
         <div name="load" id={{form.id_cliente.data}}></div>
-        <div name="id_pedido" id={{form.id}}></div>
+        <div name="id_form" id={{form.id}}></div>
 
         <div class="form-body">
             
             <div class="field is-grouped">
 
-                {% if cadastro %}
+                
                 <div class="control">
-                    <label class="label"> Id Cliente </label>
+                    <label class="label"> {{ form.id_cliente.label }} </label>
                         <div class="control">
-                            <div class="select" id="select_cliente_id" >
-                                {{ form.id_cliente() }}
-                            </div>
+                            {{ form.id_cliente(class="input", type="text", placeholder="") }}
                         </div>
                 </div>
-                {%endif%}
-
-
-
+                
+  
                 <div class="control is-expanded">
                     <label class="label"> Nome Cliente </label>
                         <div class="control">
@@ -106,7 +102,13 @@
                     <div class="select">
                         {{ form.status_pagamento() }}
                     </div>
-                </div>            
+                </div>   
+                <div class="control is-expanded">
+                    <label class="label"> {{ form.valor.label }} </label>              
+                    <div class="control">
+                            {{ form.valor(class="input", type="text", placeholder="Valor total do pedido") }}
+                    </div>
+                </div>         
                 
             </div>
             
@@ -124,18 +126,15 @@
                             {{ form.endereco_entrega(class="input", type="text", placeholder="") }}
                     </div>
                 </div>
-                <div class="control is-expanded">
-                    <label class="label"> {{ form.valor_total.label }} </label>              
-                    <div class="control">
-                            {{ form.valor_total(class="input", type="text", placeholder="Valor total do pedido") }}
-                    </div>
-                </div>
-
-
-                
             </div>
-               
-          
+            <div class="field is-grouped">
+                <div class="control is-expanded">
+                    <label class="label"> {{ form.observacao.label }} </label>              
+                    <div class="control">
+                            {{ form.observacao(class="input", type="text", placeholder="Observações sobre esse pedido") }}
+                    </div>
+                </div> 
+            </div> 
 
             <div class="field is-grouped">
                 <div class="control is-expanded">

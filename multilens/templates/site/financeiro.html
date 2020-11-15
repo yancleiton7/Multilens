@@ -1,44 +1,101 @@
 {% extends "base.html" %}
-{% from "macros/render_modal.html" import render_financeiro_modal %}
 
 {% block extra_scripts %}
 <script src="{{ url_for('static', filename='js/modals.js') }}" type="text/javascript"></script>
+<script src="{{ url_for('static', filename='js/exportar_excel.js') }}" type="text/javascript"></script>
+<script src="{{ url_for('static', filename='js/filtro.js') }}" type="text/javascript"></script>
 {% endblock extra_scripts %}
 
+{% from "macros/render_messages.html" import render_message %}
 {% block body %}
+{{ render_message() }}
+
 <article class="panel {{ color_theme }}">
-    <div class="panel-heading">Financeiro</div>
-    <div class="panel-block">
-        
-    </div>
-    <div class="form-body">
-        {% for financeiro in financeiros %}
-        <div class="field is-grouped" id={{ financeiro.id }}>
-            <div class="control is-expanded">
-                <a class="panel-block is-active show-modal">
-                    <span class="panel-icon">
-                        <i class="fas fa-user" aria-hidden="true"></i>
-                    </span>
-                    <strong>{{ financeiro.name.title() }}</strong>
-                    {{ render_financeiro_modal(financeiro) }}
-                </a>
-            </div>
-            <div class="control buttons">
-                <strong>
-                    <a class="button {{ color_theme }} is-small"
-                        href="{{ url_for('site.financeiro', register= financeiro.id ) }}">Editar</a>
-                    <a class="button is-danger is-small remove">Excluir</a>
-                </strong>
+    
+    
+    <div class="navbar {{ color_theme }}">
+
+        <div class="navbar-start">
+            <a class="navbar-item" >
+                <strong>Financeiro - Registro Financeiro de Pedidos</strong>
+              </a>
+        </div>
+
+            <div class="navbar-end">
+                <div class="buttons">
+                
+                    <a href="{{url_for('site.financeiros')}}" class="button is-success is-rounded">Financeiro - Pedidos</a>
+                    <a href="{{url_for('site.contas')}}" class="button {{color_theme}} is-rounded">Financeiro - Contas </a>
+                    <a href="{{url_for('site.pagamentos')}}" class="button {{color_theme}} is-rounded">Pagamentos Pendentes</a>
+                    <a href="{{url_for('site.pedidos')}}" class="button {{color_theme}} is-rounded">Fluxo Caixa</a>
+                <strong>   </strong>
             </div>
         </div>
-        {% endfor %}
 
-        <div class="field is-grouped">
-            
-            <div class="control">
-                <a href="{{url_for('site.form_financeiro')}}" class="button {{ color_theme }}">Cadastrar</a>
+        
+    </div>
+
+    <div class="panel-block" id="desaparecer">
+        <div class="control is-expanded has-icons-left">
+            <input class="input {{ color_theme}}" type="search" id="filtro" placeholder="Procure informação aqui">
+            <span class="icon is-left">
+                <i class="fas fa-search" aria-hidden="true"></i>
+            </span>
+        </div>
+        
+        <div>
+            <input class="input" type="date" id="data_de">
+        </div>
+
+        
+
+        <div>
+            <input class="input" type="date" id="data_ate">
+        </div>
+        <strong>  </strong>
+        <div class="navbar-end">
+            <div id="gerar_excel" class="buttons">
+            <a class="button is-success is-rounded">gerar excel</a>
+            <strong>   </strong>
             </div>
+        </div>
+    </div>
+    <div class="form-body">
+        <div class="table-container"  id="tabela_2">
+            <table class="table is-striped is-fullwidth is-hoverable"  id="tabela">
+                <thead>
+                    <tr style="background-color: rgb(215, 215, 215);">
+                        <th>Id</th>
+                        <th>Data Registro</th>
+                        <th>Id item</th>
+                        <th>Item</th>
+                        <th>Tipo financeiro</th>
+                        <th>Valor</th>
+                        <th>Status</th>
+                        <th>Data pagamento</th>
+                        <th>Descrição</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item_financeiro in financeiros %}
+                        <tr id={{ item_financeiro.id }}>
+                            <td> #{{item_financeiro.get_item()}} </td>
+                            <td> {{item_financeiro.item.get_data_pedido()}} </td>
+                            <td> #{{item_financeiro.id_item}} </td>
+                            <td> {{item_financeiro.tipo_item}} </td>
+                            <td> {{item_financeiro.tipo_financeiro}}  </td>
+                            <td> {{item_financeiro.item.valor}}  </td>
+                            <td> {{item_financeiro.item.get_status_pagamento().status_pagamento}}  </td>
+                            <td> {{item_financeiro.get_data_pagamento()}}  </td>
+                            <td> {{item_financeiro.descricao}}  </td>
+
+                        </tr>    
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </article>
-{% endblock body%}
+
+
+{% endblock body %}

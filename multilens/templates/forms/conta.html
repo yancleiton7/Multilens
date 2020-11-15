@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% from "macros/render_messages.html" import render_message %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/pedidos.js') }}" type="text/javascript"></script>
+{% endblock extra_scripts %}
+
+{% block body %}
+{{ render_message() }}
+<form method="POST">
+    {{ form.csrf_token }}
+    <article class="panel {{ color_theme }}">
+
+            
+        <div class="navbar {{ color_theme }}">
+
+            <div class="navbar-start">
+                <a class="navbar-item">
+                    <strong>Novo Conta</strong>
+                </a>
+            </div>
+
+        </div>   
+
+        <div name="id_form" id={{form.id}}></div>
+        <div class="form-body">
+            
+            <div class="field is-grouped">
+
+                
+                <div  class="control is-expanded">
+                    <label class="label"> {{ form.descricao_conta.label }} </label>
+                        <div class="control">
+                            {{ form.descricao_conta(class="input", type="text", placeholder="Descrever o tipo de conta") }}
+                        </div>
+                </div>
+
+
+            </div>
+                
+
+            <div class="field is-grouped">
+                <div  class="control is-expanded">
+                    <label class="label"> {{ form.fornecedor.label }} </label>
+                        <div class="control">
+                            {{ form.fornecedor(class="input", type="text", placeholder="Coloque aqui o fornecedor") }}
+                        </div>
+                </div>
+
+                <div class="control">
+                    <label class="label"> {{ form.valor.label }} </label>              
+                    <div class="control">
+                            {{ form.valor(class="input", type="text", placeholder="Valor da conta a pagar.") }}
+                    </div>
+                </div>  
+
+                <div class="control">
+                    <label class="label"> {{ form.data_vencimento.label }} </label>
+                        <div class="control">
+                            {{ form.data_vencimento(class="input", type="date", placeholder="") }}
+                        </div>
+                </div>
+       
+
+
+              
+            </div>
+
+            <div class="field is-grouped">
+                <div class="control">
+                    <label class="label"> {{ form.tipo_mensalidade.label }} </label>              
+                    <div class="select">
+                        {{ form.tipo_mensalidade() }}
+                    </div>
+                </div> 
+
+                <div class="control is-expanded" id="Parcela" style="display:none">
+                    <label class="label"> {{ form.parcelas.label }} </label>
+                        <div class="control">
+                            {{ form.parcelas(class="input", type="text", placeholder="") }}
+                        </div>
+                </div>   
+                <div class="control is-expanded" id="Parcela_paga" style="display:none">
+                    <label class="label"> {{ form.parcelas_pagas.label }} </label>
+                        <div class="control">
+                            {{ form.parcelas_pagas(class="input", type="text", placeholder="") }}
+                        </div>
+                </div>   
+                <div class="control is-expanded" id="Valor_parcela" style="display:none">
+                    <label class="label"> {{ form.valor_parcelas.label }} </label>
+                        <div class="control">
+                            {{ form.valor_parcelas(class="input", type="text", placeholder="") }}
+                        </div>
+                </div>  
+                <div class="control" id="Status_pagamento" style="display:none">
+                    <label class="label"> {{ form.status_pagamento.label }} </label>              
+                    <div class="select">
+                        {{ form.status_pagamento() }}
+                    </div>
+                </div>  
+            </div>
+
+            <div class="field is-grouped">
+                
+                <div class="control is-expanded">
+                    <label class="label"> {{ form.observacao.label }} </label>
+                        <div class="control">
+                            {{ form.observacao(class="input", type="text", placeholder="") }}
+                        </div>
+                </div>  
+
+            </div>
+
+            <div class="field is-grouped">
+                <div class="control is-expanded">
+                    <input class="button is-fullwidth {{ color_theme }}" id="salvar_conta" type="submit" value="Salvar" > 
+                    
+                </div>
+                <div class="control">
+                    <a href="{{url_for('site.contas')}}" class="button is-success">Voltar</a>
+                </div>
+            </div>
+        </div>
+    </article>
+</form>
+
+
+{% endblock body %}

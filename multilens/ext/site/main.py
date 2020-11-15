@@ -7,10 +7,10 @@ from flask import (Blueprint, current_app, flash, redirect, render_template,
 from flask_login import current_user, login_required
 
 from multilens.ext.api.resources import ResourcePedido
-from multilens.ext.db.models import Cliente, Estoque, Produto, Balance, Pedidos, Financeiro
+from multilens.ext.db.models import Cliente, Estoque, Produto, Balance, Pedidos, Financeiro, Contas
 
 from .form import (FormClientes, FormFinishOrder, FormBalanceEntrada, FormPedido, FormFornecedor,
-                     FormBalanceSaida, FormProduto, FormFinanceiro, FormPedidoItens)
+                     FormBalanceSaida, FormProduto, FormContas, FormPedidoItens)
 
 bp = Blueprint("site", __name__)
 
@@ -106,20 +106,27 @@ def cliente(register: int):
 @bp.route("/financeiro/", methods=["GET"])
 @login_required
 def financeiros():
-    return render_template("site/financeiro.html", financeiros=Financeiro.get_all())
+    return render_template("site/financeiro.html", financeiros=Financeiro.get_tipo("Pedido"))
 
-
-@bp.route("/financeiro/cadastro", methods=["GET", "POST"])
+@bp.route("/contas", methods=["GET"])
 @login_required
-def form_financeiro():
-    form = FormFinanceiro()
+def contas():
+    return render_template("site/contas.html", financeiros=Financeiro.get_tipo("Conta"))
+
+
+
+@bp.route("/contas/cadastro", methods=["GET", "POST"])
+@login_required
+def form_contas():
+    form = FormContas()
     if request.method == "GET":
-        return render_template("forms/financeiro.html", form=form)
+        return render_template("forms/conta.html", form=form)
 
     elif request.method == "POST":
         if form.validate_on_submit():
-            response = Financeiro.create_by_form(form)
-
+            
+            response = Contas.create_by_form(form)
+            
             if response["success"]:
                 flash(response["message"], "is-success")
 
@@ -130,22 +137,23 @@ def form_financeiro():
             for field in form.errors.values():
                 [flash(err, "is-danger") for err in field]
 
-    return render_template("forms/financeiro.html", form=form)
+    return render_template("forms/conta.html", form=form)
 
 
-@bp.route("/financeiro/<int:register>", methods=["GET", "POST", "DELETE"])
+@bp.route("/financeiro/contas/<int:conta>", methods=["GET", "POST", "DELETE"])
 @login_required
-def financeiro(register: int):
-    form = FormFinanceiro()
-    financeiro_register = Financeiro.query.get_or_404(register)
+def financeiro(conta: int):
+    form = FormContas()
+    conta_selecionada = Contas.query.get_or_404(conta)
 
     if request.method == "GET":
-        form.load(financeiro_register)
+        form.load(conta_selecionada)
 
     elif request.method == "POST":
         if form.validate_on_submit():
-            response = financeiro_register.update_by_form(form)
-
+            
+            response = conta_selecionada.update_by_form(form)
+            
             if response["success"]:
                 flash(response["message"], "is-success")
 
@@ -153,21 +161,22 @@ def financeiro(register: int):
                 flash(response["message"], "is-danger")
 
         else:
+            
             for field in form.errors.values():
                 [flash(err, "is-danger") for err in field]
 
     elif request.method == "DELETE":
-        financeiro_register = Financeiro.get(register)
+        conta_selecionada = Contas.get(conta)
 
-        if financeiro is not None:
-            response = financeiro_register.remove()
+        if conta is not None:
+            response = conta_selecionada.remove()
 
         else:
             response = {"success": False, "message": "Informe um registro valido"}
 
         return response
 
-    return render_template("forms/financeiro.html", form=form)
+    return render_template("forms/conta.html", form=form)
 
 
 @bp.route("/estoque", methods=["GET"])
@@ -313,7 +322,6 @@ def produto(register: int):
 
     return render_template("forms/produto.html", form=form, produto=produto)
 
-
 @bp.route("/produto/fornecedor/<int:produto>", methods=["GET", "POST", "DELETE"])
 @login_required
 def fornecedores(produto: int):
@@ -341,7 +349,6 @@ def fornecedores(produto: int):
             lista_fornecedores["nome_fornecedor"] =request.form["nome_fornecedor"]
             lista_fornecedores["valor"] =request.form["valor"]
             lista_fornecedores["descricao"] =request.form["descricao"]
-            print(request.form) 
             for i in range(21):
                   
                 try:
@@ -380,7 +387,6 @@ def fornecedores(produto: int):
                
 
     return render_template("forms/fornecedores.html", form=form_fornecedores, produto=produto_selecionado)
-
 
 @bp.route("/balance/saida", methods=["GET", "POST", "DELETE"])
 @login_required
@@ -456,6 +462,12 @@ def cozinha():
 def pagamentos():
     return render_template("site/pagamentos.html", pedidos=Pedidos.get_pendentes_pagamentos())
 
+@bp.route("/entregas/", methods=["GET"])
+@login_required
+def entregas():
+    return render_template("site/entregas.html", pedidos=Pedidos.get_pendentes_entrega())
+
+
 @bp.route("/pedidos/", methods=["GET"])
 @login_required
 def pedidos():
@@ -472,17 +484,7 @@ def novo_pedido():
     elif request.method == "POST":
         if form.validate_on_submit():
 
-            lista_pedidos = {}
-            for i in range(21):
-                try:
-                  lista_pedidos["quantidade"+str(i)] =request.form["quantidade"+str(i)]
-                  lista_pedidos["pedido"+str(i)] =request.form["pedido"+str(i)]
-                  lista_pedidos["descricao"+str(i)] =request.form["descricao"+str(i)]
-                except:
-                    pass
-
-
-            response = Pedidos.create_by_form(form, lista_pedidos)
+            response = Pedidos.create_by_form(form)
 
             if response["success"]:
                 flash(
@@ -520,7 +522,7 @@ def pedido(pedido: int):
             form.load(pedido_obj)
 
     elif request.method == "POST":
-        form.load(pedido_obj)
+        
         if form.validate_on_submit():
             response = pedido_obj.update_by_form(form)
 

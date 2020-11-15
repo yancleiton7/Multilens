@@ -1,6 +1,6 @@
 
 $(document).ready(function() {
-    
+
    
     (function ($) {
         $.fn.myfunction = function() {
@@ -37,6 +37,7 @@ $(document).ready(function() {
             url: window.location.origin + "/api/clientes/" + id_cliente,
             type: "GET",
             success: function(response){
+                
                 $("#nome_cliente").val(response.name)
                 $("#telefone").val(response.phone)
                 $("#endereco").val(response.endereco)
@@ -50,19 +51,37 @@ $(document).ready(function() {
     $("#tipo_retirada").change(function () {
         var tipo_retirada =  $(this).find(":selected").text()
         if (tipo_retirada==="Delivery"){
-            $("#endereco_entrega").removeAttr('disabled');
+            $("#endereco_entrega").attr('readonly', false);
             $("#endereco_entrega").val($("#endereco").val())
         } else {
             $("#endereco_entrega").val("Retirar na loja.")
-            $("#endereco_entrega").attr('disabled','disabled');
+            $("#endereco_entrega").attr('readonly', true);
         }
         
     });
 
     $("#btn_salvar").click(function () {
         $("#endereco_entrega").removeAttr('disabled');
-
+        $("#id_cliente").removeAttr('disabled');
         });
+
+    $("#salvar_conta").click(function () {
+        
+  
+        if (tipo_mensalidade===3){
+        var valor_total = $('#valor').val().replace(",", ".")
+        var valor_parcela = $('#valor_parcela').val().replace(",", ".")
+        var quantidade_parcelas = $('#quantidade').val()
+        var total_calculado = valor_parcela*quantidade_parcelas
+        
+        if (total_calculado<valor_total && tipo_mensalidade==="Parcelado"){
+            alert("O valor das parcelas x a quantidade de Parcelas é menor que o valor total.")
+            $('#valor_parcela').val("")
+            }
+
+        }
+        });
+        
 
     $("#novo_item").click(function () {
         
@@ -80,16 +99,77 @@ $(document).ready(function() {
         
     });
 
+    
+    $("#data_vencimento").change(function () {
+            $("#data_pagamento").val($("#data_vencimento").val())
+
+    });
+    
+    $("#tipo_mensalidade").change(function () {
+        tipo_mensalidade = $(this).find(":selected").text()
+        $("#parcelas").val(0)
+        $("#valor_parcelas").val("00,00")
+        $("#parcelas_pagas").val(0)
+        $('#status_pagamento option[value=1 ]').attr('selected','selected');
+        $("#Parcela").hide()
+        $("#Parcela_paga").hide()
+        $("#Valor_parcela").hide()
+        $("#Status_pagamento").hide()
+       
+        
+
+        if (tipo_mensalidade ==="Parcelado"){
+            $("#Parcela").show()
+            $("#Valor_parcela").show()
+            $("#Parcela_paga").show()
+
+        } else if (tipo_mensalidade ==="Esporádico") {
+            $("#Status_pagamento").show()
+        } 
+        
+
+});
 
 })
 
 
 $(window).load(function() {
-    var id_cliente = $("[name=load]").attr('id')
-    var id_pedido = $("[name=id_pedido]").attr('id')
+    
+    var id_pedido = $("[name=id_form]").attr('id')
+    var id_conta = id_pedido
 
     
+    $.ajax({
+        url: window.location.origin + "/api/contas/" + id_conta,
+        type: "GET",
+        success: function(response){
+            $("#valor_parcelas").val("00,00")
+            $("#parcelas_pagas").val(0)
+            $("#parcelas").val(0)
+            
+            
+            if (response.tipo_mensalidade==="3"){
+                
+                $("#Valor_parcela").show()
+                $("#Parcela_paga").show()
+                $("#Parcela").show()
+                $("#valor_parcelas").val(response.valor_parcelas)
+                $("#parcelas_pagas").val(response.parcelas_pagas)
+                $("#parcelas").val(response.parcelas)
+            }
+            if (response.tipo_mensalidade==="4"){
+                $("#Status_pagamento").show()
+                $("#status_pagamento").val(response.status_pagamento)
+            }
+            $('#tipo_mensalidade option[value='+ response.tipo_mensalidade +']').attr('selected','selected');
+            $('#status_pagamento option[value='+ response.status_pagamento +']').attr('selected','selected');
+  
+           
+        }
+    })
 
+  
+    var id_cliente = $("[name=load]").attr('id')
     $.ajax({
         url: window.location.origin + "/api/clientes/" + id_cliente,
         type: "GET",
@@ -98,7 +178,9 @@ $(window).load(function() {
             $("#telefone").val(response.phone)
             $("#endereco").val(response.endereco)
             $('#status_pagamento option[value='+ response.status_pagamento +']').attr('selected','selected');
-            
+            $("#id_cliente").val(id_cliente)
+            $("#id_cliente").attr('readonly', true);
+           
         }
     })
     

@@ -10,22 +10,22 @@
 
 <article class="panel {{ color_theme }}">
     
-    <div class="navbar {{ color_theme }}" id="desaparecer3">
+    <div class="navbar {{ color_theme }}">
 
         <div class="navbar-start">
             <a class="navbar-item" >
-                <strong>Gestão Pedido - Cozinha</strong>
+                <strong>Gestão Pedido - Entregas Pendentes</strong>
               </a>
         </div>
 
             <div class="navbar-end">
                 <div class="buttons">
                 
-                    <a href="{{url_for('site.cozinha')}}" class="button is-success is-rounded">Pedidos Cozinha</a>
-                    <a href="{{url_for('site.entregas')}}" class="button {{color_theme}} is-rounded">Entregas Pendentes</a>
-                    <a href="{{url_for('site.pagamentos')}}" class="button {{color_theme}} is-rounded">Pagamentos Pendentes</a>
-                    <a href="{{url_for('site.pedidos')}}" class="button {{color_theme}} is-rounded">Todos os Pedidos</a>
-                 <strong>   </strong>
+                <a href="{{url_for('site.cozinha')}}" class="button {{color_theme}} is-rounded">Pedidos Cozinha</a>
+                <a href="{{url_for('site.entregas')}}" class="button is-success is-rounded">Entregas Pendentes</a>
+                <a href="{{url_for('site.pagamentos')}}" class="button {{color_theme}} is-rounded">Pagamentos Pendentes</a>
+                <a href="{{url_for('site.pedidos')}}" class="button {{color_theme}} is-rounded">Todos os Pedidos</a>
+                <strong>   </strong>
             </div>
         </div>
 
@@ -60,27 +60,27 @@
         <div class="table-container">
             <table class="table is-striped is-fullwidth is-hoverable"  id="tabela">
                 <thead>
-                    <tr>
-                        <th width=30% style="text-align: center; background-color: rgb(215, 215, 215);">Pedido</th>
-                              <th style="text-align: center; background-color: rgb(215, 215, 215);">Descrição total do Pedido</th>
+                    <tr style="background-color: rgb(215, 215, 215);">
+                        <th>Id</th>
+                        <th>Data Entrega</th>
+                        <th>Nome do Cliente</th>
+                        <th>Status entrega</th>
+                        <th>Valor do Pedido</th>
+                        <th>Tipo Pagamento</th>
+                        <th>Status Pagamento</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for pedido in pedidos %}
                         <tr>
-                            <td style="vertical-align: middle">
-                                    <b>{{pedido.cliente.name}}</b>
-                                <p>  {{pedido.get_data_entrega()}} às {{ pedido.hora_entrega}}
-                                <p> <b>Telefone:</b> {{pedido.cliente.get_telefone_encrypted()}}
-                            </td>
-
-                            
-                            <td td style="vertical-align: middle; text-align: justify">
-                                {% for item in pedido.pedidos_itens %}
-                                    <p> {{item.quantidade}} {{item.pedido_nome.tipo}} - {{item.descricao}}
-                                {% endfor %}      
-
-                            </td>
+                            <td> #{{pedido.id}} </td>
+                            <td> {{pedido.get_data_entrega()}} </td>
+                            <td> {{pedido.cliente.name}} </td>
+                            <td> {{pedido.status_entrega}} </td>
+                            <td> {{pedido.valor}} </td>
+                            <td> {{pedido.pagamento.tipo_pagamento}} </td>
+                            <td> {{pedido.s_pagamento.status_pagamento}} </td>
+   
                         </tr>    
                     {% endfor %}
                 </tbody>

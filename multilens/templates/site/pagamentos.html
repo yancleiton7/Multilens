@@ -21,9 +21,10 @@
             <div class="navbar-end">
                 <div class="buttons">
                 
-                <a href="{{url_for('site.cozinha')}}" class="button {{color_theme}} is-rounded">Pedidos Cozinha</a>
-                <a href="{{url_for('site.pagamentos')}}" class="button is-success is-rounded">Pagamentos Pendentes</a>
-                <a href="{{url_for('site.pedidos')}}" class="button {{color_theme}} is-rounded">Todos os Pedidos</a>
+                    <a href="{{url_for('site.cozinha')}}" class="button {{color_theme}} is-rounded">Pedidos Cozinha</a>
+                    <a href="{{url_for('site.entregas')}}" class="button {{color_theme}} is-rounded">Entregas Pendentes</a>
+                    <a href="{{url_for('site.pagamentos')}}" class="button is-success is-rounded">Pagamentos Pendentes</a>
+                    <a href="{{url_for('site.pedidos')}}" class="button {{color_theme}} is-rounded">Todos os Pedidos</a>
                 <strong>   </strong>
             </div>
         </div>
@@ -60,10 +61,11 @@
             <table class="table is-striped is-fullwidth is-hoverable"  id="tabela">
                 <thead>
                     <tr style="background-color: rgb(215, 215, 215);">
+                        <th>Id</th>
                         <th>Data Entrega</th>
                         <th>Nome do Cliente</th>
-                        <th>Endereço entrega</th>
                         <th>Status entrega</th>
+                        <th>Valor do Pedido</th>
                         <th>Tipo Pagamento</th>
                         <th>Status Pagamento</th>
                     </tr>
@@ -71,10 +73,11 @@
                 <tbody>
                     {% for pedido in pedidos %}
                         <tr>
+                            <td> #{{pedido.id}} </td>
                             <td> {{pedido.get_data_entrega()}} </td>
                             <td> {{pedido.cliente.name}} </td>
-                            <td> {{pedido.endereco_entrega}} </td>
                             <td> {{pedido.status_entrega}} </td>
+                            <td> {{pedido.valor}} </td>
                             <td> {{pedido.pagamento.tipo_pagamento}} </td>
                             <td> {{pedido.s_pagamento.status_pagamento}} </td>
    

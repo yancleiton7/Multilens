@@ -4,8 +4,8 @@ from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import Email, Length, Optional, Regexp, Required
 
-from multilens.ext.db.models import ( Register, Estoque, Produto,Tipo, Retirada, Pagamento,
-                                     Grupo,  Cliente, Status_pagamento)
+from multilens.ext.db.models import ( Register, Estoque, Produto,Tipo, Retirada, Pagamento_conta, Pagamento,
+                                     Grupo,  Cliente, Status_pagamento, Tipo_mensalidade)
 
 
 
@@ -16,11 +16,9 @@ class BaseForm(FlaskForm):
             if isinstance(field, QuerySelectField):
                 setattr(obj, field.name, field.data.id)
 
-
 class FormLogin(BaseForm):
     username = StringField("Usuario", [Required()])
     passwd = PasswordField("Senha", [Required()])
-
 
 class FormClientes(BaseForm):
     name = StringField(
@@ -84,7 +82,6 @@ class FormClientes(BaseForm):
             self.estado.data = cliente.register.estado
             self.complemento.data = cliente.register.complemento
 
-
 class FormBalanceEntrada(BaseForm):
     produto = QuerySelectField(
         "Nome do Produto",
@@ -114,7 +111,7 @@ class FormBalanceEntrada(BaseForm):
         "Preço",
         [
             Required("Preencher o preço utilizado"),
-            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe somente números"),
+            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe o valor no formato RR,cc ex: 45,22"),
         ],
     )
 
@@ -211,7 +208,7 @@ class FormFornecedor(BaseForm):
         "Preço",
         [
             Required("Preencher com o preço desse fornecedor"),
-            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe somente números"),
+            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe o valor no formato RR,cc ex: 45,22"),
         ],
     )
 
@@ -292,96 +289,62 @@ class FormProduto(BaseForm):
         self.unidade.data = ""
         self.fornecedor = []
 
-class FormFinanceiro(BaseForm):
-    name = StringField("Nome", [Required("O nome da instituição é obrigatorio")])
-    cnpj = StringField(
-        "CNPJ",
-        [
-            Required("O CNPJ é obrigatório"),
-            Regexp("^[0-9]*$", message="Informe somente números"),
-        ],
+class FormContas(BaseForm):
+    descricao_conta  = StringField("Descrição da Conta", [Required("Informar a descrição da conta")])
+    fornecedor = StringField("Fornecedor", [Required("Registrar o fornecedor.")])
+    valor  = StringField("Valor", [Required("Colocar o valor da conta"),
+            Regexp("^[0-9]\d{0,4}(\.\d{5})*,\d{2}$", message="Informe o valor no formato RR,cc ex: 45,22"),])
+    
+    status_pagamento = QuerySelectField(
+        "Status do Pagamento",
+        validators=[Required("O status do pagamento é obrigatoria!")],
+        get_label="status_pagamento_conta",
+        get_pk=lambda x: x.id,
+        query_factory=lambda: Pagamento_conta.query,
+        allow_blank=True,  
+        
     )
-    adm_name = StringField("Administração")
-    adm_email = EmailField("Adm. Email", [Optional(), Email("Informe um email valido")])
-    adm_cel = StringField(
-        "Adm. Celular",
-        [
-            Optional(),
-            Regexp("^[0-9]*$", message="Informe somente números"),
-            Length(
-                min=11, max=11, message="O celular precisa conter exatamente 11 números"
-            ),
-        ],
+    
+    tipo_mensalidade = QuerySelectField(
+        "Recorrencia",
+        validators=[Required("Necessário selecionar tipo de mensalidade")],
+        get_label="tipo_mensalidade",
+        get_pk=lambda x: x.id,
+        query_factory=lambda: Tipo_mensalidade.query,
+        allow_blank=True,  
+        
     )
-    adm_phone = StringField(
-        "Adm. Telefone",
-        [
-            Optional(),
+
+    parcelas = StringField(
+        "Parcelas",
+        [       
+            Required("Informar a quantidade de Parcelas."), 
             Regexp("^[0-9]*$", message="Informe somente números"),
-            Length(
-                min=10,
-                max=10,
-                message="O telefone precisa conter exatamente 10 números",
-            ),
-        ],
-    )
-    enf_name = StringField("Enfermagem")
-    enf_email = EmailField("Enf. Email", [Optional(), Email("Informe um email valido")])
-    enf_cel = StringField(
-        "Enf. Celular",
-        [
-            Optional(),
-            Regexp("^[0-9]*$", message="Informe somente números"),
-            Length(
-                min=11, max=11, message="O celular precisa conter exatamente 11 números"
-            ),
-        ],
-    )
-    enf_phone = StringField(
-        "Enf. Telefone",
-        [
-            Optional(),
-            Regexp("^[0-9]*$", message="Informe somente números"),
-            Length(
-                min=10,
-                max=10,
-                message="O telefone precisa conter exatamente 10 números",
-            ),
         ],
     )
 
-    zip = StringField(
-        "CEP",
-        [
-            Required("Informe um CEP valido"),
-            Length(min=8, max=8, message="O CEP precisa conter exatamente 8 números"),
-            Optional(),
-            Regexp("^[0-9]*$", message="Informe somente números"),
+    valor_parcelas = StringField(
+        "Valor das Parcelas",
+        [        
+            Required("Informar o valor das parcelas."),
+            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe o valor das parcelas no formato RR,cc ex: 45,22"),
         ],
     )
-    city = StringField("Cidade", [Required("Informe uma cidade")])
-    address = StringField(
-        "Endereço",
-        [
-            Required("Informe o endereço"),
-            Length(min=1, max=70, message="O endereço pode ter no máximo 70 caracters"),
-        ],
-    )
-    district = StringField(
-        "Bairro",
-        [
-            Required("Informe o bairro"),
+    parcelas_pagas = StringField(
+        "Parcelas Pagas",
+        [        
+            Regexp("^[0-9]*$", message="Informar a quantiade de Parcelas pagas."),
         ],
     )
 
-    def load(self, financeiro):
-        self.process(obj=financeiro)
 
-        if financeiro.register is not None:
-            self.zip.data = financeiro.register.zip
-            self.address.data = financeiro.register.address
-            self.city.data = financeiro.register.city
-            self.district.data = financeiro.register.district
+
+    data_vencimento  = StringField("Data Vencimento", [Required("Colocar a data de vencimento.")])
+    observacao  = StringField("Observacao")
+
+    def load(self, conta):
+        self.process(obj=conta)
+        self.id = conta.id
 
 class FormPedido(BaseForm):
     
@@ -404,23 +367,27 @@ class FormPedido(BaseForm):
         ],
     )
 
-    valor_total = StringField(
+    valor = StringField(
         "Valor total do pedido",
         [
-            Required("Preencher o preço utilizado"),
-            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe somente números"),
+            Required("Preencher com o valor do pedido, para contabilizar no Financeiro"),
+            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe o valor no formato RR,cc ex: 45,22"),
         ],
     )
 
-    #Depois que selecionar o cliente, aparecer telefone, aniversário e endereço.
-    id_cliente = QuerySelectField(
-        "Id do cliente",
-        validators=[Required("O nome do cliente é obrigatorio!")],
-        get_label="id",
-        get_pk=lambda x: x.id,
-        query_factory=lambda: Cliente.query,
-        allow_blank=True,  
-        
+    observacao = StringField(
+        "Observações",
+        [
+            Required("Caso não tenha observações, colocar *"),
+        ],
+    )
+
+    id_cliente = StringField(
+        "ID",
+        [     
+            Required("Preencher o Id do cliente"),   
+            Regexp("^[0-9]*$", message="Informe somente números"),
+        ],
     )
 
     tipo_retirada = QuerySelectField(

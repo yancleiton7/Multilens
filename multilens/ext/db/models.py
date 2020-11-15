@@ -89,6 +89,174 @@ class Estoque(db.Model):
 
         return entry - sale
 
+class Contas(db.Model):
+    __tablename__ = "contas"
+
+    id = db.Column("id", db.Integer, primary_key=True)
+    descricao_conta = db.Column("descricao_conta", db.Unicode)
+    id_conta_parcelada = db.Column("id_conta_parcelada", db.ForeignKey("contas_parceladas.id"))
+    fornecedor = db.Column("fornecedor", db.Unicode)
+    data_vencimento = db.Column("data_vencimento", db.Unicode)
+    valor = db.Column("valor", db.Unicode)
+    data_pagamento = db.Column("data_pagamento", db.Unicode)
+    status_pagamento = db.Column("status_pagamento", db.ForeignKey("pagamento_conta.id"))  
+    observacao = db.Column("observacao", db.Unicode) 
+    tipo_mensalidade = db.Column("tipo_mensalidade", db.ForeignKey("tipo_mensalidade.id"))  
+    id_financeiro = db.Column("id_financeiro", db.ForeignKey("financeiro.id")) 
+
+    pagamento = db.relationship("Pagamento_conta", foreign_keys=status_pagamento)
+    recorrencia = db.relationship("Tipo_mensalidade", foreign_keys=tipo_mensalidade)
+    parcelas_info = db.relationship("Contas_parceladas", foreign_keys=id_conta_parcelada)
+
+
+    def get_status_vencimento(self):
+        if self.pagamento.status_pagamento_conta == "Pendente":
+            if self.data_vencimento  > datetime.now().strftime('%Y-%m-%d'):
+                status = "A vencer"
+            else:
+                status = "Vencido"        
+            return status
+        else:
+            return ""
+
+
+    @staticmethod
+    def get(id: int):
+        return Contas.query.filter_by(id=id).first()
+
+    def get_data_vencimento(self):
+        return converter_data(self.data_vencimento)
+
+    def get_data_pagamento(self):
+        return converter_data(self.data_pagamento)
+
+    def to_dict(self) -> dict:
+        return dict((col, getattr(self, col)) for col in self.__table__.columns.keys())
+
+    @property
+    def details(self) -> dict:
+        details = self.to_dict()
+        #details.pop("register_id")
+        return details
+
+
+    @staticmethod
+    def create_by_form(form):
+        
+        conta = Contas()
+        parcelas = Contas_parceladas()
+
+        form.populate_obj(parcelas)
+        parcelasObj = parcelas.save()
+        
+
+        form.populate_obj(conta)
+        conta.id_conta_parcelada = parcelas.id
+
+        response = conta.save()
+
+
+        contaObj = response["object"]
+        
+        
+        financeiro = Financeiro()
+        financeiro.tipo_item = "Conta"
+        financeiro.descricao = f"{contaObj.fornecedor}: {contaObj.descricao_conta} vence em {contaObj.get_data_vencimento()}."
+        financeiro.data_pagamento = contaObj.data_pagamento
+        financeiro.id_item = contaObj.id
+        resposta_financeiro = financeiro.save()
+        
+        
+        
+
+
+        conta.id_financeiro = resposta_financeiro["object"].id
+        conta.id_conta_parcelada = parcelasObj["object"].id
+        conta.save()
+
+
+        if not response["success"] or not parcelasObj["success"] or not resposta_financeiro["success"]:
+            financeiro.remove()
+            parcelas.remove()
+           
+            response["message"] = "Algo deu errado, verificar os campos."
+
+        return response
+
+    def update_by_form(self, form):
+        form.populate_obj(self)
+        response = self.save()
+        response["message"] = "Conta atualizada!"
+
+        return response
+    
+    def save(self):
+        try:
+            db.session.add(self)
+            db.session.commit()
+
+        except Exception as e:
+            print(e)
+            db.session.rollback()
+            response = {
+                "success": False,
+                "message": "Aconteceu algo errado, por favor tente novamente",
+            }
+
+        else:
+            response = {
+                "success": True,
+                "message": "Conta cadastrada com successo, cadastre agora os produtos!",
+                "id": self.id,
+            }
+       
+        response["object"] = self
+        return response
+
+    def remove(self):
+        db.session.delete(self)
+        db.session.commit()
+
+class Contas_parceladas(db.Model):
+    __tablename__ = "contas_parceladas"
+    id = db.Column("id", db.Integer, primary_key=True)
+    valor_parcelas = db.Column("valor_parcelas", db.Unicode)
+    parcelas = db.Column("parcelas", db.Integer)
+    parcelas_pagas = db.Column("parcelas_pagas", db.Integer)
+
+    @staticmethod
+    def get(id: int):
+        return Contas_parceladas.query.filter_by(id=id).first()
+
+    def get_formato_parcela(self):
+        return str(self.parcelas_pagas)+"/"+str(self.parcelas)
+
+    def save(self):
+        try:
+            db.session.add(self)
+            db.session.commit()
+
+        except:
+            db.session.rollback()
+            response = {
+                "success": False,
+                "message": "Aconteceu algo errado, por favor tente novamente",
+            }
+
+        else:
+            response = {
+                "success": True,
+                "message": "Conta parcelada cadastrada com successo",
+                "id": self.id,
+            }
+       
+        response["object"] = self
+        return response
+    
+    def remove(self):
+        db.session.delete(self)
+        db.session.commit()
+
 class Produto(db.Model):
     __tablename__ = "produtos"
     balance = db.relationship("Balance", backref="balance", lazy="dynamic")
@@ -273,8 +441,26 @@ class Fornecedor(db.Model):
         db.session.commit()
 
     def save(self):
-        db.session.add(self)
-        db.session.commit()
+        try:
+            db.session.add(self)
+            db.session.commit()
+
+        except:
+            db.session.rollback()
+            response = {
+                "success": False,
+                "message": "Aconteceu algo errado, por favor tente novamente",
+            }
+
+        else:
+            response = {
+                "success": True,
+                "message": "Fornecedor cadastrado com successo, cadastre agora os produtos!",
+                "id": self.id,
+            }
+       
+        response["object"] = self
+        return response
 
 class Pedido_item(db.Model):
     __tablename__ = "pedidos_itens"
@@ -307,8 +493,26 @@ class Pedido_item(db.Model):
         db.session.commit()
 
     def save(self):
-        db.session.add(self)
-        db.session.commit()
+        try:
+            db.session.add(self)
+            db.session.commit()
+
+        except:
+            db.session.rollback()
+            response = {
+                "success": False,
+                "message": "Aconteceu algo errado, por favor tente novamente",
+            }
+
+        else:
+            response = {
+                "success": True,
+                "message": "Itens cadastrado com successo, cadastre agora os produtos!",
+                "id": self.id,
+            }
+       
+        response["object"] = self
+        return response
 
 class Pedidos(db.Model):
     __tablename__ = "pedidos"
@@ -322,6 +526,9 @@ class Pedidos(db.Model):
     endereco_entrega = db.Column("endereco_entrega", db.Unicode)
     status_pagamento = db.Column("status_pagamento", db.Integer, db.ForeignKey("status_pagamento.id"))   
     status_entrega = db.Column("status_entrega", db.Unicode, default="Pendente") 
+    valor = db.Column("valor", db.Unicode)
+    observacao = db.Column("observacao", db.Unicode)
+    id_financeiro = db.Column(db.Integer, db.ForeignKey("financeiro.id"))
 
     cliente = db.relationship("Cliente", foreign_keys=id_cliente)
     pagamento = db.relationship("Pagamento", foreign_keys=tipo_pagamento)
@@ -331,6 +538,12 @@ class Pedidos(db.Model):
     @staticmethod
     def get(id: int):
         return Pedidos.query.filter_by(id=id).first()
+
+    def get_status_pagamento(self):
+        return Status_pagamento.query.filter_by(id=self.status_pagamento).first()
+
+
+
 
     def to_dict(self) -> dict:
         return dict((col, getattr(self, col)) for col in self.__table__.columns.keys())
@@ -344,7 +557,7 @@ class Pedidos(db.Model):
     @staticmethod
     def get_all():
         return Pedidos.query.order_by(Pedidos.data_entrega.asc(), Pedidos.hora_entrega.asc()).all()
-    
+     
     def get_pendentes_entrega():
         return Pedidos.query.order_by(Pedidos.data_entrega.asc(), Pedidos.hora_entrega.asc()).filter_by(status_entrega="Pendente")
 
@@ -358,43 +571,35 @@ class Pedidos(db.Model):
         
         return descricao_computada
 
-    def get_data_entrega(self):
-        data_convertida = self.data_entrega[-2:]+"/"+self.data_entrega[5:7]+"/"+self.data_entrega[:4]
-        return data_convertida
+    def get_data_entrega(self):        
+        return converter_data(self.data_entrega)
+
+    def get_data_pedido(self):
+        return converter_data(self.data_pedido)
             
     @staticmethod
-    def create_by_form(form, lista_pedidos):
-
+    def create_by_form(form):
         pedido = Pedidos()
-        pedido_item = []
-        pedido_item.append(Pedido_item())
-
         form.populate_obj(pedido)
         response = pedido.save()
 
+        pedidoObj = response["object"]
 
-        form.populate_obj(pedido_item[0])
-        pedido_item[0].id_pedido = pedido.id
-        pedido_item[0].save()
-      
-        for i in (range(int(len(lista_pedidos)/3))):
-            pedido_item.append(Pedido_item())
-            form.populate_obj(pedido_item[i+1])
-            pedido_item[i+1].id_pedido = pedido.id
-            pedido_item[i+1].quantidade = lista_pedidos["quantidade"+str(i)]
-            pedido_item[i+1].pedido = lista_pedidos["pedido"+str(i)]
-            pedido_item[i+1].descricao = lista_pedidos["descricao"+str(i)]
-            pedido_item[i+1].save()
-        
+        financeiro = Financeiro()
+        financeiro.id_item = pedidoObj.id
+        financeiro.tipo_item = "Pedido"
+        financeiro.descricao = f"Pedido: #{pedidoObj.id} cliente: {pedidoObj.cliente.name} entrega em {pedidoObj.get_data_entrega()}."
+        financeiro.data_pagamento = pedidoObj.data_entrega
+        resposta_financeiro = financeiro.save()
 
+        pedido.id_financeiro = resposta_financeiro["object"].id
+        pedido.save()
 
         if not response["success"]:
-            for i in (range(1+int(len(lista_pedidos)/3))):
-                pedido_item[i].remove()
+            financeiro.delete()
 
-
-        
         return response
+
 
     def save(self):
         try:
@@ -426,8 +631,7 @@ class Pedidos(db.Model):
         return response
 
     def update_pedidos(self, lista_pedido_itens):
-        print(self.id)
-        
+                
         for pedido_item in self.pedidos_itens:
             pedido_item.remove()
         
@@ -449,11 +653,7 @@ class Pedidos(db.Model):
             pedido_itens[i+1].produto = lista_pedido_itens["produto"+str(i)]
             pedido_itens[i+1].descricao = lista_pedido_itens["descricao"+str(i)]
             pedido_itens[i+1].save()
-            print(pedido_itens[i+1])
         
-
-        
-
         response={}  
         response["success"] = "ok"
         response["message"] = "Produtos atualizado com successo!"
@@ -559,10 +759,28 @@ class Retirada(db.Model):
     def get(id: int):
         return Retirada.query.filter_by(id=id).first()
 
+class Tipo_mensalidade(db.Model):
+    __tablename__ = "tipo_mensalidade"
+    id = db.Column("id", db.Integer, primary_key=True)
+    tipo_mensalidade = db.Column("tipo_mensalidade", db.Unicode)
+
+    @staticmethod
+    def get(id: int):
+        return Tipo_mensalidade.query.filter_by(id=id).first()
+
 class Pagamento(db.Model):
     __tablename__ = "pagamento"
     id = db.Column("id", db.Integer, primary_key=True)
     tipo_pagamento = db.Column("tipo_pagamento", db.Unicode)
+
+    @staticmethod
+    def get(id: int):
+        return Pagamento.query.filter_by(id=id).first()
+
+class Pagamento_conta(db.Model):
+    __tablename__ = "pagamento_conta"
+    id = db.Column("id", db.Integer, primary_key=True)
+    status_pagamento_conta = db.Column("status_pagamento_conta", db.Unicode)
 
     @staticmethod
     def get(id: int):
@@ -578,36 +796,73 @@ class Status_pagamento(db.Model):
         return Status_pagamento.query.filter_by(id=id).first()
 
 class Financeiro(db.Model):
-    __tablename__ = "institution"
+    __tablename__ = "financeiro"
     id = db.Column("id", db.Integer, primary_key=True)
-    register_id = db.Column("register_id", db.Integer, db.ForeignKey("register.id"))
-    name = db.Column("name", db.Unicode)
-    cnpj = db.Column("cnpj", db.Integer)
-    adm_name = db.Column("adm_name", db.Unicode)
-    adm_email = db.Column("adm_email", db.Unicode)
-    adm_cel = db.Column("adm_cel", db.Integer)
-    adm_phone = db.Column("adm_phone", db.Integer)
-    enf_name = db.Column("enf_name", db.Unicode)
-    enf_email = db.Column("enf_email", db.Unicode)
-    enf_cel = db.Column("enf_cel", db.Integer)
-    enf_phone = db.Column("enf_phone", db.Integer)
+    id_item = db.Column("id_item", db.Integer)
+    tipo_item = db.Column("tipo_item", db.Unicode)
+    data_pagamento = db.Column("data_pagamento", db.Unicode)
+    observacao = db.Column("observacao", db.Unicode)
 
-    register = db.relationship("Register", foreign_keys=register_id)
+
 
     @staticmethod
     def get_all():
         return Financeiro.query.all()
 
+   
+    @staticmethod
+    def get_tipo(tipo):
+        return Financeiro.query.filter_by(tipo_item=tipo).all()
+
+    def get_data_registro(self):
+        return converter_data(self.data_registro)
+
+    def get_data_pagamento(self):
+        return converter_data(self.data_pagamento)
+
     @staticmethod
     def get(id: int):
         return Financeiro.query.filter_by(id=id).first()
 
-    def save(self):
-        db.session.add(self)
-        db.session.commit()
-        response = {"success": True, "message": "Financeiro cadastrada com successo!"}
 
+
+    def get_item(self):
+        if self.tipo_item == "Pedido":
+            self.item = Pedidos.get(self.id_item)
+            self.tipo_financeiro = "Entrada"
+
+        elif self.tipo_item == "Conta":
+            self.item = Contas.get(self.id_item)
+            self.tipo_financeiro = "Saida"
+            
+
+        return self.id
+
+    def save(self):
+        try:
+            db.session.add(self)
+            db.session.commit()
+
+        except:
+            db.session.rollback()
+            response = {
+                "success": False,
+                "message": "Aconteceu algo errado, por favor tente novamente",
+            }
+
+        else:
+            response = {
+                "success": True,
+                "message": "Item Financeiro, cadastre agora os produtos!",
+                "id": self.id,
+            }
+       
+        response["object"] = self
         return response
+
+    def remove(self):
+        db.session.delete(self)
+        db.session.commit()
 
     @staticmethod
     def create_by_form(form):
@@ -634,13 +889,6 @@ class Financeiro(db.Model):
 
         return response
 
-    def remove(self) -> dict:
-        self.register.remove()
-        db.session.delete(self)
-        db.session.commit()
-        response = {"success": True, "message": "Registro excluido com sucesso!"}
-
-        return response
 
     def to_dict(self):
         return dict((col, getattr(self, col)) for col in self.__table__.columns.keys())
@@ -674,8 +922,26 @@ class Register(db.Model):
 
         
     def save(self):
-        db.session.add(self)
-        db.session.commit()
+        try:
+            db.session.add(self)
+            db.session.commit()
+
+        except:
+            db.session.rollback()
+            response = {
+                "success": False,
+                "message": "Aconteceu algo errado, por favor tente novamente",
+            }
+
+        else:
+            response = {
+                "success": True,
+                "message": "Registro cadastrada com successo, cadastre agora os produtos!",
+                "id": self.id,
+            }
+       
+        response["object"] = self
+        return response
 
     def to_dict(self):
         return dict((col, getattr(self, col)) for col in self.__table__.columns.keys())
@@ -790,8 +1056,6 @@ class Cliente(db.Model):
     @staticmethod
     def get_all():
         return Cliente.query.order_by(Cliente.id.desc()).all()
-
-    
 
     @staticmethod
     def get(id: int):
