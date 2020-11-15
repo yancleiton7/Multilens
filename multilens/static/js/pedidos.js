@@ -29,6 +29,9 @@ $(document).ready(function() {
         };
         })( jQuery )
 
+         
+   
+
     var count_item = 0;
     $("#id_cliente").change(function () {
         var id_cliente = $(this).val()
@@ -81,6 +84,7 @@ $(document).ready(function() {
         }
         });
         
+  
 
     $("#novo_item").click(function () {
         
@@ -103,6 +107,8 @@ $(document).ready(function() {
             $("#data_pagamento").val($("#data_vencimento").val())
 
     });
+
+
     
     $("#tipo_mensalidade").change(function () {
         tipo_mensalidade = $(this).find(":selected").text()
@@ -128,7 +134,9 @@ $(document).ready(function() {
         
         
 
-});
+    });
+
+
 
 
 
@@ -140,6 +148,7 @@ $(document).ready(function() {
 
 
 $(window).load(function() {
+
     
     var id_pedido = $("[name=id_form]").attr('id')
     var id_conta = id_pedido
