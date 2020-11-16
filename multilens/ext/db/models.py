@@ -109,6 +109,15 @@ class Contas(db.Model):
     parcelas_info = db.relationship("Contas_parceladas", foreign_keys=id_conta_parcelada)
 
 
+
+    @staticmethod
+    def get(id: int):
+        return Contas.query.filter_by(id=id).first()
+
+    @staticmethod
+    def get_all():
+        return Contas.query.all()
+
     def get_status_vencimento(self):
         if self.pagamento.status_pagamento_conta == "Pendente":
             if self.data_vencimento  > datetime.now().strftime('%Y-%m-%d'):
@@ -118,11 +127,6 @@ class Contas(db.Model):
             return status
         else:
             return ""
-
-
-    @staticmethod
-    def get(id: int):
-        return Contas.query.filter_by(id=id).first()
 
     def get_data_vencimento(self):
         return converter_data(self.data_vencimento)
@@ -195,8 +199,7 @@ class Contas(db.Model):
             db.session.add(self)
             db.session.commit()
 
-        except Exception as e:
-            print(e)
+        except:
             db.session.rollback()
             response = {
                 "success": False,
@@ -216,6 +219,8 @@ class Contas(db.Model):
     def remove(self):
         db.session.delete(self)
         db.session.commit()
+        response = {"success": True, "message": "Produto excluido com sucesso!"}
+        return response
 
 class Contas_parceladas(db.Model):
     __tablename__ = "contas_parceladas"
@@ -227,6 +232,9 @@ class Contas_parceladas(db.Model):
     @staticmethod
     def get(id: int):
         return Contas_parceladas.query.filter_by(id=id).first()
+
+
+     
 
     def get_formato_parcela(self):
         return str(self.parcelas_pagas)+"/"+str(self.parcelas)
@@ -544,8 +552,32 @@ class Pedidos(db.Model):
 
     def get_status_pagamento(self):
         return Status_pagamento.query.filter_by(id=self.status_pagamento).first()
+    
+    def get_data_entrega(self):        
+        return converter_data(self.data_entrega)
 
+    def get_data_pedido(self):
+        return converter_data(self.data_pedido)
 
+    @staticmethod
+    def get_all():
+        return Pedidos.query.order_by(Pedidos.data_entrega.asc(), Pedidos.hora_entrega.asc()).all()
+     
+    def get_pendentes_entrega():
+        return Pedidos.query.order_by(Pedidos.data_entrega.asc(), Pedidos.hora_entrega.asc()).filter_by(status_entrega="Pendente")
+
+    def get_pendentes_pagamentos():
+        return Pedidos.query.order_by(Pedidos.data_entrega.asc(), Pedidos.hora_entrega.asc()).filter(Pedidos.status_pagamento!=3)
+ 
+    def get_pagos():
+        return Pedidos.query.order_by(Pedidos.data_entrega.asc(), Pedidos.hora_entrega.asc()).filter(Pedidos.status_pagamento==3)
+
+    def get_descricao_computada(self):
+        descricao_computada = ""
+        for pedidos_item in self.pedidos_itens:
+            descricao_computada = descricao_computada + str(pedidos_item.quantidade) + " " + pedidos_item.descricao + "\n"
+        
+        return descricao_computada
 
 
     def to_dict(self) -> dict:
@@ -557,29 +589,6 @@ class Pedidos(db.Model):
         #details.pop("register_id")
         return details
 
-    @staticmethod
-    def get_all():
-        return Pedidos.query.order_by(Pedidos.data_entrega.asc(), Pedidos.hora_entrega.asc()).all()
-     
-    def get_pendentes_entrega():
-        return Pedidos.query.order_by(Pedidos.data_entrega.asc(), Pedidos.hora_entrega.asc()).filter_by(status_entrega="Pendente")
-
-    def get_pendentes_pagamentos():
-        return Pedidos.query.order_by(Pedidos.data_entrega.asc(), Pedidos.hora_entrega.asc()).filter(Pedidos.status_pagamento!=3)
-
-    def get_descricao_computada(self):
-        descricao_computada = ""
-        for pedidos_item in self.pedidos_itens:
-            descricao_computada = descricao_computada + str(pedidos_item.quantidade) + " " + pedidos_item.descricao + "\n"
-        
-        return descricao_computada
-
-    def get_data_entrega(self):        
-        return converter_data(self.data_entrega)
-
-    def get_data_pedido(self):
-        return converter_data(self.data_pedido)
-            
     @staticmethod
     def create_by_form(form):
         pedido = Pedidos()

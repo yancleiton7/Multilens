@@ -103,15 +103,15 @@ def cliente(register: int):
     return render_template("forms/cliente.html", form=form)
 
 
-@bp.route("/financeiro/", methods=["GET"])
+@bp.route("/financeiro/pedidos/", methods=["GET"])
 @login_required
-def financeiros():
-    return render_template("site/financeiro.html", financeiros=Financeiro.get_tipo("Pedido"))
+def financeiro_pedidos():
+    return render_template("site/financeiro_pedidos.html", pedidos=Pedidos.get_pagos())
 
-@bp.route("/contas", methods=["GET"])
+@bp.route("/contas/", methods=["GET"])
 @login_required
 def contas():
-    return render_template("site/contas.html", financeiros=Financeiro.get_tipo("Conta"))
+    return render_template("site/contas.html", contas=Contas.get_all())
 
 
 
@@ -140,7 +140,7 @@ def form_contas():
     return render_template("forms/conta.html", form=form)
 
 
-@bp.route("/financeiro/contas/<int:conta>", methods=["GET", "POST", "DELETE"])
+@bp.route("/contas/<int:conta>", methods=["GET", "POST", "DELETE"])
 @login_required
 def financeiro(conta: int):
     form = FormContas()

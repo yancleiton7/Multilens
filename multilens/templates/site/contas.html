@@ -24,9 +24,9 @@
             <div class="navbar-end">
                 <div class="buttons">
                 
-                    <a href="{{url_for('site.financeiros')}}" class="button {{color_theme}} is-rounded">Financeiro - Pedidos</a>
-                    <a href="{{url_for('site.contas')}}" class="button is-success is-rounded">Financeiro - Contas </a>
-                    <a  class="button {{color_theme}} is-rounded">Pagamentos Pendentes</a>
+                    <a href="{{url_for('site.financeiro_pedidos')}}" class="button {{color_theme}} is-rounded">Pedidos</a>
+                    <a href="{{url_for('site.contas')}}" class="button is-success is-rounded">Contas </a>
+                    <a  class="button {{color_theme}} is-rounded">Pendentes Mês</a>
                     <a  class="button {{color_theme}} is-rounded">Fluxo Caixa</a>
                 <strong>   </strong>
             </div>
@@ -74,26 +74,26 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for item_financeiro in financeiros %}
+                    {% for conta in contas %}
 
-                        <tr id={{ item_financeiro.id }}>
+                        <tr id={{ conta.id }}>
                         
 
-                            <td> #{{item_financeiro.get_item()}} </td>
-                            <td> {{item_financeiro.item.get_data_vencimento()}} </td>
-                            <td> {{item_financeiro.item.recorrencia.tipo_mensalidade}} </td>
-                            <td> {{item_financeiro.item.valor}}  </td>
-                            <td> <b>Fornecedor:</b> {{item_financeiro.item.fornecedor}} <p>
-                            <b>Descrição:</b> {{item_financeiro.item.descricao_conta}} <p>
+                            <td> #{{conta.id}} </td>
+                            <td> {{conta.get_data_vencimento()}} </td>
+                            <td> {{conta.recorrencia.tipo_mensalidade}} </td>
+                            <td> {{conta.valor}}  </td>
+                            <td> <b>Fornecedor:</b> {{conta.fornecedor}} <p>
+                            <b>Descrição:</b> {{conta.descricao_conta}} <p>
                                 
-                                {% if item_financeiro.item.recorrencia.tipo_mensalidade == "Parcelado" %}
+                                {% if conta.recorrencia.tipo_mensalidade == "Parcelado" %}
                                      
-                                     Parcelas {{item_financeiro.item.parcelas_info.get_formato_parcela()}} 
-                                     R$: {{item_financeiro.item.parcelas_info.valor_parcelas}}
-                                {% elif item_financeiro.item.recorrencia.tipo_mensalidade == "Esporádico" %}
-                                    {{item_financeiro.item.pagamento.status_pagamento_conta}} <p>     
+                                     Parcelas {{conta.parcelas_info.get_formato_parcela()}} 
+                                     R$: {{conta.parcelas_info.valor_parcelas}}
+                                {% elif conta.recorrencia.tipo_mensalidade == "Esporádico" %}
+                                    {{conta.status_pagamento_conta}} <p>     
                                 {% else %}   
-                                   <b> {{item_financeiro.item.recorrencia.tipo_mensalidade}} </b>      
+                                   <b> {{conta.recorrencia.tipo_mensalidade}} </b>      
                                 {% endif %} 
 
 
@@ -102,7 +102,7 @@
                             <td >
                                 <div class="control buttons" >
                                     <strong> <a class="button {{ color_theme }} is-small is-fullwidth"
-                                                href="{{ url_for('site.financeiro', conta= item_financeiro.id_item ) }}">Editar</a>
+                                                href="{{ url_for('site.financeiro', conta= conta.id ) }}">Editar</a>
                                                 {% if current_user.is_admin %}
                                                 <a class="button is-danger is-small is-fullwidth remove" >Excluir</a>
                                                 {% endif %}

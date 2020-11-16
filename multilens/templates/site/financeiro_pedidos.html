@@ -24,9 +24,9 @@
             <div class="navbar-end">
                 <div class="buttons">
                 
-                    <a href="{{url_for('site.financeiros')}}" class="button is-success is-rounded">Financeiro - Pedidos</a>
-                    <a href="{{url_for('site.contas')}}" class="button {{color_theme}} is-rounded">Financeiro - Contas </a>
-                    <a  class="button {{color_theme}} is-rounded">Pagamentos Pendentes</a>
+                    <a href="{{url_for('site.financeiro_pedidos')}}" class="button is-success is-rounded">Pedidos</a>
+                    <a href="{{url_for('site.contas')}}" class="button {{color_theme}} is-rounded">Contas </a>
+                    <a  class="button {{color_theme}} is-rounded">Pendentes Mês</a>
                     <a  class="button {{color_theme}} is-rounded">Fluxo Caixa</a>
                 <strong>   </strong>
             </div>
@@ -71,23 +71,26 @@
                         <th>Item</th>
                         <th>Tipo financeiro</th>
                         <th>Valor</th>
-                        <th>Status</th>
                         <th>Data pagamento</th>
                         <th>Descrição</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for item_financeiro in financeiros %}
-                        <tr id={{ item_financeiro.id }}>
-                            <td> #{{item_financeiro.get_item()}} </td>
-                            <td> {{item_financeiro.item.get_data_pedido()}} </td>
-                            <td> #{{item_financeiro.id_item}} </td>
-                            <td> {{item_financeiro.tipo_item}} </td>
-                            <td> {{item_financeiro.tipo_financeiro}}  </td>
-                            <td> {{item_financeiro.item.valor}}  </td>
-                            <td> {{item_financeiro.item.get_status_pagamento().status_pagamento}}  </td>
-                            <td> {{item_financeiro.get_data_pagamento()}}  </td>
-                            <td> {{item_financeiro.descricao}}  </td>
+                    {% for pedido in pedidos %}
+                        <tr id={{ pedido.id }}>
+                            <td> #{{pedido.id}} </td>
+                            <td> {{pedido.get_data_pedido()}} </td>
+                            <td> #{{pedido.id}} </td>
+                            <td> Pedido </td>
+                            <td> Entrada  </td>
+                            <td> {{pedido.valor}}  </td>
+                            <td> {{pedido.get_data_entrega()}}  </td>
+
+                            <td> 
+                                {% for item in pedido.pedidos_itens %}
+                                    #{{item.quantidade}} {{item.pedido_nome.tipo}}#
+                                {% endfor %}  
+                            </td>
 
                         </tr>    
                     {% endfor %}

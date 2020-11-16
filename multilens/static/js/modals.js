@@ -14,6 +14,7 @@ $(document).ready(function () {
                     register.remove()
                 },
                 error: function () {
+                    alert(window.location.href + register.attr('id'))
                     alert("Não foi possível excluir o registro, tente novamente mais tarde.")
                 }
             })
