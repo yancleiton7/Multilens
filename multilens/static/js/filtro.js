@@ -17,7 +17,9 @@ $(document).ready(function() {
         var val = $.trim($(this).val()).replace(/ +/g, ' ').toLowerCase();
         
         $rows.show().filter(function() {
-            var text = $(this).text().replace(/\s+/g, ' ').toLowerCase();
+            //var text = $(this).text().replace(/\s+/g, ' ').toLowerCase(); -- Essa linha procura em toda a correspondência
+            var text = $(this).html().split('filtro_data')[1];
+
             return !~text.indexOf(val);
         }).hide();
 
@@ -28,7 +30,6 @@ $(document).ready(function() {
     $('#data_de').change(function() {
         var ate = $('#data_ate').val()
         var de = $('#data_de').val()
-
         if (ate!="" && de!=""){
            
             var ate_tratado = ate.split("-")
@@ -43,7 +44,9 @@ $(document).ready(function() {
                 return (entrega>=de_tratado && entrega<=ate_tratado)
             }).show();
             
-        } 
+        } else {
+            $rows.show()
+        }
 
     });
 

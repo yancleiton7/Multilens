@@ -24,9 +24,9 @@
             <div class="navbar-end">
                 <div class="buttons">
                 
-                    <a href="{{url_for('site.financeiro_pedidos')}}" class="button {{color_theme}}  is-rounded">Pedidos</a>
-                    <a href="{{url_for('site.contas')}}" class="button is-success is-rounded">Contas </a>
-                    <a href="{{url_for('site.contas_pendentes')}}" class="button {{color_theme}} is-rounded">Pendentes Mês</a>
+                    <a href="{{url_for('site.financeiro_pedidos')}}" class="button {{color_theme}} is-rounded">Pedidos</a>
+                    <a href="{{url_for('site.contas')}}" class="button {{color_theme}} is-rounded">Contas </a>
+                    <a  class="button is-success is-rounded">Pendentes Mês</a>
                     <a  class="button {{color_theme}} is-rounded">Fluxo Caixa</a>
                 <strong>   </strong>
             </div>
@@ -83,12 +83,14 @@
                             <td> {{conta.get_data_vencimento()}} </td>
                             <td> {{conta.recorrencia.tipo_mensalidade}} </td>
                             <td> {{conta.valor}}  </td>
-                            <td>  {{conta.fornecedor}} - {{conta.descricao_conta}} <p>
+                            <td> <b>Fornecedor:</b> {{conta.fornecedor}} <p>
+                            <b>Descrição:</b> {{conta.descricao_conta}} <p>
                                 
                                 {% if conta.recorrencia.tipo_mensalidade == "Parcelado" %}
-                                        Parcelas {{conta.get_formato_parcela()}} -
-                                        R$: {{conta.parcelas_info[0].valor}} -
-                                        Total R$: {{conta.valor}}
+                                    
+                                        Parcelas {{conta.get_formato_parcela()}} 
+                                        R$: {{conta.parcelas_info[0].valor}}
+                                        
                                      
                                 {% elif conta.recorrencia.tipo_mensalidade == "Esporádico" %}
                                     {{conta.status_pagamento_conta}} <p>     
@@ -101,11 +103,8 @@
 
                             <td >
                                 <div class="control buttons" >
-                                    <strong> <a class="button {{ color_theme }} is-small"
-                                                href="{{ url_for('site.financeiro', conta= conta.id ) }}">Editar</a>
-                                                {% if current_user.is_admin %}
-                                                <a class="button is-danger is-small remove" >Excluir</a>
-                                                {% endif %}
+                                    <strong> <a class="button {{ color_theme }} is-small is-fullwidth"
+                                                href="{{ url_for('site.status_pagamento_conta', conta= conta.id ) }}">Pagar</a>
 
                                     </strong>
                                 </div>

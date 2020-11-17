@@ -22,6 +22,72 @@ def encriptar_telefone(telefone):
                 telefone_encriptado = telefone_encriptado+"*"
         return telefone_encriptado
 
+def monthdelta(date, delta):
+    m, y = (date.month+delta) % 12, date.year + ((date.month)+delta-1) // 12
+    if not m: m = 12
+    d = min(date.day, [31,
+        29 if y%4==0 and not y%400==0 else 28,31,30,31,30,31,31,30,31,30,31][m-1])
+    return date.replace(day=d,month=m, year=y)
+
+class BaseModel:
+
+    def populate_object(self, **data: dict) -> None:
+        columns = self.__table__.columns.keys()
+        for key, value in data.items():
+            if key in columns:
+                setattr(self, key, value)
+
+    def to_dict(self) -> dict:
+        return {col: getattr(self, col) for col in self.__table__.columns.keys()}
+
+    def to_json(self) -> dict:
+        data = self.to_dict()
+
+        for col, value in data.items():
+            if isinstance(value, dt.datetime) or isinstance(value, dt.date):
+                data[col] = value.isoformat()
+
+            elif isinstance(value, dt.time):
+                data[col] = value.isoformat()[:8]
+
+        return data
+
+    def delete(self) -> None:
+        db.session.delete(self)
+        db.session.commit()
+
+    def update(self, **data: dict) -> None:
+        data = data.copy()
+
+        for col in data.keys():
+            if col not in self.editable_fields:
+                data.pop(col, None)
+
+        self.populate_object(**data)
+
+        if "updated_at" in self.__table__.columns.keys():
+            self.updated_at = dt.datetime.now()
+            self.save()
+
+    def save(self) -> dict:
+        try:
+            db.session.add(self)
+            db.session.commit()
+
+        except Exception as err:
+            db.session.rollback()
+            response = {
+                "success": False,
+                "message": f"Não foi possível salvar o {self.__name__}\nDescrição: {self.parse_exception(err)}",
+            }
+
+        else:
+            response = {"success": True, "data": self.to_json()}
+
+        return response
+
+    def parse_exception(self, excp: Exception) -> str:
+        return str(excp)
 
 
 class User(UserMixin, db.Model):
@@ -91,23 +157,19 @@ class Estoque(db.Model):
 
 class Contas(db.Model):
     __tablename__ = "contas"
-
     id = db.Column("id", db.Integer, primary_key=True)
     descricao_conta = db.Column("descricao_conta", db.Unicode)
-    id_conta_parcelada = db.Column("id_conta_parcelada", db.ForeignKey("contas_parceladas.id"))
     fornecedor = db.Column("fornecedor", db.Unicode)
     data_vencimento = db.Column("data_vencimento", db.Unicode)
     valor = db.Column("valor", db.Unicode)
-    data_pagamento = db.Column("data_pagamento", db.Unicode)
     status_pagamento = db.Column("status_pagamento", db.ForeignKey("pagamento_conta.id"))  
     observacao = db.Column("observacao", db.Unicode) 
     tipo_mensalidade = db.Column("tipo_mensalidade", db.ForeignKey("tipo_mensalidade.id"))  
-    id_financeiro = db.Column("id_financeiro", db.ForeignKey("financeiro.id")) 
 
     pagamento = db.relationship("Pagamento_conta", foreign_keys=status_pagamento)
     recorrencia = db.relationship("Tipo_mensalidade", foreign_keys=tipo_mensalidade)
-    parcelas_info = db.relationship("Contas_parceladas", foreign_keys=id_conta_parcelada)
-
+    parcelas_info = db.relationship("Contas_parceladas", backref="owner")
+    pagas_info = db.relationship("Contas_pagas", backref="owner")
 
 
     @staticmethod
@@ -117,6 +179,18 @@ class Contas(db.Model):
     @staticmethod
     def get_all():
         return Contas.query.all()
+   
+    @staticmethod
+    def get_pendentes():
+        lista_de_contas = Contas.query.filter_by(status_pagamento=1).all()
+        hoje = datetime.now().strftime('%Y%m')
+        lista_pendentes_mes_atual = []
+        for conta in lista_de_contas:
+            vencimento = (conta.data_vencimento[:4]+conta.data_vencimento[5:7])
+            if vencimento <= hoje:
+                lista_pendentes_mes_atual.append(conta)
+
+        return lista_pendentes_mes_atual
 
     def get_status_vencimento(self):
         if self.pagamento.status_pagamento_conta == "Pendente":
@@ -134,6 +208,16 @@ class Contas(db.Model):
     def get_data_pagamento(self):
         return converter_data(self.data_pagamento)
 
+    def get_formato_parcela(self):
+        quantidade_parcelas_pagas=0
+        for parcela in self.parcelas_info:
+            if parcela.status_pagamento == 2:
+                quantidade_parcelas_pagas +=1
+
+        return str(quantidade_parcelas_pagas)+"/"+str(len(self.parcelas_info))
+
+
+
     def to_dict(self) -> dict:
         return dict((col, getattr(self, col)) for col in self.__table__.columns.keys())
 
@@ -144,52 +228,42 @@ class Contas(db.Model):
         return details
 
 
+    def criar_parcelas(self, form):
+        for i in range(int(form.parcelas.data)):
+            item_parcela = Contas_parceladas()
+            item_parcela.id_conta = self.id
+            item_parcela.valor = form.valor_parcelas.data
+            item_parcela.status_pagamento = 1
+
+            data_vencimento = datetime.strptime(form.data_vencimento.data, '%Y-%m-%d').date()
+
+            item_parcela.data_vencimento = monthdelta(data_vencimento, i)
+            item_parcela.save()
+
+    def deleta_parcelas(self):
+        for parcela in self.parcelas_info:
+            parcela.remove()
+
+
     @staticmethod
-    def create_by_form(form):
-        
+    def create_by_form(form):       
         conta = Contas()
-        parcelas = Contas_parceladas()
-
-        form.populate_obj(parcelas)
-        parcelasObj = parcelas.save()
-        
-
         form.populate_obj(conta)
-        conta.id_conta_parcelada = parcelas.id
-
         response = conta.save()
 
-
-        contaObj = response["object"]
-        
-        
-        financeiro = Financeiro()
-        financeiro.tipo_item = "Conta"
-        financeiro.descricao = f"{contaObj.fornecedor}: {contaObj.descricao_conta} vence em {contaObj.get_data_vencimento()}."
-        financeiro.data_pagamento = contaObj.data_pagamento
-        financeiro.id_item = contaObj.id
-        resposta_financeiro = financeiro.save()
-        
-        
-        
-
-
-        conta.id_financeiro = resposta_financeiro["object"].id
-        conta.id_conta_parcelada = parcelasObj["object"].id
-        conta.save()
-
-
-        if not response["success"] or not parcelasObj["success"] or not resposta_financeiro["success"]:
-            financeiro.remove()
-            parcelas.remove()
-           
-            response["message"] = "Algo deu errado, verificar os campos."
+        if conta.recorrencia.tipo_mensalidade=="Parcelado":
+            conta.criar_parcelas(form)
 
         return response
 
     def update_by_form(self, form):
         form.populate_obj(self)
         response = self.save()
+
+        if self.recorrencia.tipo_mensalidade=="Parcelado":
+            self.deleta_parcelas()
+            self.criar_parcelas(form)
+
         response["message"] = "Conta atualizada!"
 
         return response
@@ -217,6 +291,9 @@ class Contas(db.Model):
         return response
 
     def remove(self):
+        if self.recorrencia.tipo_mensalidade=="Parcelado":
+            self.deleta_parcelas()
+
         db.session.delete(self)
         db.session.commit()
         response = {"success": True, "message": "Produto excluido com sucesso!"}
@@ -225,19 +302,17 @@ class Contas(db.Model):
 class Contas_parceladas(db.Model):
     __tablename__ = "contas_parceladas"
     id = db.Column("id", db.Integer, primary_key=True)
-    valor_parcelas = db.Column("valor_parcelas", db.Unicode)
-    parcelas = db.Column("parcelas", db.Integer)
-    parcelas_pagas = db.Column("parcelas_pagas", db.Integer)
+    valor = db.Column("valor", db.Unicode)
+    data_vencimento = db.Column("data_vencimento", db.Unicode)
+    data_pagamento = db.Column("data_pagamento", db.Unicode, default="Pendente")
+    status_pagamento = db.Column("status_pagamento", db.Integer, db.ForeignKey("pagamento_conta.id"))   
+    id_conta = db.Column(db.Integer, db.ForeignKey("contas.id"))
+
+    s_pagamento = db.relationship("Pagamento_conta", foreign_keys=status_pagamento)
 
     @staticmethod
     def get(id: int):
         return Contas_parceladas.query.filter_by(id=id).first()
-
-
-     
-
-    def get_formato_parcela(self):
-        return str(self.parcelas_pagas)+"/"+str(self.parcelas)
 
     def save(self):
         try:
@@ -262,6 +337,96 @@ class Contas_parceladas(db.Model):
         return response
     
     def remove(self):
+
+        db.session.delete(self)
+        db.session.commit()
+
+class Contas_pagas(db.Model):
+    __tablename__ = "contas_pagas"
+    id = db.Column("id", db.Integer, primary_key=True)
+    valor = db.Column("valor", db.Unicode)
+    data_vencimento = db.Column("data_vencimento", db.Unicode)
+    data_pagamento = db.Column("data_pagamento", db.Unicode)  
+    id_conta = db.Column(db.Integer, db.ForeignKey("contas.id"))
+    observacao = db.Column("observacao", db.Unicode) 
+
+    @staticmethod
+    def get(id: int):
+        return Contas_parceladas.query.filter_by(id=id).first()
+
+    @staticmethod
+    def create_by_form(form, conta_obj):
+
+        conta_paga = Contas_pagas()
+        form.populate_obj(conta_paga)
+        conta_paga.id_conta = conta_obj.id
+
+
+        if conta_obj.tipo_mensalidade == "1":
+            data_vencimento = datetime.strptime(conta_obj.data_vencimento, '%Y-%m-%d').date()
+            conta_obj.data_vencimento = monthdelta(data_vencimento, 1)
+
+
+        elif conta_obj.tipo_mensalidade == "2":
+            data_vencimento = datetime.strptime(conta_obj.data_vencimento, '%Y-%m-%d').date()
+            conta_obj.data_vencimento = data_vencimento.replace(year=int(conta_obj.data_vencimento[:4])+1)
+            
+        
+        elif conta_obj.tipo_mensalidade == "3":
+            parcela_selecionada = ""
+            proxima_parcela = "-"
+            for parcela in conta_obj.parcelas_info:
+                if parcela_selecionada!="":
+                    proxima_parcela = parcela
+                    break
+                if parcela.data_pagamento == "Pendente":
+                    parcela_selecionada = parcela
+
+
+            parcela_selecionada.data_pagamento = conta_paga.data_pagamento
+            parcela_selecionada.status_pagamento = 2
+            parcela_selecionada.save()
+
+            if proxima_parcela != "-":
+                conta_obj.data_vencimento = proxima_parcela.data_vencimento
+            else:
+                conta_obj.status_pagamento = 2
+
+                
+            
+        elif conta_obj.tipo_mensalidade == "4":
+            conta_obj.status_pagamento = 2
+
+
+        conta_obj.save()
+        response = conta_paga.save()
+
+        return response
+
+    def save(self):
+        try:
+            db.session.add(self)
+            db.session.commit()
+
+        except:
+            db.session.rollback()
+            response = {
+                "success": False,
+                "message": "Aconteceu algo errado, por favor tente novamente",
+            }
+
+        else:
+            response = {
+                "success": True,
+                "message": "Conta parcelada cadastrada com successo",
+                "id": self.id,
+            }
+       
+        response["object"] = self
+        return response
+    
+    def remove(self):
+
         db.session.delete(self)
         db.session.commit()
 
@@ -530,21 +695,23 @@ class Pedidos(db.Model):
     id = db.Column("id", db.Integer, primary_key=True)
     data_pedido = db.Column("data_pedido", db.Unicode)
     data_entrega = db.Column("data_entrega", db.Unicode)
+    data_pagamento = db.Column("data_pagamento", db.Unicode)
     hora_entrega = db.Column("hora_entrega", db.Unicode)
     id_cliente = db.Column(db.Integer, db.ForeignKey("cliente.id"))
     tipo_retirada = db.Column("tipo_retirada", db.Integer, db.ForeignKey("retirada.id"))
     tipo_pagamento = db.Column("tipo_pagamento", db.Integer, db.ForeignKey("pagamento.id"))
     endereco_entrega = db.Column("endereco_entrega", db.Unicode)
     status_pagamento = db.Column("status_pagamento", db.Integer, db.ForeignKey("status_pagamento.id"))   
-    status_entrega = db.Column("status_entrega", db.Unicode, default="Pendente") 
+    status_entrega = db.Column("status_entrega", db.Integer, db.ForeignKey("status_entrega.id") , default=1) 
     valor = db.Column("valor", db.Unicode)
     observacao = db.Column("observacao", db.Unicode)
-    id_financeiro = db.Column(db.Integer, db.ForeignKey("financeiro.id"))
 
     cliente = db.relationship("Cliente", foreign_keys=id_cliente)
     pagamento = db.relationship("Pagamento", foreign_keys=tipo_pagamento)
     pedidos_itens = db.relationship("Pedido_item", backref="owner")
     s_pagamento = db.relationship("Status_pagamento", foreign_keys=status_pagamento)
+    s_entrega = db.relationship("Status_Entrega", foreign_keys=status_entrega)
+    retirada = db.relationship("Retirada", foreign_keys=tipo_retirada)
 
     @staticmethod
     def get(id: int):
@@ -552,7 +719,12 @@ class Pedidos(db.Model):
 
     def get_status_pagamento(self):
         return Status_pagamento.query.filter_by(id=self.status_pagamento).first()
-    
+
+    def get_status_entrega(self):
+        return Status_Entrega.query.filter_by(id=self.status_entrega).first()
+        
+
+
     def get_data_entrega(self):        
         return converter_data(self.data_entrega)
 
@@ -564,7 +736,7 @@ class Pedidos(db.Model):
         return Pedidos.query.order_by(Pedidos.data_entrega.asc(), Pedidos.hora_entrega.asc()).all()
      
     def get_pendentes_entrega():
-        return Pedidos.query.order_by(Pedidos.data_entrega.asc(), Pedidos.hora_entrega.asc()).filter_by(status_entrega="Pendente")
+        return Pedidos.query.order_by(Pedidos.data_entrega.asc(), Pedidos.hora_entrega.asc()).filter_by(status_entrega=1)
 
     def get_pendentes_pagamentos():
         return Pedidos.query.order_by(Pedidos.data_entrega.asc(), Pedidos.hora_entrega.asc()).filter(Pedidos.status_pagamento!=3)
@@ -594,22 +766,6 @@ class Pedidos(db.Model):
         pedido = Pedidos()
         form.populate_obj(pedido)
         response = pedido.save()
-
-        pedidoObj = response["object"]
-
-        financeiro = Financeiro()
-        financeiro.id_item = pedidoObj.id
-        financeiro.tipo_item = "Pedido"
-        financeiro.descricao = f"Pedido: #{pedidoObj.id} cliente: {pedidoObj.cliente.name} entrega em {pedidoObj.get_data_entrega()}."
-        financeiro.data_pagamento = pedidoObj.data_entrega
-        resposta_financeiro = financeiro.save()
-
-        pedido.id_financeiro = resposta_financeiro["object"].id
-        pedido.save()
-
-        if not response["success"]:
-            financeiro.delete()
-
         return response
 
 
@@ -655,16 +811,16 @@ class Pedidos(db.Model):
         pedido_itens[0].descricao = lista_pedido_itens["descricao"]
         pedido_itens[0].save()
 
-        quantidade_repeticao = int(len(lista_pedido_itens)/3)-1
+        quantidade_repeticao = int(len(lista_pedido_itens)/3)
         
-        for i in range(quantidade_repeticao):
+        for i in range(1,quantidade_repeticao):
             
             pedido_itens.append(Pedido_item())
-            pedido_itens[i+1].id_pedido = self.id
-            pedido_itens[i+1].quantidade = lista_pedido_itens["quantidade"+str(i)]
-            pedido_itens[i+1].produto = lista_pedido_itens["produto"+str(i)]
-            pedido_itens[i+1].descricao = lista_pedido_itens["descricao"+str(i)]
-            pedido_itens[i+1].save()
+            pedido_itens[i].id_pedido = self.id
+            pedido_itens[i].quantidade = lista_pedido_itens["quantidade"+str(i)]
+            pedido_itens[i].produto = lista_pedido_itens["produto"+str(i)]
+            pedido_itens[i].descricao = lista_pedido_itens["descricao"+str(i)]
+            pedido_itens[i].save()
         
         response={}  
         response["success"] = "ok"
@@ -806,6 +962,15 @@ class Status_pagamento(db.Model):
     @staticmethod
     def get(id: int):
         return Status_pagamento.query.filter_by(id=id).first()
+
+class Status_Entrega(db.Model):
+    __tablename__ = "status_entrega"
+    id = db.Column("id", db.Integer, primary_key=True)
+    status_entrega = db.Column("status_entrega", db.Unicode)
+
+    @staticmethod
+    def get(id: int):
+        return Status_Entrega.query.filter_by(id=id).first()
 
 class Financeiro(db.Model):
     __tablename__ = "financeiro"

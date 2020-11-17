@@ -113,6 +113,12 @@
             </div>
             
             <div class="field is-grouped">
+                <div class="control" id="status_entrega_div">
+                    <label class="label"> {{ form.status_entrega.label }} </label>              
+                    <div class="select">
+                        {{ form.status_entrega() }}
+                    </div>
+                </div>
 
                 <div class="control">
                     <label class="label"> {{ form.tipo_retirada.label }} </label>              

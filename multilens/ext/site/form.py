@@ -5,7 +5,7 @@ from wtforms.fields.html5 import EmailField
 from wtforms.validators import Email, Length, Optional, Regexp, Required
 
 from multilens.ext.db.models import ( Register, Estoque, Produto,Tipo, Retirada, Pagamento_conta, Pagamento,
-                                     Grupo,  Cliente, Status_pagamento, Tipo_mensalidade)
+                                     Grupo,  Cliente, Status_pagamento, Status_Entrega,Tipo_mensalidade, Contas)
 
 
 
@@ -321,12 +321,6 @@ class FormContas(BaseForm):
             Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe o valor das parcelas no formato RR,cc ex: 45,22"),
         ],
     )
-    parcelas_pagas = StringField(
-        "Parcelas Pagas",
-        [        
-            Regexp("^[0-9]*$", message="Informar a quantiade de Parcelas pagas."),
-        ],
-    )
 
 
 
@@ -411,6 +405,14 @@ class FormPedido(BaseForm):
         allow_blank=True,  
         
     )
+    status_entrega = QuerySelectField(
+        "Status Entrega",
+        get_label="status_entrega",
+        get_pk=lambda x: x.id,
+        query_factory=lambda: Status_Entrega.query,
+        allow_blank=True,  
+        
+    )
     
     def load(self, pedido):
         self.process(obj=pedido)
@@ -474,15 +476,153 @@ class FormPedidoItens(BaseForm):
     )
 
     
-    def load(self, pedido_itens):
-        self.process(obj=pedido_itens)
-        self.pedido_id = pedido_itens.id
+    def load(self, item_pedido):
+        self.process(obj=item_pedido)
+        self.pedido_id = item_pedido.id
+        return ""
 
-class FormFinishOrder(BaseForm):
-    register_id = QuerySelectField(
-        "Cliente/Instituição",
-        validators=[Required("Informe para quem será feita a venda")],
+class FormStatusPagamento(BaseForm):
+    status_pagamento = QuerySelectField(
+        "Status do Pagamento",
+        validators=[Required("O status do pagamento é obrigatoria!")],
+        get_label="status_pagamento",
         get_pk=lambda x: x.id,
-        query_factory=lambda: Register.query,
-        allow_blank=True,
+        query_factory=lambda: Status_pagamento.query,
+        allow_blank=True,   
     )
+    tipo_pagamento = QuerySelectField(
+        "Forma de Pagamento",
+        validators=[Required("A forma de Pagamento é obrigatoria!")],
+        get_label="tipo_pagamento",
+        get_pk=lambda x: x.id,
+        query_factory=lambda: Pagamento.query,
+        allow_blank=True,  
+        
+    )
+    data_pagamento = StringField(
+        "Data Pagamento",
+        [
+            Regexp("\d{4}-\d{2}-\d{2}", message="Datas seguem o formato 01/01/2000"),
+        ],
+    )
+    observacao =  StringField("Observações")
+
+    valor = StringField(
+        "Valor total do pedido",
+        [
+            Required("Preencher com o valor do pedido, para contabilizar no Financeiro"),
+            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe o valor no formato RR,cc ex: 45,22"),
+        ],
+    )
+
+    
+
+
+    def load(self, pedido):
+        self.process(obj=pedido)
+        self.id = pedido.id
+        self.descricao = (f"Pedido :{pedido.id} - Cliente: {pedido.cliente.name} - Entrega: {pedido.get_data_entrega()}")
+
+class FormStatusEntrega(BaseForm):
+    tipo_retirada = QuerySelectField(
+        "Forma de Retirada",
+        validators=[Required("A forma de retirada é obrigatoria!")],
+        get_label="tipo_retirada",
+        get_pk=lambda x: x.id,
+        query_factory=lambda: Retirada.query,
+        allow_blank=True,  
+        
+    )
+
+    status_entrega = QuerySelectField(
+        "Status Entrega",
+        validators=[Required("O Status de Entrega é obrigatório")],
+        get_label="status_entrega",
+        get_pk=lambda x: x.id,
+        query_factory=lambda: Status_Entrega.query,
+        allow_blank=True,  
+        
+    )
+
+    
+    #Caso o seja Delivery
+    endereco_entrega = StringField(
+        "Endereço Entrega",
+        [        
+            Required("Por favor, preecher o endereço."),
+        ],
+    )
+    data_entrega = StringField(
+        "Data entrega",
+        [
+            Regexp("\d{4}-\d{2}-\d{2}", message="Datas seguem o formato 01/01/2000"),
+        ],
+    )
+
+    hora_entrega = StringField(
+        "Hora da Entrega",
+        [
+            Required("Por favor preencher hora da entrega."),
+        ],
+    )
+
+    observacao =  StringField("Observações")
+
+
+    
+
+
+    def load(self, pedido):
+        self.process(obj=pedido)
+        self.id = pedido.id
+        self.descricao = (f"Pedido :{pedido.id} - Cliente: {pedido.cliente.name} - Entrega: {pedido.get_data_entrega()}")
+
+class FormContasPagas(BaseForm):
+
+    data_pagamento = StringField(
+        "Data Pagamento",
+        [
+            Regexp("\d{4}-\d{2}-\d{2}", message="Datas seguem o formato 01/01/2000"),
+        ],
+    )
+    data_vencimento = StringField(
+        "Data Vencimento",
+        [
+            Regexp("\d{4}-\d{2}-\d{2}", message="Datas seguem o formato 01/01/2000"),
+        ],
+    )
+
+    valor = StringField(
+        "Valor total do pagamento",
+        [
+            Required("Preencher com o valor pago nessa conta."),
+            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe o valor no formato RR,cc ex: 45,22"),
+        ],
+    )
+
+    observacao =  StringField("Observações")
+
+
+    
+
+
+    def load(self, conta_obj):
+        
+        self.descricao = (f"Conta :{conta_obj.id} - Fornecedor: {conta_obj.fornecedor} - Descrição: {conta_obj.descricao_conta}")
+        self.process(obj=conta_obj)
+
+        if conta_obj.tipo_mensalidade=="3":
+            parcela_selecionada = ""
+            for quantidade, parcela in enumerate(conta_obj.parcelas_info):
+                if parcela.data_pagamento == "Pendente":
+                    parcela_selecionada = parcela
+                    self.descricao = (f"Parcela: {quantidade+1} de {len(conta_obj.parcelas_info)} - {conta_obj.fornecedor} : {conta_obj.descricao_conta}.")
+                    self.process(obj=parcela_selecionada)
+                    break
+
+
+        self.id = conta_obj.id
+        
+       
+        
+        

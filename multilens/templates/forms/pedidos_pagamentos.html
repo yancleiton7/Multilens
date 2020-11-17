@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% from "macros/render_messages.html" import render_message %}
+
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/pedidos.js') }}" type="text/javascript"></script>
+{% endblock extra_scripts %}
+
+{% block body %}
+{{ render_message() }}
+<form method="POST">
+    {{ form.csrf_token }}
+    <article class="panel {{ color_theme }}">
+
+        <div name="id_form" id={{form.id}}></div>
+
+        <div class="panel-heading">Alterar Status - Pagamento</div>
+        <div class="form-body">
+
+            <div class="control is-expanded">
+                <label class="label"> Descrição do Pedido </label>
+                
+                <div class="control">
+                    <input class="input" type="text" value="{{form.descricao}}" id="nome_cliente" placeholder="Nome do Cliente" disabled >
+                </div>
+            </div>
+
+
+            <div class="field is-grouped">
+                
+                
+                <div class="control is-expanded">
+                    <label class="label"> {{ form.valor.label }} </label>              
+                        <div class="control">
+                            {{ form.valor( class="input", type="text", placeholder="Data compra") }}
+                        </div>
+                </div>
+
+                <div class="control">
+                    <label class="label"> {{ form.status_pagamento.label }} </label>
+                        <div class="control">
+                            <div class="select">
+                                {{ form.status_pagamento() }}
+                            </div>
+                        </div>
+                </div>
+                <div class="control">
+                    <label class="label"> {{ form.tipo_pagamento.label }} </label>
+                        <div class="control">
+                            <div class="select">
+                                {{ form.tipo_pagamento() }}
+                            </div>
+                        </div>
+                </div>               
+
+                
+                <div class="control is-expanded">
+                    <label class="label"> {{ form.data_pagamento.label }} </label>              
+                        <div class="control">
+                            {{ form.data_pagamento( class="input", type="date", placeholder="Data compra") }}
+                        </div>
+                </div>
+                
+                
+            </div>
+
+            <div class="control is-expanded">
+                <label class="label"> {{ form.observacao.label }} </label>              
+                    <div class="control">
+                        {{ form.observacao( class="textarea", rows="10",placeholder="Campo de Observações") }}
+                    </div>
+                </div>
+            </div>
+            
+
+
+            
+            <div class="field is-grouped">
+                <div class="control is-expanded">
+                    <input class="button is-fullwidth {{ color_theme }}" type="submit" value="Salvar Alterações" > 
+                    
+                </div>
+                <div class="control">
+                    <a href="{{url_for('site.pagamentos')}}" class="button is-success">Voltar</a>
+                </div>
+            </div>
+        </div>
+    </article>
+</form>
+{% endblock body %}

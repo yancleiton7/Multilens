@@ -29,10 +29,8 @@ $(document).ready(function() {
         };
         })( jQuery )
 
-         
-   
-
     var count_item = 0;
+    
     $("#id_cliente").change(function () {
         var id_cliente = $(this).val()
         $.ajax({
@@ -47,8 +45,6 @@ $(document).ready(function() {
         })
 
     });
-
-
 
     $("#tipo_retirada").change(function () {
         var tipo_retirada =  $(this).find(":selected").text()
@@ -69,29 +65,29 @@ $(document).ready(function() {
 
     $("#salvar_conta").click(function () {
         
-  
-        if (tipo_mensalidade===3){
-        var valor_total = $('#valor').val().replace(",", ".")
-        var valor_parcela = $('#valor_parcela').val().replace(",", ".")
-        var quantidade_parcelas = $('#quantidade').val()
-        var total_calculado = valor_parcela*quantidade_parcelas
+        tipo_mensalidade = $("#tipo_mensalidade").val()
         
-        if (total_calculado<valor_total && tipo_mensalidade==="Parcelado"){
+        if (tipo_mensalidade==="3"){
+            
+        var valor_total = $('#valor').val().replace(",", ".")
+        var valor_parcela = $('#valor_parcelas').val().replace(",", ".")
+        var quantidade_parcelas = $('#parcelas').val()
+        var total_calculado = (valor_parcela*quantidade_parcelas)
+
+   
+        if (total_calculado<valor_total && tipo_mensalidade==="3"){
             alert("O valor das parcelas x a quantidade de Parcelas é menor que o valor total.")
-            $('#valor_parcela').val("")
+            
+            $('#valor_parcelas').val("")
             }
 
         }
         });
-        
-  
-
+         
     $("#novo_item").click(function () {
         
         $(this).myfunction()
     });
-
-   
 
     $("#excluir_item").click(function () {
         if (count_item>0){
@@ -102,31 +98,25 @@ $(document).ready(function() {
         
     });
 
-    
     $("#data_vencimento").change(function () {
             $("#data_pagamento").val($("#data_vencimento").val())
 
     });
-
-
-    
+  
     $("#tipo_mensalidade").change(function () {
         tipo_mensalidade = $(this).find(":selected").text()
         $("#parcelas").val(0)
         $("#valor_parcelas").val("00,00")
-        $("#parcelas_pagas").val(0)
         $('#status_pagamento option[value=1 ]').attr('selected','selected');
         $("#Parcela").hide()
-        $("#Parcela_paga").hide()
         $("#Valor_parcela").hide()
         $("#Status_pagamento").hide()
        
         
-
+        
         if (tipo_mensalidade ==="Parcelado"){
             $("#Parcela").show()
             $("#Valor_parcela").show()
-            $("#Parcela_paga").show()
 
         } else if (tipo_mensalidade ==="Esporádico") {
             $("#Status_pagamento").show()
@@ -136,13 +126,46 @@ $(document).ready(function() {
 
     });
 
-
-
-
-
-
-
+    $("#parcelas").keyup(function () {
+        var valor_total = $('#valor').val().replace(",", ".")
+        var quantidade_parcelas = $('#parcelas').val()
+        valor = valor_total/quantidade_parcelas
         
+        if (quantidade_parcelas>1){
+            valor_reais = valor.toString().split(".")[0]
+
+            if (valor.toString().indexOf(".")>0){
+                valor_centavos = valor.toString().split(".")[1].substr(0, 2)
+            } else {
+                valor_centavos = "00"
+            }
+
+            if (valor_centavos.length===1){valor_centavos = valor_centavos+"0"}
+            if (valor_centavos.length===0){valor_centavos = "00"}
+            if (valor_centavos.length===2){
+                ultimo_digito_centavo = parseInt(valor_centavos.substr(1, 1))
+                primeiro_digito_centavo = parseInt(valor_centavos.substr(0, 1))
+                ultimo_digito_centavo = ultimo_digito_centavo +1
+                if (ultimo_digito_centavo===10){
+                    ultimo_digito_centavo = 0
+                    primeiro_digito_centavo = primeiro_digito_centavo + 1
+                    if (primeiro_digito_centavo===10){
+                        primeiro_digito_centavo = 0
+                        valor_reais = (parseInt(valor_reais)+1).toString()
+                        }
+                    }
+                    valor_centavos = primeiro_digito_centavo.toString()+ultimo_digito_centavo.toString()
+                }
+            
+
+            valor_final = valor_reais+","+valor_centavos
+            
+            $("#valor_parcelas").val(valor_final)
+        }
+        
+        
+    });
+
 
 })
 
@@ -153,23 +176,25 @@ $(window).load(function() {
     var id_pedido = $("[name=id_form]").attr('id')
     var id_conta = id_pedido
 
+    if (tipo_mensalidade==="Parcelado"){
+        $("#Valor_parcela").show()
+        $("#Parcela").show()
+
+    }
+
     
     $.ajax({
         url: window.location.origin + "/api/contas/" + id_conta,
         type: "GET",
         success: function(response){
             $("#valor_parcelas").val("00,00")
-            $("#parcelas_pagas").val(0)
             $("#parcelas").val(0)
             
             
             if (response.tipo_mensalidade==="3"){
-                
                 $("#Valor_parcela").show()
-                $("#Parcela_paga").show()
                 $("#Parcela").show()
                 $("#valor_parcelas").val(response.valor_parcelas)
-                $("#parcelas_pagas").val(response.parcelas_pagas)
                 $("#parcelas").val(response.parcelas)
             }
             if (response.tipo_mensalidade==="4"){
@@ -178,13 +203,14 @@ $(window).load(function() {
             }
             $('#tipo_mensalidade option[value='+ response.tipo_mensalidade +']').attr('selected','selected');
             $('#status_pagamento option[value='+ response.status_pagamento +']').attr('selected','selected');
-  
            
         }
     })
 
   
     var id_cliente = $("[name=load]").attr('id')
+    $("#status_entrega_div").hide()
+    
     $.ajax({
         url: window.location.origin + "/api/clientes/" + id_cliente,
         type: "GET",
@@ -195,6 +221,7 @@ $(window).load(function() {
             $('#status_pagamento option[value='+ response.status_pagamento +']').attr('selected','selected');
             $("#id_cliente").val(id_cliente)
             $("#id_cliente").attr('readonly', true);
+            $("#status_entrega_div").show()
            
         }
     })
@@ -206,12 +233,22 @@ $(window).load(function() {
             $('#tipo_pagamento option[value='+ response.tipo_pagamento +']').attr('selected','selected');
             $('#status_pagamento option[value='+ response.status_pagamento +']').attr('selected','selected');
             $('#tipo_retirada option[value='+ response.tipo_retirada +']').attr('selected','selected');
-            $('#status_pagamento option[value='+ response.status_pagamento +']').attr('selected','selected');
+            $('#status_entrega option[value='+ response.status_entrega +']').attr('selected','selected');
+            //$("#endereco").val(response.endereco)
             
         }
     })
     
+    //Depois de editar uma conta parcelada tem que aparecer o valor e as parcelas
+    var tipo_mensalidade = $("#tipo_mensalidade").find(":selected").text()
+    if (tipo_mensalidade==='Parcelado'){                
+        $("#Valor_parcela").show()
+        $("#Parcela").show()
 
+    } else if (tipo_mensalidade==="Esporádico"){
+        
+            $("#Status_pagamento").show()
+    }
     
 });
 

@@ -7,10 +7,11 @@ from flask import (Blueprint, current_app, flash, redirect, render_template,
 from flask_login import current_user, login_required
 
 from multilens.ext.api.resources import ResourcePedido
-from multilens.ext.db.models import Cliente, Estoque, Produto, Balance, Pedidos, Financeiro, Contas
+from multilens.ext.db.models import Cliente, Estoque, Produto, Contas_parceladas, Balance, Pedidos, Financeiro, Contas, Pedido_item, Contas_pagas
+                                        
 
-from .form import (FormClientes, FormFinishOrder, FormBalanceEntrada, FormPedido, FormFornecedor,
-                     FormBalanceSaida, FormProduto, FormContas, FormPedidoItens)
+from .form import (FormClientes, FormStatusPagamento, FormBalanceEntrada, FormPedido, FormFornecedor,
+                     FormBalanceSaida, FormProduto, FormContas, FormPedidoItens, FormStatusEntrega, FormContasPagas)
 
 bp = Blueprint("site", __name__)
 
@@ -113,6 +114,11 @@ def financeiro_pedidos():
 def contas():
     return render_template("site/contas.html", contas=Contas.get_all())
 
+@bp.route("/contas/pendentes", methods=["GET"])
+@login_required
+def contas_pendentes():
+    return render_template("site/contas_pendentes.html", contas=Contas.get_pendentes())
+
 
 
 @bp.route("/contas/cadastro", methods=["GET", "POST"])
@@ -178,6 +184,44 @@ def financeiro(conta: int):
 
     return render_template("forms/conta.html", form=form)
 
+@bp.route("/contas/pagamentos/<int:conta>", methods=["GET", "POST", "DELETE"])
+@login_required
+def status_pagamento_conta(conta: int):
+    form = FormContasPagas()
+    conta_obj = Contas.query.get_or_404(conta)
+    conta_paga = Contas_pagas()
+    
+
+    if request.method == "GET":
+        if conta_obj is None:
+            flash("Cadastro não localizado!", "is-warning")
+            redirect(url_for("site.financeiro"))
+        else:
+            form.load(conta_obj)
+           
+
+    elif request.method == "POST":
+        if form.validate_on_submit():
+            response = conta_paga.create_by_form(form, conta_obj)
+            if response["success"]:
+                flash(
+                    response["message"],
+                    "is-success",
+                )
+                return render_template("forms/contas_pagamentos.html", form=form)
+                
+            
+
+            else:
+                flash(response["message"], "is-danger")
+
+        else:
+            for field in form.errors.values():
+                [flash(err, "is-danger") for err in field]
+
+    return render_template("forms/contas_pagamentos.html", form=form)
+
+
 
 @bp.route("/estoque", methods=["GET"])
 @login_required
@@ -230,9 +274,8 @@ def estoque(produto: int):
 
 @bp.route("/produtos/", methods=["GET", "DELETE"])
 @login_required
-def produtos():
-        
-        return render_template("site/produtos.html", produtos=Produto.get_all())
+def produtos():       
+    return render_template("site/produtos.html", produtos=Produto.get_all())
 
 @bp.route("/produto/cadastro", methods=["GET", "POST"])
 @login_required
@@ -266,7 +309,6 @@ def form_produto():
                 [flash(err, "is-danger") for err in field]
 
         return render_template("forms/produto.html", form=form, cadastro=True)
-
 
 @bp.route("/produtos/<int:register>", methods=["GET", "POST", "DELETE"])
 @login_required
@@ -450,8 +492,6 @@ def form_produto_entrada():
 
         return render_template("forms/entrada.html", form=form)
 
-
-
 @bp.route("/cozinha/", methods=["GET"])
 @login_required
 def cozinha():
@@ -467,12 +507,10 @@ def pagamentos():
 def entregas():
     return render_template("site/entregas.html", pedidos=Pedidos.get_pendentes_entrega())
 
-
 @bp.route("/pedidos/", methods=["GET"])
 @login_required
 def pedidos():
     return render_template("site/pedidos.html", pedidos=Pedidos.get_all())
-
 
 @bp.route("/pedido/novo", methods=["GET", "POST", "PUT", "DELETE"])
 @login_required
@@ -552,44 +590,44 @@ def pedido(pedido: int):
 
     return render_template("forms/novo_pedido.html", form=form)
 
-
-
 @bp.route("/pedidos/itens/<int:pedido_id>", methods=["GET", "POST"])
 @login_required
 def itens_pedido(pedido_id: int):
     pedido_selecionado = Pedidos.query.get_or_404(pedido_id)
+    if  len(pedido_selecionado.pedidos_itens)==0:
+        pedido_selecionado.pedidos_itens.append(Pedido_item())
+
     form = FormPedidoItens()
-    form_pedidos = []
 
     if request.method == "GET":
         if pedido_selecionado is None:
             flash("Pedido não localizado!", "is-warning")
             redirect(url_for("site.pedidos"))
 
-        else:    
-            for pedido in pedido_selecionado.pedidos_itens: 
-                form.load(pedido)
-                form_pedidos.append(form)
-                form = FormPedidoItens()
+        else: 
+            form.load(pedido_selecionado.pedidos_itens[0])     
+
             
            
 
     elif request.method == "POST":
         if form.validate_on_submit():
-            
             lista_pedidos_itens = {}
             lista_pedidos_itens["produto"] =request.form["produto"]
             lista_pedidos_itens["quantidade"] =request.form["quantidade"]
             lista_pedidos_itens["descricao"] =request.form["descricao"]
 
-            for i in range(21):
-                  
+            for i in range(1,21):
                 try:
+                  
                   lista_pedidos_itens["produto"+str(i)] =request.form["produto"+str(i)]
                   lista_pedidos_itens["quantidade"+str(i)] =request.form["quantidade"+str(i)]
                   lista_pedidos_itens["descricao"+str(i)] =request.form["descricao"+str(i)]
+                  
                 except:
-                    pass
+                    
+                    break
+                    
             
             
             response = pedido_selecionado.update_pedidos(lista_pedidos_itens)
@@ -599,11 +637,10 @@ def itens_pedido(pedido_id: int):
                     response["message"],
                     "is-success",
                 )
-                for pedido in pedido_selecionado.pedidos_itens: 
-                    form.load(pedido)
-                    form_pedidos.append(form)
-                    form = FormPedidoItens()
-                return render_template("forms/pedido_itens.html", form=form_pedidos, pedido=pedido_selecionado)
+
+                form.load(pedido_selecionado.pedidos_itens[0])
+
+                return render_template("forms/pedido_itens.html", form=form, pedido=pedido_selecionado)
                 
             
 
@@ -615,8 +652,76 @@ def itens_pedido(pedido_id: int):
             for field in form.errors.values():
                 [flash(err, "is-danger") for err in field]
 
-    if len(form_pedidos) ==0:
-        form_pedidos.append(form)
-               
 
-    return render_template("forms/pedido_itens.html", form=form_pedidos, pedido=pedido_selecionado)
+    return render_template("forms/pedido_itens.html", form=form, pedido=pedido_selecionado)
+
+@bp.route("/pedidos/pagamentos/<int:pedido_id>", methods=["GET", "POST", "DELETE"])
+@login_required
+def status_pagamento_pedido(pedido_id: int):
+    form = FormStatusPagamento()
+    pedido_obj = Pedidos.query.get_or_404(pedido_id)
+    
+    if request.method == "GET":
+        if pedido_obj is None:
+            flash("Cadastro não localizado!", "is-warning")
+            redirect(url_for("site.pedidos"))
+        else:
+            form.load(pedido_obj)
+           
+
+    elif request.method == "POST":
+        if form.validate_on_submit():
+            response = pedido_obj.update_by_form(form)
+            if response["success"]:
+                flash(
+                    response["message"],
+                    "is-success",
+                )
+                return render_template("forms/pedidos_pagamentos.html", form=form)
+                
+            
+
+            else:
+                flash(response["message"], "is-danger")
+
+        else:
+            for field in form.errors.values():
+                [flash(err, "is-danger") for err in field]
+
+    return render_template("forms/pedidos_pagamentos.html", form=form)
+
+@bp.route("/pedidos/entregas/<int:pedido_id>", methods=["GET", "POST", "DELETE"])
+@login_required
+def status_entrega_pedido(pedido_id: int):
+    form = FormStatusEntrega()
+    pedido_obj = Pedidos.query.get_or_404(pedido_id)
+    
+    if request.method == "GET":
+        if pedido_obj is None:
+            flash("Cadastro não localizado!", "is-warning")
+            redirect(url_for("site.pedidos"))
+        else:
+            form.load(pedido_obj)
+           
+
+    elif request.method == "POST":
+        if form.validate_on_submit():
+            response = pedido_obj.update_by_form(form)
+            if response["success"]:
+                flash(
+                    response["message"],
+                    "is-success",
+                )
+                return render_template("forms/pedidos_entregas.html", form=form)
+                
+            
+
+            else:
+                flash(response["message"], "is-danger")
+
+        else:
+            for field in form.errors.values():
+                [flash(err, "is-danger") for err in field]
+
+    return render_template("forms/pedidos_entregas.html", form=form)
+

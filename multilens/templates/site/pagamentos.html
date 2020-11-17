@@ -68,6 +68,7 @@
                         <th>Valor do Pedido</th>
                         <th>Tipo Pagamento</th>
                         <th>Status Pagamento</th>
+                        <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -76,10 +77,18 @@
                             <td> #{{pedido.id}} </td>
                             <td> {{pedido.get_data_entrega()}} </td>
                             <td> {{pedido.cliente.name}} </td>
-                            <td> {{pedido.status_entrega}} </td>
+                            <td> {{pedido.s_entrega.status_entrega}} </td>
                             <td> {{pedido.valor}} </td>
                             <td> {{pedido.pagamento.tipo_pagamento}} </td>
                             <td> {{pedido.s_pagamento.status_pagamento}} </td>
+                            <td >
+                                <div class="control buttons" >
+                                    <strong> <a class="button {{ color_theme }} is-small is-fullwidth"
+                                                href="{{ url_for('site.status_pagamento_pedido', pedido_id= pedido.id ) }}">Editar Status</a>
+                                             
+                                    </strong>
+                                </div>
+                             </td>
    
                         </tr>    
                     {% endfor %}

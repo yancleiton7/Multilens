@@ -56,9 +56,8 @@ class ResourceConta(Resource):
         if conta is not None:
             response = conta.details
             if response["tipo_mensalidade"] == "3":
-                response["valor_parcelas"] = conta.parcelas_info.valor_parcelas
-                response["parcelas_pagas"] = conta.parcelas_info.parcelas_pagas
-                response["parcelas"] = conta.parcelas_info.parcelas
+                response["valor_parcelas"] = conta.parcelas_info[0].valor
+                response["parcelas"] = len(conta.parcelas_info)
 
 
 
