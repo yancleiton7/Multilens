@@ -38,13 +38,14 @@ $(document).ready(function() {
             
             
             div_adicinar = JSON.parse(div_adicinar);
-            
+
+            div_adicinar = div_adicinar.replace('text" value="'+$("[name=nome_fornecedor]").val(), 'text" value="')
+            div_adicinar = div_adicinar.replace('text" value="'+$("[name=valor]").val(), 'text" value="')
+            div_adicinar = div_adicinar.replace('text" value="'+$("[name=descricao]").val(), 'text" value="')
             div_adicinar = div_adicinar.replace('name="nome_fornecedor', 'name="nome_fornecedor'+(count_item-1))
             div_adicinar = div_adicinar.replace('name="valor', 'name="valor'+(count_item-1))
             div_adicinar = div_adicinar.replace('name="descricao', 'name="descricao'+(count_item-1))
-            div_adicinar = div_adicinar.replace($("[name=nome_fornecedor]").val(), '')
-            div_adicinar = div_adicinar.replace($("[name=valor]").val(), '')
-            div_adicinar = div_adicinar.replace($("[name=descricao]").val(), '')
+
             div_adicinar = div_adicinar.replace('<div class="field is-grouped">', '<div class="field is-grouped" id="item-'+count_item+'">')
             
 

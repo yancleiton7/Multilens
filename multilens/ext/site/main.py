@@ -10,7 +10,7 @@ from multilens.ext.api.resources import ResourcePedido
 from multilens.ext.db.models import Cliente, Estoque, Produto, Contas_parceladas, Balance, Pedidos, Financeiro, Contas, Pedido_item, Contas_pagas
                                         
 
-from .form import (FormClientes, FormStatusPagamento, FormBalanceEntrada, FormPedido, FormFornecedor,
+from .form import (FormClientes, FormStatusPagamento, FormBalanceEntrada, FormPedido, FormFornecedor, FormParcelas,
                      FormBalanceSaida, FormProduto, FormContas, FormPedidoItens, FormStatusEntrega, FormContasPagas)
 
 bp = Blueprint("site", __name__)
@@ -201,6 +201,7 @@ def status_pagamento_conta(conta: int):
            
 
     elif request.method == "POST":
+        print(request.form)
         if form.validate_on_submit():
             response = conta_paga.create_by_form(form, conta_obj)
             if response["success"]:
@@ -221,6 +222,75 @@ def status_pagamento_conta(conta: int):
 
     return render_template("forms/contas_pagamentos.html", form=form)
 
+@bp.route("/pedidos/itens/<int:conta_id>", methods=["GET", "POST"])
+@login_required
+def parcelas(conta_id: int):
+    conta_obj = Contas.query.get_or_404(conta_id)
+    if  len(conta_obj.parcelas_info)==0:
+        conta_obj.parcelas_info.append(Contas_parceladas())
+
+    form = FormParcelas()
+
+    if request.method == "GET":
+        if conta_obj is None:
+            flash("Conta não localizada!", "is-warning")
+            redirect(url_for("site.contas"))
+
+        else: 
+            form.load(conta_obj.parcelas_info[0])     
+
+            
+           
+
+    elif request.method == "POST":
+        print(request.form)
+        if form.validate_on_submit():
+            contagem_de_erro = 0
+            for parcela in conta_obj.parcelas_info:
+                try:
+                    parcela.valor =request.form["valor"+str(parcela.id)]
+                    parcela.status_pagamento =request.form["status_pagamento"+str(parcela.id)]
+                    parcela.data_pagamento =request.form["data_pagamento"+str(parcela.id)]
+
+                    if parcela.status_pagamento=="1":
+                        parcela.data_pagamento ="Pendente"
+
+                    
+                    parcela.data_vencimento =request.form["data_vencimento"+str(parcela.id)]
+                    parcela.save()
+                except:
+                    print(parcela.id)
+                    contagem_de_erro += 1
+                    parcela.valor =request.form["valor"]
+                    parcela.status_pagamento =request.form["status_pagamento"]
+                    parcela.data_pagamento =request.form["data_pagamento"]
+                    parcela.data_vencimento =request.form["data_vencimento"]
+                    parcela.save()
+
+            
+
+            if contagem_de_erro==1:
+                flash(
+                    "Parcelas atualizadas com sucesso.",
+                    "is-success",
+                )
+
+                form.load(conta_obj.parcelas_info[0])
+
+                return render_template("forms/parcelas.html", form=form, conta=conta_obj)
+                
+            
+
+            else:
+                
+                flash("Algo aconteceu errado.", "is-danger")
+
+        else:
+            for field in form.errors.values():
+                [flash(err, "is-danger") for err in field]
+
+
+    return render_template("forms/parcelas.html", form=form, conta=conta_obj)
 
 
 @bp.route("/estoque", methods=["GET"])

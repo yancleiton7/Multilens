@@ -623,6 +623,45 @@ class FormContasPagas(BaseForm):
 
         self.id = conta_obj.id
         
+class FormParcelas(BaseForm):
+
+    data_pagamento = StringField(
+        "Data Pagamento",
+    )
+    data_vencimento = StringField(
+        "Data Vencimento",
+        [
+            Regexp("\d{4}-\d{2}-\d{2}", message="Vencimento: Datas seguem o formato 01/01/2000"),
+        ],
+    )
+
+    status_pagamento = QuerySelectField(
+        "Status do Pagamento",
+        get_label="status_pagamento_conta",
+        get_pk=lambda x: x.id,
+        query_factory=lambda: Pagamento_conta.query,
+        allow_blank=True,   
+    )
+
+    valor = StringField(
+        "Valor da Parcela",
+        [
+            Required("Preencher com o valor da parcela."),
+            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Parcela: Informe o valor no formato RR,cc ex: 45,22"),
+        ],
+    )
+
+    observacao =  StringField("Observações")
+
+
+    
+
+
+    def load(self, parcela):
+        self.process(obj=parcela)
+        return ""
        
+        
+               
         
         

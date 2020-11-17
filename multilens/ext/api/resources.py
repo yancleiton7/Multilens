@@ -76,3 +76,16 @@ class ResourcePedidoItens(Resource):
             response = {}
 
         return response
+
+class ResourceParcelas(Resource):
+    #@login_required
+    def get(self, id: int):
+        conta = Contas.get(id)
+        response = {}
+        for parcela in conta.parcelas_info:
+            if parcela is not None:
+                response[parcela.id] = parcela.details
+            else:
+                response = {}
+
+        return response

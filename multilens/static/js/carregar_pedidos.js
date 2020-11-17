@@ -24,7 +24,7 @@ $(window).load(function() {
 
    
     var pedido = retornar_clientes(id_pedido)
-   
+
 
     for (i = 0; i < quantidade_linhas; i++) {
         

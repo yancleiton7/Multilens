@@ -216,7 +216,15 @@ class Contas(db.Model):
 
         return str(quantidade_parcelas_pagas)+"/"+str(len(self.parcelas_info))
 
+    def get_parcelas_to_dict(self):
+        response = {}
+        for parcela in self.parcelas_info:
+            if parcela is not None:
+                response[parcela.id] = parcela.details
+            else:
+                response = {}
 
+        return response
 
     def to_dict(self) -> dict:
         return dict((col, getattr(self, col)) for col in self.__table__.columns.keys())
@@ -313,6 +321,16 @@ class Contas_parceladas(db.Model):
     @staticmethod
     def get(id: int):
         return Contas_parceladas.query.filter_by(id=id).first()
+
+    def to_dict(self) -> dict:
+        return dict((col, getattr(self, col)) for col in self.__table__.columns.keys())
+
+    @property
+    def details(self) -> dict:
+        details = self.to_dict()
+        #details.pop("register_id")
+        return details
+
 
     def save(self):
         try:

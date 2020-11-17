@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% from "macros/render_messages.html" import render_message %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/carregar_parcelas.js') }}" type="text/javascript"></script>
+{% endblock extra_scripts %}
+
+{% block body %}
+{{ render_message() }}
+<form method="POST">
+    {{ form.csrf_token }}
+    <article class="panel {{ color_theme }}">
+
+        <div class="panel-heading">{{conta.descricao_conta}}</div>
+
+        <div name="load" id={{conta.parcelas_info|length}}></div>
+        <div name="id_form" id={{conta.id}}></div>
+        
+
+        <div class="form-body">
+            
+           {% for item_parcela in conta.parcelas_info %}
+           {{form.load(item_parcela)}}
+
+           <div name="id_pedido-{{loop.index0}}" id={{item_parcela.id}}></div>
+           <div class="field" id="item-{{loop.index0}}">
+
+                <div class="field is-grouped">
+                    <div class="control is-expanded">
+                        
+    {% if loop.index0 == 0%}   <label class="label"> {{ form.valor.label }} </label>   {% endif %}           
+                            <div class="control">
+                                {{ form.valor( class="input", type="text", placeholder="") }}
+                            </div>
+                    </div>
+
+
+                
+
+                    <div class="control is-expanded">
+    {% if loop.index0 == 0%}   <label class="label"> {{ form.data_pagamento.label }} </label>   {% endif %}                 
+                            <div class="control">
+                                {{ form.data_pagamento( class="input", type="date", placeholder="") }}
+                            </div>
+                    </div>
+
+                <div class="control is-expanded">
+    {% if loop.index0 == 0%}   <label class="label"> {{ form.data_vencimento.label }} </label>   {% endif %}             
+                        <div class="control">
+                            {{ form.data_vencimento( class="input", type="date", placeholder="") }}
+                        </div>
+                </div>
+                
+
+                <div class="control">
+    {% if loop.index0 == 0%}   <label class="label"> {{ form.status_pagamento.label }} </label>   {% endif %}  
+                                            <div class="control">
+                                                <div class="select">
+                                                    {{ form.status_pagamento() }}
+                                                </div>
+                                            </div>
+                                    </div>
+            </div>
+        </div>
+            {% endfor %}
+
+            <div class="field" id="form_principal"></div>
+             
+ 
+
+
+
+            
+
+        </div>
+            <div class="field is-grouped">
+                <div class="control is-expanded">
+                    <input class="button is-fullwidth {{ color_theme }}" type="submit" id="btn_salvar" value="Salvar" > 
+                    
+                </div>
+                <div class="control">
+                    <a href="{{url_for('site.contas')}}"   class="button is-success" >Voltar</a>
+                </div>
+            </div>
+        </div>
+    </article>
+</form>
+{% endblock body %}
