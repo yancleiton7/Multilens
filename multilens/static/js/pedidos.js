@@ -62,7 +62,6 @@ $(document).ready(function() {
         $("#endereco_entrega").removeAttr('disabled');
         $("#id_cliente").removeAttr('disabled');
         $('#status_entrega option[value=1]').attr('selected','selected');
-        alert($('#status_entrega').val())
         });
 
     $("#salvar_conta").click(function () {
