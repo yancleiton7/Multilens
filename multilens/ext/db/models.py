@@ -5,6 +5,7 @@ from flask_login import UserMixin, current_user
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash
 
+
 from . import db
 
 db.metadata.clear()

@@ -61,6 +61,8 @@ $(document).ready(function() {
     $("#btn_salvar").click(function () {
         $("#endereco_entrega").removeAttr('disabled');
         $("#id_cliente").removeAttr('disabled');
+        $('#status_entrega option[value=1]').attr('selected','selected');
+        alert($('#status_entrega').val())
         });
 
     $("#salvar_conta").click(function () {
@@ -209,6 +211,7 @@ $(window).load(function() {
 
   
     var id_cliente = $("[name=load]").attr('id')
+    
     $("#status_entrega_div").hide()
     
     $.ajax({

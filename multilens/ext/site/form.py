@@ -12,7 +12,9 @@ from multilens.ext.db.models import ( Register, Estoque, Produto,Tipo, Retirada,
 class BaseForm(FlaskForm):
     def populate_obj(self, obj: FlaskForm):
         super(FlaskForm, self).populate_obj(obj)
+        
         for field in self:
+            print(f"Nome: {field.name} e dado:{field.data}")
             if isinstance(field, QuerySelectField):
                 setattr(obj, field.name, field.data.id)
 

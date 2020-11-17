@@ -46,6 +46,7 @@ def form_cliente():
 
     elif request.method == "POST":
         if form.validate_on_submit():
+            
             response = Cliente.create_by_form(form)
 
             if response["success"]:
@@ -222,7 +223,7 @@ def status_pagamento_conta(conta: int):
 
     return render_template("forms/contas_pagamentos.html", form=form)
 
-@bp.route("/pedidos/itens/<int:conta_id>", methods=["GET", "POST"])
+@bp.route("/contas/parcelas/<int:conta_id>", methods=["GET", "POST"])
 @login_required
 def parcelas(conta_id: int):
     conta_obj = Contas.query.get_or_404(conta_id)
