@@ -1054,8 +1054,7 @@ class Financeiro(db.Model):
 
     @staticmethod
     def get_all():
-        #return Pedidos.query.order_by(Pedidos.data_entrega.asc(), Pedidos.hora_entrega.asc()).all()
-        return Financeiro.query.order_by(data_pagamento.asc()).all()
+        return Financeiro.query.order_by(Financeiro.data_pagamento.asc()).all()
 
     def get_total_pedidos_valor(self):
         mes = datetime.now().strftime('%m')
