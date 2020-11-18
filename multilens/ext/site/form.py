@@ -71,7 +71,7 @@ class FormClientes(BaseForm):
     numero = StringField("Número", [Required("Necessário o número"), Regexp("^[0-9]*$", message="Informe somente números")])
     address = StringField("Endereço", [Required("Informe o endereço")])
     district = StringField("Bairro", [Required("Informe o bairro")])
-    complemento = StringField("Complemento", [Required("Caso não haja complemento, colocar *.")])
+    complemento = StringField("Complemento", )
     
     def load(self, cliente):
         self.process(obj=cliente)
@@ -109,7 +109,7 @@ class FormBalanceEntrada(BaseForm):
     preco = StringField(
         "Preço",
         [
-            Required("Preencher o preço utilizado"),
+            Required("Preencher com o preço do produto."),
             Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe o valor no formato RR,cc ex: 45,22"),
         ],
     )
@@ -117,7 +117,7 @@ class FormBalanceEntrada(BaseForm):
     date = StringField(
         "Data",
         [
-            Regexp("\d{4}-\d{2}-\d{2}", message="Aniversário de ser no formato 01/01/2000"),
+            Regexp("\d{4}-\d{2}-\d{2}", message="Datas devem ser no formato 01/01/2000"),
         ],
     )
 
@@ -168,7 +168,7 @@ class FormBalanceSaida(BaseForm):
     date = StringField(
         "Data",
         [
-            Regexp("\d{4}-\d{2}-\d{2}", message="Aniversário de ser no formato 01/01/2000"),
+            Regexp("\d{4}-\d{2}-\d{2}", message="Datas devem ser no formato 01/01/2000"),
         ],
     )
 
@@ -203,7 +203,7 @@ class FormFornecedor(BaseForm):
     valor = StringField(
         "Preço",
         [
-            Required("Preencher com o preço desse fornecedor"),
+            Required("Preencher com o preço nesse fornecedor"),
             Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe o valor no formato RR,cc ex: 45,22"),
         ],
     )
@@ -211,7 +211,7 @@ class FormFornecedor(BaseForm):
     descricao = StringField(
         "Informação adicional",
         [
-           Required("Colocar informação adicional sobre esse fornecedor"),
+           
         ],
     )
 
@@ -286,7 +286,7 @@ class FormContas(BaseForm):
     descricao_conta  = StringField("Descrição da Conta", [Required("Informar a descrição da conta")])
     fornecedor = StringField("Fornecedor", [Required("Registrar o fornecedor.")])
     valor  = StringField("Valor", [Required("Colocar o valor da conta"),
-            Regexp("^[0-9]\d{0,4}(\.\d{5})*,\d{2}$", message="Informe o valor no formato RR,cc ex: 45,22"),])
+            Regexp("^[0-9]\d{0,4}(\.\d{5})*,\d{2}$", message="Informe o valor da conta no formato RR,cc ex: 45,22"),])
     
     status_pagamento = QuerySelectField(
         "Status do Pagamento",
@@ -338,13 +338,13 @@ class FormPedido(BaseForm):
     data_pedido = StringField(
         "Data pedido",
         [
-            Regexp("\d{4}-\d{2}-\d{2}", message="Datas seguem o formato 01/01/2000"),
+            Regexp("\d{4}-\d{2}-\d{2}", message="Data de pedido: Datas seguem o formato 01/01/2000"),
         ],
     )
     data_entrega = StringField(
         "Data entrega",
         [
-            Regexp("\d{4}-\d{2}-\d{2}", message="Datas seguem o formato 01/01/2000"),
+            Regexp("\d{4}-\d{2}-\d{2}", message="Data de entrega: Datas seguem o formato 01/01/2000"),
         ],
     )
     hora_entrega = StringField(
@@ -431,28 +431,6 @@ class FormPedido(BaseForm):
         self.tipo_retirada.data = ""
         self.tipo_pagamento.data = ""
         self.status_pagamento.data = ""
-
-class FormOrder(BaseForm):
-    freight = FloatField("Frete", validators=[Required("O frete é obrigatorio")])
-    '''
-    type_of_sale = QuerySelectField(
-        "Tipo de venda",
-        validators=[Required("O tipo de venda é obrigatorio!")],
-        get_label="type_of_sale",
-        get_pk=lambda x: x.id,
-        query_factory=lambda: SaleType.query,
-        allow_blank=True,
-    )
-    type_pgto = QuerySelectField(
-        "Prazo Pgto.",
-        validators=[Required("O prazo do pagamento é obrigatorio!")],
-        get_label="type_of_payment",
-        get_pk=lambda x: x.id,
-        query_factory=lambda: PaymentType.query,
-        allow_blank=True,
-    )
-    '''
-    discount = FloatField("Desconto")
 
 class FormPedidoItens(BaseForm):
     produto = QuerySelectField(
@@ -547,7 +525,7 @@ class FormStatusEntrega(BaseForm):
     )
 
     
-    #Caso o seja Delivery
+    
     endereco_entrega = StringField(
         "Endereço Entrega",
         [        
@@ -584,13 +562,13 @@ class FormContasPagas(BaseForm):
     data_pagamento = StringField(
         "Data Pagamento",
         [
-            Regexp("\d{4}-\d{2}-\d{2}", message="Datas seguem o formato 01/01/2000"),
+            Regexp("\d{4}-\d{2}-\d{2}", message="Pagamento: Datas seguem o formato 01/01/2000"),
         ],
     )
     data_vencimento = StringField(
         "Data Vencimento",
         [
-            Regexp("\d{4}-\d{2}-\d{2}", message="Datas seguem o formato 01/01/2000"),
+            Regexp("\d{4}-\d{2}-\d{2}", message="Vencimento: Datas seguem o formato 01/01/2000"),
         ],
     )
 

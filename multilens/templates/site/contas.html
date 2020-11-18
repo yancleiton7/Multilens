@@ -27,7 +27,7 @@
                     <a href="{{url_for('site.financeiro_pedidos')}}" class="button {{color_theme}}  is-rounded">Pedidos</a>
                     <a href="{{url_for('site.contas')}}" class="button is-success is-rounded">Contas </a>
                     <a href="{{url_for('site.contas_pendentes')}}" class="button {{color_theme}} is-rounded">Pendentes Mês</a>
-                    <a  class="button {{color_theme}} is-rounded">Fluxo Caixa</a>
+                    <a href="{{url_for('site.fluxo')}}" class="button {{color_theme}} is-rounded">Fluxo Caixa</a>
                 <strong>   </strong>
             </div>
         </div>
@@ -86,11 +86,11 @@
                             <td>  {{conta.fornecedor}} - {{conta.descricao_conta}} <p>
                                 
                                 {% if conta.recorrencia.tipo_mensalidade == "Parcelado" %}
-                                        Parcelas {{conta.get_formato_parcela()}} -
-                                        R$: {{conta.parcelas_info[0].valor}} -
-                                        Total R$: {{conta.valor}}
+                                        Parcela {{conta.get_formato_parcela()}} -
+                                        R$ {{conta.parcelas_info[0].valor}} -
+                                        Total R$ {{conta.valor}}
                                      
-                                {% elif conta.recorrencia.tipo_mensalidade == "Esporádico" %}
+                                {% elif conta.recorrencia.tipo_mensalidade == "Variável" %}
                                     {{conta.status_pagamento_conta}} <p>     
                                 {% else %}   
                                    <b> {{conta.recorrencia.tipo_mensalidade}} </b>      

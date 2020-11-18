@@ -4,6 +4,7 @@ from datetime import datetime
 from flask_login import UserMixin, current_user
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash
+from sqlalchemy.sql import func
 
 
 from . import db
@@ -30,7 +31,14 @@ def monthdelta(date, delta):
         29 if y%4==0 and not y%400==0 else 28,31,30,31,30,31,31,30,31,30,31][m-1])
     return date.replace(day=d,month=m, year=y)
 
+def tratar_centavos(valor):
+    valor_formatado =  str('{:.2f}').format(valor)
+    valor_formatado = valor_formatado.replace(".", ",")
+    return valor_formatado
+
 class BaseModel:
+
+    '''
 
     def populate_object(self, **data: dict) -> None:
         columns = self.__table__.columns.keys()
@@ -89,6 +97,7 @@ class BaseModel:
 
     def parse_exception(self, excp: Exception) -> str:
         return str(excp)
+    '''
 
 
 class User(UserMixin, db.Model):
@@ -177,9 +186,20 @@ class Contas(db.Model):
     def get(id: int):
         return Contas.query.filter_by(id=id).first()
 
+
     @staticmethod
     def get_all():
         return Contas.query.all()
+
+    def get_descricao(self):
+        tipo_mensalidade = self.recorrencia.tipo_mensalidade
+        quantidade = self.get_parcelas_pagas()
+        if tipo_mensalidade == "Parcelado":
+            return (f"Parcela: {quantidade-1} de {len(self.parcelas_info)} - {self.fornecedor} : {self.descricao_conta}.")
+        elif tipo_mensalidade == "Compras":
+            return (f"Compras feitas em {self.fornecedor} ")
+        else:
+            return (f"{self.fornecedor} - Descrição: {self.descricao_conta}")
    
     @staticmethod
     def get_pendentes():
@@ -188,7 +208,13 @@ class Contas(db.Model):
         lista_pendentes_mes_atual = []
         for conta in lista_de_contas:
             vencimento = (conta.data_vencimento[:4]+conta.data_vencimento[5:7])
-            if vencimento <= hoje:
+            if conta.recorrencia.tipo_mensalidade=="Anual":
+                vencimento = (conta.data_vencimento[:4])
+                ano = datetime.now().strftime('%Y')
+                if vencimento <= ano:
+                    lista_pendentes_mes_atual.append(conta)
+
+            elif vencimento <= hoje:
                 lista_pendentes_mes_atual.append(conta)
 
         return lista_pendentes_mes_atual
@@ -208,14 +234,16 @@ class Contas(db.Model):
 
     def get_data_pagamento(self):
         return converter_data(self.data_pagamento)
+    
+    def get_parcelas_pagas(self):
+        return Contas_parceladas.query.filter(Contas_parceladas.status_pagamento == 2, Contas_parceladas.id_conta == self.id).count()
+
+    def get_parcela_atual(self):
+        return self.get_parcelas_pagas()+1
+
 
     def get_formato_parcela(self):
-        quantidade_parcelas_pagas=0
-        for parcela in self.parcelas_info:
-            if parcela.status_pagamento == 2:
-                quantidade_parcelas_pagas +=1
-
-        return str(quantidade_parcelas_pagas)+"/"+str(len(self.parcelas_info))
+        return str(self.get_parcela_atual())+"/"+str(len(self.parcelas_info))
 
     def get_parcelas_to_dict(self):
         response = {}
@@ -292,7 +320,7 @@ class Contas(db.Model):
         else:
             response = {
                 "success": True,
-                "message": "Conta cadastrada com successo, cadastre agora os produtos!",
+                "message": "Conta cadastrada com successo!",
                 "id": self.id,
             }
        
@@ -371,7 +399,11 @@ class Contas_pagas(db.Model):
 
     @staticmethod
     def get(id: int):
-        return Contas_parceladas.query.filter_by(id=id).first()
+        return Contas_pagas.query.filter_by(id=id).first()
+
+    def get_data_pagamento(self):
+        return converter_data(self.data_pagamento)
+
 
     @staticmethod
     def create_by_form(form, conta_obj):
@@ -419,6 +451,17 @@ class Contas_pagas(db.Model):
 
         conta_obj.save()
         response = conta_paga.save()
+
+        financeiro = Financeiro()
+        financeiro.tipo_item = "Conta"
+        financeiro.data_pagamento = conta_paga.data_pagamento
+        financeiro.id_item = conta_paga.id
+        financeiro.tipo_forma = conta_obj.recorrencia.tipo_mensalidade
+        financeiro.descricao = conta_obj.get_descricao()
+        financeiro.valor = conta_paga.valor
+        
+        financeiro.save()
+        
 
         return response
 
@@ -650,7 +693,7 @@ class Fornecedor(db.Model):
         else:
             response = {
                 "success": True,
-                "message": "Fornecedor cadastrado com successo, cadastre agora os produtos!",
+                "message": "Fornecedor cadastrado com successo!",
                 "id": self.id,
             }
        
@@ -702,7 +745,7 @@ class Pedido_item(db.Model):
         else:
             response = {
                 "success": True,
-                "message": "Itens cadastrado com successo, cadastre agora os produtos!",
+                "message": "Itens cadastrado com successo!",
                 "id": self.id,
             }
        
@@ -749,6 +792,10 @@ class Pedidos(db.Model):
 
     def get_data_pedido(self):
         return converter_data(self.data_pedido)
+
+    def get_data_pagamento(self):
+        return converter_data(self.data_pagamento)
+
 
     @staticmethod
     def get_all():
@@ -997,13 +1044,52 @@ class Financeiro(db.Model):
     id_item = db.Column("id_item", db.Integer)
     tipo_item = db.Column("tipo_item", db.Unicode)
     data_pagamento = db.Column("data_pagamento", db.Unicode)
-    observacao = db.Column("observacao", db.Unicode)
+    tipo_forma = db.Column("tipo_forma", db.Unicode)
+    descricao = db.Column("descricao", db.Unicode)
+    valor = db.Column("valor", db.Unicode)
 
+    
 
 
     @staticmethod
     def get_all():
         return Financeiro.query.all()
+
+    def get_total_pedidos_valor(self):
+        qry = db.session.query(func.sum(Financeiro.valor).label("total")).filter_by(tipo_item="Pedido")
+        return tratar_centavos(qry.first()[0])
+
+    def get_total_contas_valor(self):
+        qry = db.session.query(func.sum(Financeiro.valor).label("total")).filter_by(tipo_item="Conta")
+        return tratar_centavos(qry.first()[0])
+
+    def get_total_pedidos(self):
+        return Financeiro.query.filter_by(tipo_item="Pedido").count()
+
+    def get_total_contas(self):
+        return Financeiro.query.filter_by(tipo_item="Conta").count()
+
+
+    def get_saldo(self):
+        saida = float(self.get_total_contas_valor().replace(",","."))
+        entrada = float(self.get_total_pedidos_valor().replace(",","."))
+        return tratar_centavos(entrada-saida)
+
+
+    def get_total_geral(self):
+        qry = db.session.query(func.count(Financeiro.valor).label("total"))
+        return qry.first()[0]
+
+    def get_all_organizado():
+        lista_retorno = []
+        financeiro = Financeiro.get_all()
+        for item in financeiro:
+            if item.tipo_item == "Conta":
+                lista_retorno.append(Contas_pagas.get(item.id_item))
+            if item.tipo_item == "Pedido":
+                lista_retorno.append(Pedidos.get(item.id_item)) 
+        print(lista_retorno)        
+        return lista_retorno
 
    
     @staticmethod
@@ -1022,18 +1108,6 @@ class Financeiro(db.Model):
 
 
 
-    def get_item(self):
-        if self.tipo_item == "Pedido":
-            self.item = Pedidos.get(self.id_item)
-            self.tipo_financeiro = "Entrada"
-
-        elif self.tipo_item == "Conta":
-            self.item = Contas.get(self.id_item)
-            self.tipo_financeiro = "Saida"
-            
-
-        return self.id
-
     def save(self):
         try:
             db.session.add(self)
@@ -1049,7 +1123,7 @@ class Financeiro(db.Model):
         else:
             response = {
                 "success": True,
-                "message": "Item Financeiro, cadastre agora os produtos!",
+                "message": "Item Financeiro!",
                 "id": self.id,
             }
        
@@ -1132,7 +1206,7 @@ class Register(db.Model):
         else:
             response = {
                 "success": True,
-                "message": "Registro cadastrada com successo, cadastre agora os produtos!",
+                "message": "Registro cadastrada com successo",
                 "id": self.id,
             }
        

@@ -2,13 +2,15 @@ import json
 import os
 import time
 
+
 from flask import (Blueprint, current_app, flash, redirect, render_template,
                    request, send_file, url_for)
 from flask_login import current_user, login_required
 
+
 from multilens.ext.api.resources import ResourcePedido
 from multilens.ext.db.models import Cliente, Estoque, Produto, Contas_parceladas, Balance, Pedidos, Financeiro, Contas, Pedido_item, Contas_pagas
-                                        
+                                      
 
 from .form import (FormClientes, FormStatusPagamento, FormBalanceEntrada, FormPedido, FormFornecedor, FormParcelas,
                      FormBalanceSaida, FormProduto, FormContas, FormPedidoItens, FormStatusEntrega, FormContasPagas)
@@ -583,6 +585,12 @@ def entregas():
 def pedidos():
     return render_template("site/pedidos.html", pedidos=Pedidos.get_all())
 
+@bp.route("/fluxo/", methods=["GET"])
+@login_required
+def fluxo():
+    return render_template("site/fluxo.html", financeiro=Financeiro.get_all())
+
+
 @bp.route("/pedido/novo", methods=["GET", "POST", "PUT", "DELETE"])
 @login_required
 def novo_pedido():
@@ -748,6 +756,15 @@ def status_pagamento_pedido(pedido_id: int):
                     response["message"],
                     "is-success",
                 )
+                financeiro_obj = Financeiro()
+                financeiro_obj.tipo_item="Pedido"
+                financeiro_obj.data_pagamento = pedido_obj.data_pagamento
+                financeiro_obj.id_item = pedido_obj.id
+                financeiro_obj.descricao = (f"Pedido Nº: {pedido_obj.id}")
+                financeiro_obj.tipo_forma = pedido_obj.pagamento.tipo_pagamento
+                financeiro_obj.valor = pedido_obj.valor
+                financeiro_obj.save()
+
                 return render_template("forms/pedidos_pagamentos.html", form=form)
                 
             

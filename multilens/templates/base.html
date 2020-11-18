@@ -43,20 +43,19 @@
       <a class="navbar-item" href="{{ url_for('site.clientes') }}">
         Clientes
       </a>
-      <a class="navbar-item" href="{{ url_for('site.financeiro_pedidos') }}">
-        Financeiro
-      </a>
-
-      <a class="navbar-item" href="{{ url_for('site.estoques') }}">
-        Estoque
-      </a>
-
       <a class="navbar-item" href="{{ url_for('site.novo_pedido') }}">
         Novo Pedido
       </a>
       <a class="navbar-item" href="{{ url_for('site.cozinha') }}">
-        Historico de vendas
+        Pedidos
       </a>
+      <a class="navbar-item" href="{{ url_for('site.estoques') }}">
+        Estoque
+      </a>
+      <a class="navbar-item" href="{{ url_for('site.financeiro_pedidos') }}">
+        Financeiro
+      </a>
+
       {% if current_user.is_admin %}
       <a class="navbar-item" href="{{ url_for('user.index_view') }}">
         Tela Administrativa

@@ -31,8 +31,14 @@ $(document).ready(function() {
 
     var count_item = 0;
     
-    $("#id_cliente").change(function () {
+    $("#id_cliente").keyup(function () {
         var id_cliente = $(this).val()
+        if (id_cliente===""){
+            $("#nome_cliente").val("")
+                $("#telefone").val("")
+                $("#endereco").val("")
+        }
+        else{
         $.ajax({
             url: window.location.origin + "/api/clientes/" + id_cliente,
             type: "GET",
@@ -43,6 +49,7 @@ $(document).ready(function() {
                 $("#endereco").val(response.endereco)
             }
         })
+    }
 
     });
 
@@ -59,9 +66,14 @@ $(document).ready(function() {
     });
 
     $("#btn_salvar").click(function () {
-        $("#endereco_entrega").removeAttr('disabled');
-        $("#id_cliente").removeAttr('disabled');
-        $('#status_entrega option[value=1]').attr('selected','selected');
+        if ($("#id_cliente").attr('readonly')===false){
+                $('#status_entrega option[value=1]').attr('selected','selected');
+            }
+        
+        if ($("#nome_cliente").val()===""){
+            alert("Informe um Id válido.")
+            $("#id_cliente").val("")
+        }  
         });
 
     $("#salvar_conta").click(function () {
@@ -119,7 +131,7 @@ $(document).ready(function() {
             $("#Parcela").show()
             $("#Valor_parcela").show()
 
-        } else if (tipo_mensalidade ==="Esporádico") {
+        } else if (tipo_mensalidade ==="Variável") {
             $("#Status_pagamento").show()
         } 
         
@@ -247,7 +259,7 @@ $(window).load(function() {
         $("#Valor_parcela").show()
         $("#Parcela").show()
 
-    } else if (tipo_mensalidade==="Esporádico"){
+    } else if (tipo_mensalidade==="Variável"){
         
             $("#Status_pagamento").show()
     }
