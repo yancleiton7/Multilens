@@ -53,10 +53,10 @@
         </div>
         <strong>  </strong>
         <div class="navbar-end">
-            <div id="" class="buttons">
-            <a href="{{url_for('site.form_contas')}}" class="button is-success is-rounded">Cadastrar conta</a>
-            <strong>   </strong>
-            </div>
+                <div class="field" style="display: inline-flex">    
+                    <a id="mostrar_compra"  class="button is-rounded">Mostrar Compras</a>
+                    <a href="{{url_for('site.form_contas')}}" class="button is-success is-rounded">Cadastrar conta</a>
+                </div>
         </div>
     </div>
     <div class="form-body">
@@ -90,9 +90,7 @@
                                         Total R$ {{conta.valor}}
                                      
                                 {% elif conta.recorrencia.tipo_mensalidade == "Variável" %}
-                                    {{conta.status_pagamento_conta}} <p>     
-                                {% else %}   
-                                   <b> {{conta.recorrencia.tipo_mensalidade}} </b>      
+                                    {{conta.pagamento.status_pagamento_conta}} <p>          
                                 {% endif %} 
 
 

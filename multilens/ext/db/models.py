@@ -217,6 +217,7 @@ class Contas(db.Model):
             elif vencimento <= hoje:
                 lista_pendentes_mes_atual.append(conta)
 
+        print(lista_pendentes_mes_atual)
         return lista_pendentes_mes_atual
 
     def get_status_vencimento(self):
@@ -445,7 +446,7 @@ class Contas_pagas(db.Model):
 
                 
             
-        elif conta_obj.tipo_mensalidade == "4":
+        elif conta_obj.tipo_mensalidade == "4" or conta_obj.tipo_mensalidade == "5":
             conta_obj.status_pagamento = 2
 
 
@@ -1082,16 +1083,6 @@ class Financeiro(db.Model):
         qry = db.session.query(func.count(Financeiro.valor).label("total"))
         return qry.first()[0]
 
-    def get_all_organizado():
-        lista_retorno = []
-        financeiro = Financeiro.get_all()
-        for item in financeiro:
-            if item.tipo_item == "Conta":
-                lista_retorno.append(Contas_pagas.get(item.id_item))
-            if item.tipo_item == "Pedido":
-                lista_retorno.append(Pedidos.get(item.id_item)) 
-        print(lista_retorno)        
-        return lista_retorno
 
    
     @staticmethod

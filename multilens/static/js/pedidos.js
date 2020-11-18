@@ -65,6 +65,18 @@ $(document).ready(function() {
         
     });
 
+    $("#status_pagamento").change(function () {
+        var tipo_retirada =  $(this).find(":selected").text()
+        if (tipo_retirada==="Pago"){
+            $("#Data_pagamento").show()
+
+
+        } else {
+            $("#Data_pagamento").hide()
+        }
+        
+    });
+
     $("#btn_salvar").click(function () {
         if ($("#id_cliente").attr('readonly')===false){
                 $('#status_entrega option[value=1]').attr('selected','selected');
@@ -90,11 +102,12 @@ $(document).ready(function() {
    
         if (total_calculado<valor_total && tipo_mensalidade==="3"){
             alert("O valor das parcelas x a quantidade de Parcelas é menor que o valor total.")
-            
             $('#valor_parcelas').val("")
             }
 
         }
+
+
         });
          
     $("#novo_item").click(function () {
@@ -124,19 +137,16 @@ $(document).ready(function() {
         $("#Parcela").hide()
         $("#Valor_parcela").hide()
         $("#Status_pagamento").hide()
-       
+        $("#Data_pagamento").hide()
         
         
         if (tipo_mensalidade ==="Parcelado"){
             $("#Parcela").show()
             $("#Valor_parcela").show()
 
-        } else if (tipo_mensalidade ==="Variável") {
+        } else if (tipo_mensalidade ==="Variável" || tipo_mensalidade ==="Compras" ) {
             $("#Status_pagamento").show()
         } 
-        
-        
-
     });
 
     $("#parcelas").keyup(function () {
@@ -210,8 +220,9 @@ $(window).load(function() {
                 $("#valor_parcelas").val(response.valor_parcelas)
                 $("#parcelas").val(response.parcelas)
             }
-            if (response.tipo_mensalidade==="4"){
+            if (response.tipo_mensalidade==="4" || response.tipo_mensalidade==="5"){
                 $("#Status_pagamento").show()
+                
                 $("#status_pagamento").val(response.status_pagamento)
             }
             $('#tipo_mensalidade option[value='+ response.tipo_mensalidade +']').attr('selected','selected');
@@ -253,13 +264,14 @@ $(window).load(function() {
         }
     })
     
-    //Depois de editar uma conta parcelada tem que aparecer o valor e as parcelas
+    
     var tipo_mensalidade = $("#tipo_mensalidade").find(":selected").text()
+    
     if (tipo_mensalidade==='Parcelado'){                
         $("#Valor_parcela").show()
         $("#Parcela").show()
 
-    } else if (tipo_mensalidade==="Variável"){
+    } else if (tipo_mensalidade==="Variável" || tipo_mensalidade ==="Compras"){
         
             $("#Status_pagamento").show()
     }

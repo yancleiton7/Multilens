@@ -204,7 +204,6 @@ def status_pagamento_conta(conta: int):
            
 
     elif request.method == "POST":
-        print(request.form)
         if form.validate_on_submit():
             response = conta_paga.create_by_form(form, conta_obj)
             if response["success"]:
@@ -246,7 +245,6 @@ def parcelas(conta_id: int):
            
 
     elif request.method == "POST":
-        print(request.form)
         if form.validate_on_submit():
             contagem_de_erro = 0
             for parcela in conta_obj.parcelas_info:
@@ -262,7 +260,6 @@ def parcelas(conta_id: int):
                     parcela.data_vencimento =request.form["data_vencimento"+str(parcela.id)]
                     parcela.save()
                 except:
-                    print(parcela.id)
                     contagem_de_erro += 1
                     parcela.valor =request.form["valor"]
                     parcela.status_pagamento =request.form["status_pagamento"]

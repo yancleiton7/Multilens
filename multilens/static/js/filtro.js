@@ -13,6 +13,28 @@ $(document).ready(function() {
 
     });
 
+    $('#mostrar_compra').click(function() {
+        var val = "compras"
+        
+        if ($(this).text()==="Mostrar Compras"){
+            $(this).attr('text',"Ocultar Compras")
+            $rows.show()
+        }
+        else {
+            $(this).attr('text',"Mostrar Compras")
+            $rows.hide().filter(function() {
+                var text = $(this).text().replace(/\s+/g, ' ').toLowerCase();
+                
+                return !~text.indexOf(val);
+                
+            }).show();
+        }
+        
+    });
+
+
+
+
     $('#filtro_Mes').change(function() {
         var val = $.trim($(this).val()).replace(/ +/g, ' ').toLowerCase();
         
@@ -109,3 +131,17 @@ $(document).ready(function() {
         });
 
 })
+
+
+$(window).load(function() {
+
+    var $rows = $('#tabela tbody tr');
+    
+    $rows.hide().filter(function() {
+        var text = $(this).text().replace(/\s+/g, ' ').toLowerCase();
+        
+        return !~text.indexOf("compras");
+        
+    }).show();
+    
+});

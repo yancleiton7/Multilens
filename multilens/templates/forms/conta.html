@@ -93,6 +93,12 @@
                         {{ form.status_pagamento() }}
                     </div>
                 </div>  
+                <div class="control" id="Data_pagamento" style="display:none">
+                    <label class="label"> {{ form.data_pagamento.label }} </label>              
+                    <div class="control">
+                        {{ form.data_pagamento(class="input", type="date", placeholder="") }}
+                    </div>
+                </div> 
             </div>
 
             <div class="field is-grouped">

@@ -14,7 +14,6 @@ class BaseForm(FlaskForm):
         super(FlaskForm, self).populate_obj(obj)
         
         for field in self:
-            print(f"Nome: {field.name} e dado:{field.data}")
             if isinstance(field, QuerySelectField):
                 setattr(obj, field.name, field.data.id)
 
@@ -325,7 +324,7 @@ class FormContas(BaseForm):
     )
 
 
-
+    data_pagamento = StringField("Data Pagamento")
     data_vencimento  = StringField("Data Vencimento", [Required("Colocar a data de vencimento.")])
     observacao  = StringField("Observacao")
 
