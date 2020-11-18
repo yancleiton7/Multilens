@@ -63,6 +63,7 @@
                 <thead>
                 <tr>
                     <th>Id</th>  
+                    <th>Cadastrado</th>  
                     <th>Nome do Cliente</th>
                     <th>Aniversário</th>
                     <th>Telefone</th>
@@ -76,16 +77,16 @@
                 {% for cliente in clientes %}
 
                     <tr id={{ cliente.id }} >
-                    <td width=10% ><b>Id: {{ cliente.id }} </b><p>
-                        Cadastrado: {{ cliente.get_data_cadastro() }}
-                    </td>
+                    <td >{{ cliente.id }}</td>
+                    <td >{{ cliente.get_data_cadastro() }}</td>
+                    
                     <th>{{ cliente.name.title() }}</th>
                     <td id="filtro_data">{{ cliente.get_aniversario() }}</td>
                     <td>{{ cliente.phone }}</td>
                     <td>{{ cliente.cel }}</td>
-                    <td width=30% >{{ cliente.observacao }}</td>
-                    <td>
-                        <div class="control buttons">
+                    <td width=25% >{{ cliente.observacao }}</td>
+                    <td width=15%>
+                        <div class="field buttons">
                             <strong> <a class="button {{ color_theme }} is-small"
                                         href="{{ url_for('site.cliente', register= cliente.id ) }}">Editar</a>
                                         {% if current_user.is_admin %}

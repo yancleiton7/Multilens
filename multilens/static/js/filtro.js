@@ -26,6 +26,26 @@ $(document).ready(function() {
 
     });
 
+    
+    $('#filtro_Financeiro').change(function() {
+        var val = $.trim($(this).val()).replace(/ +/g, ' ').toLowerCase();
+        var valor_entrada=0
+
+        $rows.show().filter(function() {
+            var text = $(this).text().replace(/\s+/g, ' ').toLowerCase(); 
+            if (text.indexOf(val)>0){
+                
+                valor_em_html= $(this).html().split('R$ ')[1].split('  </td>')[0];
+                valor_entrada = valor_entrada + parseFloat(valor_em_html.replace(",","."))
+                console.log(valor_entrada)
+            }
+            
+            return !~text.indexOf(val);
+        }).hide();
+        
+
+    });
+
 
     $('#data_de').change(function() {
         var ate = $('#data_ate').val()

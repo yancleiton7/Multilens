@@ -66,7 +66,7 @@
                         <th>Nome do Cliente</th>
                         <th>Status entrega</th>
                         <th>Retirada</th>
-                        <th>Tipo Pagamento</th>
+                        <th>Status Pagamento</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -74,11 +74,11 @@
                     {% for pedido in pedidos %}
                         <tr>
                             <td> #{{pedido.id}} </td>
-                            <td> {{pedido.get_data_entrega()}} </td>
+                            <td> {{pedido.get_data_entrega()}} às {{pedido.hora_entrega}}  </td>
                             <td> {{pedido.cliente.name}} </td>
                             <td> {{pedido.s_entrega.status_entrega}} </td>
                             <td> {{pedido.endereco_entrega}} </td>
-                            <td> {{pedido.get_data_entrega()}} às {{pedido.hora_entrega}} </td>
+                            <td> {{pedido.s_pagamento.status_pagamento}} </td>
                             <td >
                                 <div class="control buttons" >
                                     <strong> <a class="button {{ color_theme }} is-small is-fullwidth"

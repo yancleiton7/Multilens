@@ -1049,13 +1049,16 @@ class Financeiro(db.Model):
     valor = db.Column("valor", db.Unicode)
 
     
+    # .filter(Financeiro.data_pagamento>'2020-11-02')
 
 
     @staticmethod
     def get_all():
-        return Financeiro.query.all()
+        #return Pedidos.query.order_by(Pedidos.data_entrega.asc(), Pedidos.hora_entrega.asc()).all()
+        return Financeiro.query.order_by(data_pagamento.asc()).all()
 
     def get_total_pedidos_valor(self):
+        mes = datetime.now().strftime('%m')
         qry = db.session.query(func.sum(Financeiro.valor).label("total")).filter_by(tipo_item="Pedido")
         return tratar_centavos(qry.first()[0])
 

@@ -2,7 +2,6 @@
 
 {% block extra_scripts %}
 <script src="{{ url_for('static', filename='js/modals.js') }}" type="text/javascript"></script>
-<script src="{{ url_for('static', filename='js/exportar_excel.js') }}" type="text/javascript"></script>
 <script src="{{ url_for('static', filename='js/filtro.js') }}" type="text/javascript"></script>
 {% endblock extra_scripts %}
 
@@ -45,7 +44,7 @@
 
     <div class="panel-block" id="desaparecer">
         <div class="control is-expanded has-icons-left">
-            <input class="input {{ color_theme}}" type="search" id="filtro" placeholder="Procure informação aqui">
+            <input class="input {{ color_theme}}" type="search" id="filtro_Financeiro" placeholder="Procure informação aqui">
             <span class="icon is-left">
                 <i class="fas fa-search" aria-hidden="true"></i>
             </span>
@@ -60,19 +59,13 @@
         <div>
             <input class="input" type="date" id="data_ate">
         </div>
-        <strong>  </strong>
-        <div class="navbar-end">
-            <div id="gerar_excel" class="buttons">
-            <a class="button is-success is-rounded">gerar excel</a>
-            <strong>   </strong>
-            </div>
-        </div>
+
     </div>
 
     <div class="form-body">
 
         <div class="field is-grouped" style="padding-bottom: 0ch;">
-                <div class="box" id="box" style="background-color: rgba(0, 255, 42, 0.5)">
+                <div class="box" id="box_entrada" style="background-color: rgba(0, 255, 42, 0.5)">
                   <b>Entrada: </b>R$ {{financeiro[0].get_total_pedidos_valor()}}<p>
                   <b> Pedidos:</b> {{financeiro[0].get_total_pedidos()}}
                 </div>
@@ -84,14 +77,13 @@
                 <div class="box" id="box" style="background-color: rgba(248, 248, 248, 0.5)">
                     <b>Saldo:</b> {{financeiro[0].get_saldo()}} <p>
                     <b>Total de Transações:</b> {{financeiro[0].get_total_geral()}}
-                    
                 </div>
-
         </div>
 
-        <div class="table-container"  id="tabela_2"  >
+        <div class="table-container"  id="tabela_2" style="height: 10%" >
+            
 
-            <table class="table is-striped is-fullwidth is-hoverable" id="tabela">
+            <table class="table is-striped is-fullwidth is-hoverable" id="tabela" >
                 <thead>
                     <tr style="background-color: rgb(215, 215, 215);">
                         
