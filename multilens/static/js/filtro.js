@@ -10,10 +10,11 @@ function procurar_fluxo($rows, val){
         var val = $.trim($("#filtro_Financeiro").val()).replace(/ +/g, ' ').toLowerCase() 
         var ate = $('#data_ate_financeiro').val()
         var de = $('#data_de_financeiro').val()
+        var datas_vazias = true
         if (ate!="" && de!=""){
             ate = tratar_data(ate)
             de = tratar_data(de)
-            
+            datas_vazias = false
         }
     
     var valor_entrada=0
@@ -23,6 +24,9 @@ function procurar_fluxo($rows, val){
     var saldo = 0
     var transacoes = 0
     var tipo = '[entrada]'
+
+        
+
     
 
     $rows.hide().filter(function() {
@@ -31,13 +35,13 @@ function procurar_fluxo($rows, val){
         var data = $(this).text().split("/")
         var data_tratada = parseInt(data[2].slice(0,4)+""+data[1].slice(-2)+""+data[0].slice(-2))
 
-        console.log("de_ATE")
-        console.log((ate!="" && de!=""))
-        console.log("Diltro")
-        console.log((text.indexOf(val)>0 || val===""))
+
+
+        console.log("Datas")
+        console.log((data_tratada>=de && data_tratada<=ate))
            // console.log(((text.indexOf(val)>0 || val==="") && ((ate!="" && de!="")&&(data_tratada>=val[0] && data_tratada<=val[1]))))
             
-            if ((text.indexOf(val)>0 || val==="") && ((ate!="" && de!="") && (data_tratada>=de && data_tratada<=ate))){
+            if ((text.indexOf(val)>0 || val==="") && (datas_vazias || (data_tratada>=de && data_tratada<=ate))){
                 
                 if (text.indexOf(tipo)>0){   
                     count_entrada +=1     
@@ -50,7 +54,7 @@ function procurar_fluxo($rows, val){
                 
             } 
             
-            return ((text.indexOf(val)>0 || val==="") && ((ate!="" && de!="") && (data_tratada>=de && data_tratada<=ate)));
+            return ((text.indexOf(val)>0 || val==="") && (datas_vazias || (data_tratada>=de && data_tratada<=ate)));
             
         
 

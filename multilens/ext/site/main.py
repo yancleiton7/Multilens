@@ -752,14 +752,16 @@ def status_pagamento_pedido(pedido_id: int):
                     response["message"],
                     "is-success",
                 )
-                financeiro_obj = Financeiro()
-                financeiro_obj.tipo_item="Pedido"
-                financeiro_obj.data_pagamento = pedido_obj.data_pagamento
-                financeiro_obj.id_item = pedido_obj.id
-                financeiro_obj.descricao = (f"Pedido Nº: {pedido_obj.id}")
-                financeiro_obj.tipo_forma = pedido_obj.pagamento.tipo_pagamento
-                financeiro_obj.valor = pedido_obj.valor
-                financeiro_obj.save()
+               
+                if form.status_pagamento.data.status_pagamento=="Pago":
+                    financeiro_obj = Financeiro()
+                    financeiro_obj.tipo_item="Pedido"
+                    financeiro_obj.data_pagamento = pedido_obj.data_pagamento
+                    financeiro_obj.id_item = pedido_obj.id
+                    financeiro_obj.descricao = (f"Pedido Nº: {pedido_obj.id}")
+                    financeiro_obj.tipo_forma = pedido_obj.pagamento.tipo_pagamento
+                    financeiro_obj.valor = pedido_obj.valor
+                    financeiro_obj.save()
 
                 return render_template("forms/pedidos_pagamentos.html", form=form)
                 
