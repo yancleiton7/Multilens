@@ -51,13 +51,13 @@
         </div>
         
         <div>
-            <input class="input" type="date" id="data_de">
+            <input class="input" type="date" id="data_de_financeiro">
         </div>
 
         
 
         <div>
-            <input class="input" type="date" id="data_ate">
+            <input class="input" type="date" id="data_ate_financeiro">
         </div>
 
     </div>
@@ -66,17 +66,25 @@
 
         <div class="field is-grouped" style="padding-bottom: 0ch;">
                 <div class="box" id="box_entrada" style="background-color: rgba(0, 255, 42, 0.5)">
-                  <b>Entrada: </b>R$ {{financeiro[0].get_total_pedidos_valor()}}<p>
-                  <b> Pedidos:</b> {{financeiro[0].get_total_pedidos()}}
+                  <b>Entrada: </b>R$ 
+                    <entrada id="Entrada"> {{financeiro[0].get_total_pedidos_valor()}} </entrada> <p>
+                  <b> Pedidos:</b> <entrada id="total_entrada">
+                    <entrada id="Entrada_contador">  {{financeiro[0].get_total_pedidos()}} </entrada>
+                    </entrada>
                 </div>
 
                 <div class="box" id="box" style="background-color: rgba(255, 30, 0, 0.5)">
-                    <b>Total de Saída:</b> {{financeiro[0].get_total_contas_valor()}} <p>
-                  <b>Contas:</b> {{financeiro[0].get_total_contas()}} 
+                    <b>Total de Saída:</b> R$ 
+                        <entrada id="Saida"> {{financeiro[0].get_total_contas_valor()}}  </entrada><p>
+                    <b>Contas:</b> 
+                        <entrada id="Saida_contador">{{financeiro[0].get_total_contas()}} </entrada>
                 </div>
                 <div class="box" id="box" style="background-color: rgba(248, 248, 248, 0.5)">
-                    <b>Saldo:</b> {{financeiro[0].get_saldo()}} <p>
-                    <b>Total de Transações:</b> {{financeiro[0].get_total_geral()}}
+                    <b>Saldo:</b> <entrada id="Saldo">
+                        {{financeiro[0].get_saldo()}}
+                    </entrada> <p>
+                    <b>Total de Transações:</b> 
+                    <entrada id="Saldo_contador">{{financeiro[0].get_total_geral()}}</entrada>
                 </div>
         </div>
 
@@ -86,12 +94,14 @@
             <table class="table is-striped is-fullwidth is-hoverable" id="tabela" >
                 <thead>
                     <tr style="background-color: rgb(215, 215, 215);">
-                        
-                        <th>Id</th>
+                        <th>Identificador</th>
                         <th>Data</th>
                         <th>Descrição</th>
                         <th>Valor</th>
                         <th>Tipo</th>
+                        {% if current_user.is_admin %}         
+                        <th>Ações</th>
+                        {%endif%}
      
                     </tr>
                 </thead>
@@ -99,14 +109,23 @@
                     {% for item_financeiro in financeiro %}
                     {% if item_financeiro.tipo_item == "Conta" %}
                         <tr style="color: rgb(214, 91, 75);font-weight: bold" id={{ item_financeiro.id }}>
+                            <td style="font-size: 1em;"> [Saida] </td>
                     {% else %}  
                         <tr style="color: rgba(47, 138, 6, 0.733); font-weight: bold;" id={{ item_financeiro.id }}>     
+                        <td style="font-size: 1em;"> [Entrada] </td>
                     {% endif %}        
-                            <td style="font-size: 1em;"> #{{item_financeiro.id}} </td>
-                            <td style="font-size: small"> {{item_financeiro.get_data_pagamento()}} </td>
+                            
+                            <td id="data_pagamento" style="font-size: small"> {{item_financeiro.get_data_pagamento()}} </td>
                             <td style="font-size: small"> {{item_financeiro.descricao}} </td>
                             <td style="font-size: small"> R$ {{item_financeiro.valor}}  </td>
                             <td style="font-size: small"> {{item_financeiro.tipo_forma}}  </td>
+                            {% if current_user.is_admin %}
+                            <td >
+                                <div class="control buttons" >
+                                        <a class="button is-danger is-small remove" >Excluir</a>
+                                </div>
+                             </td>
+                             {% endif %}
                         </tr>    
                     {% endfor %}
                 </tbody>

@@ -16,7 +16,7 @@
 
         <div class="navbar-start">
             <a class="navbar-item" >
-                <strong>Financeiro - Registro Financeiro de Pedidos</strong>
+                <strong>Financeiro - Contas registradas</strong>
               </a>
         </div>
 
@@ -54,7 +54,7 @@
         <strong>  </strong>
         <div class="navbar-end">
                 <div class="field" style="display: inline-flex">    
-                    <a id="mostrar_compra"  class="button is-rounded">Mostrar Compras</a>
+                    <a id="mostrar_compra"  class="button is-rounded">Ocultar Compras</a>
                     <a href="{{url_for('site.form_contas')}}" class="button is-success is-rounded">Cadastrar conta</a>
                 </div>
         </div>
@@ -75,14 +75,16 @@
                 <tbody>
                     {% for conta in contas %}
 
-                        <tr id={{ conta.id }}>
+                        <tr id={{ conta.id }}
+                        {% if conta.recorrencia.mensalidade == "Compras" %} style="display: none;" {%endif%}
+                        >
                         
 
                             <td> #{{conta.id}} </td>
                             <td> {{conta.get_data_vencimento()}} </td>
                             <td> {{conta.recorrencia.tipo_mensalidade}} </td>
                             <td> {{conta.valor}}  </td>
-                            <td>  {{conta.fornecedor}} - {{conta.descricao_conta}} <p>
+                            <td>  {{conta.fornecedor}} - {{conta.descricao}} <p>
                                 
                                 {% if conta.recorrencia.tipo_mensalidade == "Parcelado" %}
                                         Parcela {{conta.get_formato_parcela()}} -
@@ -99,7 +101,7 @@
                             <td >
                                 <div class="control buttons" >
                                     <strong> <a class="button {{ color_theme }} is-small"
-                                                href="{{ url_for('site.financeiro', conta= conta.id ) }}">Editar</a>
+                                                href="{{ url_for('site.contas', conta= conta.id ) }}">Editar</a>
                                                 
                                                 <a class="button is-danger is-small remove" >Excluir</a>
                                                 {% if conta.recorrencia.tipo_mensalidade == "Parcelado" %}

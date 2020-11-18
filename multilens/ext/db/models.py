@@ -168,7 +168,7 @@ class Estoque(db.Model):
 class Contas(db.Model):
     __tablename__ = "contas"
     id = db.Column("id", db.Integer, primary_key=True)
-    descricao_conta = db.Column("descricao_conta", db.Unicode)
+    descricao = db.Column("descricao", db.Unicode)
     fornecedor = db.Column("fornecedor", db.Unicode)
     data_vencimento = db.Column("data_vencimento", db.Unicode)
     valor = db.Column("valor", db.Unicode)
@@ -195,11 +195,11 @@ class Contas(db.Model):
         tipo_mensalidade = self.recorrencia.tipo_mensalidade
         quantidade = self.get_parcelas_pagas()
         if tipo_mensalidade == "Parcelado":
-            return (f"Parcela: {quantidade-1} de {len(self.parcelas_info)} - {self.fornecedor} : {self.descricao_conta}.")
+            return (f"Parcela: {quantidade-1} de {len(self.parcelas_info)} - {self.fornecedor} : {self.descricao}.")
         elif tipo_mensalidade == "Compras":
             return (f"Compras feitas em {self.fornecedor} ")
         else:
-            return (f"{self.fornecedor} - Descrição: {self.descricao_conta}")
+            return (f"{self.fornecedor} - Descrição: {self.descricao}")
    
     @staticmethod
     def get_pendentes():
@@ -291,6 +291,11 @@ class Contas(db.Model):
 
         if conta.recorrencia.tipo_mensalidade=="Parcelado":
             conta.criar_parcelas(form)
+
+        if conta.pagamento.status_pagamento_conta=="Pago":
+            conta_paga = Contas_pagas()
+            form.populate_obj(conta_paga)
+            conta_paga.save()
 
         return response
 

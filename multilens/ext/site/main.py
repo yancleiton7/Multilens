@@ -39,7 +39,7 @@ def clientes():
         return render_template("site/clientes.html", clientes=Cliente.get_all())
 
 
-@bp.route("/clientes/cadastro", methods=["GET", "POST"])
+@bp.route("/clientes/cadastro/", methods=["GET", "POST"])
 @login_required
 def form_cliente():
     form = FormClientes()
@@ -123,7 +123,6 @@ def contas_pendentes():
     return render_template("site/contas_pendentes.html", contas=Contas.get_pendentes())
 
 
-
 @bp.route("/contas/cadastro", methods=["GET", "POST"])
 @login_required
 def form_contas():
@@ -149,9 +148,9 @@ def form_contas():
     return render_template("forms/conta.html", form=form)
 
 
-@bp.route("/contas/<int:conta>", methods=["GET", "POST", "DELETE"])
+@bp.route("/conta/<int:conta>", methods=["GET", "POST", "DELETE"])
 @login_required
-def financeiro(conta: int):
+def conta(conta: int):
     form = FormContas()
     conta_selecionada = Contas.query.get_or_404(conta)
 
@@ -198,7 +197,7 @@ def status_pagamento_conta(conta: int):
     if request.method == "GET":
         if conta_obj is None:
             flash("Cadastro não localizado!", "is-warning")
-            redirect(url_for("site.financeiro"))
+            redirect(url_for("site.contas"))
         else:
             form.load(conta_obj)
            

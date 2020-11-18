@@ -16,7 +16,7 @@
 
         <div class="navbar-start">
             <a class="navbar-item" >
-                <strong>Financeiro - Registro Financeiro de Pedidos</strong>
+                <strong>Financeiro - Contas a pagar</strong>
               </a>
         </div>
 
@@ -83,7 +83,7 @@
                             <td> {{conta.recorrencia.tipo_mensalidade}} </td>
                             <td> {{conta.valor}}  </td>
                             <td> <b>Fornecedor:</b> {{conta.fornecedor}} <p>
-                            <b>Descrição:</b> {{conta.descricao_conta}} <p>
+                            <b>Descrição:</b> {{conta.descricao}} <p>
                                 
                                 {% if conta.recorrencia.tipo_mensalidade == "Parcelado" %}
                                     

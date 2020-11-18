@@ -36,7 +36,7 @@ class FormClientes(BaseForm):
         [
             Required("Informe um número de celular valido"),
             Length(
-                min=11, max=11, message="O celular precisa conter exatamente 11 números 2 do DDD 9 do número"
+                min=10, max=11, message="O celular precisa conter exatamente 11 números 2 do DDD 9 do número"
             ),
             Regexp("^[0-9]*$", message="Informe somente números"),
         ],
@@ -46,13 +46,15 @@ class FormClientes(BaseForm):
         [
             Required("Informe um telefone validio"),
             Length(
-                min=11,
+                min=10,
                 max=11,
                 message="O telefone precisa conter exatamente 11 números 2 do DDD 9 do número ",
             ),
             Regexp("^[0-9]*$", message="Informe somente números"),
         ],
     )
+
+
 
     aniversario = StringField(
         "Nascimento",
@@ -282,7 +284,7 @@ class FormProduto(BaseForm):
         self.fornecedor = []
 
 class FormContas(BaseForm):
-    descricao_conta  = StringField("Descrição da Conta", [Required("Informar a descrição da conta")])
+    descricao  = StringField("Descrição da Conta", [Required("Informar a descrição da conta")])
     fornecedor = StringField("Fornecedor", [Required("Registrar o fornecedor.")])
     valor  = StringField("Valor", [Required("Colocar o valor da conta"),
             Regexp("^[0-9]\d{0,4}(\.\d{5})*,\d{2}$", message="Informe o valor da conta no formato RR,cc ex: 45,22"),])
@@ -587,7 +589,7 @@ class FormContasPagas(BaseForm):
 
     def load(self, conta_obj):
         
-        self.descricao = (f"Conta :{conta_obj.id} - Fornecedor: {conta_obj.fornecedor} - Descrição: {conta_obj.descricao_conta}")
+        self.descricao = (f"Conta :{conta_obj.id} - Fornecedor: {conta_obj.fornecedor} - Descrição: {conta_obj.descricao}")
         self.process(obj=conta_obj)
 
         if conta_obj.tipo_mensalidade=="3":
@@ -595,7 +597,7 @@ class FormContasPagas(BaseForm):
             for quantidade, parcela in enumerate(conta_obj.parcelas_info):
                 if parcela.data_pagamento == "Pendente":
                     parcela_selecionada = parcela
-                    self.descricao = (f"Parcela: {quantidade+1} de {len(conta_obj.parcelas_info)} - {conta_obj.fornecedor} : {conta_obj.descricao_conta}.")
+                    self.descricao = (f"Parcela: {quantidade+1} de {len(conta_obj.parcelas_info)} - {conta_obj.fornecedor} : {conta_obj.descricao}.")
                     self.process(obj=parcela_selecionada)
                     break
 
