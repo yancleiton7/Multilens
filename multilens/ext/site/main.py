@@ -584,6 +584,20 @@ def pedidos():
 @bp.route("/fluxo/", methods=["GET"])
 @login_required
 def fluxo():
+    if request.method == "GET":
+        return render_template("site/fluxo.html", financeiro=Financeiro.get_all())
+
+
+@bp.route("/fluxo/<int:financa>", methods=["DELETE"])
+@login_required
+def fluxo_delete(financa: int):
+    if request.method == "DELETE":
+        financeiro = Financeiro.get(financa)
+        print(financeiro)
+        if financeiro is not None:
+            financeiro.remove()
+            response = {"success": True, "message": "Pedido excuído com acesso."}
+            return response
     return render_template("site/fluxo.html", financeiro=Financeiro.get_all())
 
 

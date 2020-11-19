@@ -61,26 +61,26 @@
             <table class="table is-striped is-fullwidth is-hoverable"  id="tabela">
                 <thead>
                     <tr style="background-color: rgb(215, 215, 215);">
-                        <th>Id</th>
-                        <th>Data Entrega</th>
-                        <th>Nome do Cliente</th>
-                        <th>Status entrega</th>
-                        <th>Valor do Pedido</th>
-                        <th>Tipo Pagamento</th>
-                        <th>Status Pagamento</th>
+                        <th onclick="sortTable(0)">Id</th>
+                        <th onclick="sortTable(1)">Data Entrega</th>
+                        <th onclick="sortTable(2)">Nome do Cliente</th>
+                        <th onclick="sortTable(3)">Status entrega</th>
+                        <th onclick="sortTable(4)">Valor do Pedido</th>
+                        <th onclick="sortTable(5)">Tipo Pagamento</th>
+                        <th onclick="sortTable(6)">Status Pagamento</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for pedido in pedidos %}
                         <tr>
-                            <td> #{{pedido.id}} </td>
-                            <td> {{pedido.get_data_entrega()}} </td>
-                            <td> {{pedido.cliente.name}} </td>
-                            <td> {{pedido.s_entrega.status_entrega}} </td>
-                            <td> {{pedido.valor}} </td>
-                            <td> {{pedido.pagamento.tipo_pagamento}} </td>
-                            <td> {{pedido.s_pagamento.status_pagamento}} </td>
+                            <td>{{pedido.id}} </td>
+                            <td>{{pedido.get_data_entrega()}}</td>
+                            <td>{{pedido.cliente.name}} </td>
+                            <td>{{pedido.s_entrega.status_entrega}}</td>
+                            <td>{{pedido.valor}} </td>
+                            <td>{{pedido.pagamento.tipo_pagamento}} </td>
+                            <td>{{pedido.s_pagamento.status_pagamento}} </td>
                             <td >
                                 <div class="control buttons" >
                                     <strong> <a class="button {{ color_theme }} is-small is-fullwidth"

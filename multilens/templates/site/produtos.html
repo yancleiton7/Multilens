@@ -47,10 +47,10 @@
             <table class="table is-fullwidth" id="tabela">     
                 <thead>
                     <tr>
-                        <th>Data Cadastro</th>
-                        <th>Nome do Produto</th>
-                        <th>Grupo</th>
-                        <th>Fornecedores</th>
+                        <th onclick="sortTable(0)">Data Cadastro</th>
+                        <th onclick="sortTable(1)">Nome do Produto</th>
+                        <th onclick="sortTable(2)">Grupo</th>
+                        <th onclick="sortTable(3)">Fornecedores</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -60,7 +60,7 @@
                     
                         <tr id={{ produto.id }}>
                             <td>{{ produto.get_data_cadastro()}}</td>
-                            <th>{{ produto.nome_produto.title() }}</th>
+                            <td>{{ produto.nome_produto.title() }}</th>
                             <td>{{ produto.get_grupo(produto.id)}}</td>
                             
                             <td >

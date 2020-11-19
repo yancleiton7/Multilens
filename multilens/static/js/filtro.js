@@ -1,6 +1,95 @@
-function tratar_data(data){
-    var data_tratada = data.split("-")
-    data_tratada = parseInt(data_tratada[0]+""+data_tratada[1]+""+data_tratada[2])
+function sortTable(n) {
+    var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+    table = document.getElementById("tabela");
+    switching = true;
+    
+    //Set the sorting direction to ascending:
+    dir = "asc"; 
+    /*Make a loop that will continue until
+    no switching has been done:*/
+    while (switching) {
+      //start by saying: no switching is done:
+      switching = false;
+      rows = table.rows;
+      /*Loop through all table rows (except the
+      first, which contains table headers):*/
+      for (i = 1; i < (rows.length - 1); i++) {
+        //start by saying there should be no switching:
+        shouldSwitch = false;
+        /*Get the two elements you want to compare,
+        one from current row and one from the next:*/
+
+        x = rows[i].getElementsByTagName("TD")[n];
+        y = rows[i + 1].getElementsByTagName("TD")[n];
+        /*check if the two rows should switch place,
+        based on the direction, asc or desc:*/
+
+        /*Extract text of object */
+        valor_de_x = x.innerHTML.toLowerCase()
+        valor_de_y = y.innerHTML.toLowerCase()
+
+        /*Verificar se é data ou dinheiro*/
+        
+        verifica_valor = valor_de_x.slice(0,5)
+        if (verifica_valor.includes("r$ ",0)){
+            
+            valor_de_x = parseFloat(valor_de_x.split("r$ ")[1].replace(",","."))
+            valor_de_y = parseFloat(valor_de_y.split("r$ ")[1].replace(",","."))
+            
+
+        } else if (verifica_valor.includes("/",2)){
+            
+            valor_de_x = tratar_data(valor_de_x, "/")
+            valor_de_y = tratar_data(valor_de_y, "/")
+            
+
+        }
+
+
+
+
+        if (dir == "asc") {
+          if (valor_de_x > valor_de_y) {
+            //if so, mark as a switch and break the loop:
+            shouldSwitch= true;
+            break;
+          }
+        } else if (dir == "desc") {
+          if (valor_de_x < valor_de_y) {
+            //if so, mark as a switch and break the loop:
+            shouldSwitch = true;
+            break;
+          }
+        }
+      }
+      if (shouldSwitch) {
+        /*If a switch has been marked, make the switch
+        and mark that a switch has been done:*/
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+        //Each time a switch is done, increase this count by 1:
+        switchcount ++;      
+      } else {
+        /*If no switching has been done AND the direction is "asc",
+        set the direction to "desc" and run the while loop again.*/
+        if (switchcount == 0 && dir == "asc") {
+          dir = "desc";
+          switching = true;
+        }
+      }
+    }
+  }
+
+
+
+function tratar_data(data, item_split="-"){
+    var data_tratada = data.split(item_split)
+
+    if (item_split==="-"){
+        data_tratada = parseInt(data_tratada[0]+""+data_tratada[1]+""+data_tratada[2])
+    } else {
+        var data_tratada = parseInt(data_tratada[2].slice(0,4)+""+data_tratada[1].slice(-2)+""+data_tratada[0].slice(-2))
+    }
     
     return data_tratada
 }
@@ -32,15 +121,9 @@ function procurar_fluxo($rows, val){
     $rows.hide().filter(function() {
         valor_em_html= $(this).html().split('R$ ')[1].split('  </td>')[0];
         var text = $(this).text().replace(/\s+/g, ' ').toLowerCase()
-        var data = $(this).text().split("/")
-        var data_tratada = parseInt(data[2].slice(0,4)+""+data[1].slice(-2)+""+data[0].slice(-2))
+        var data = $(this).text()
+        var data_tratada = tratar_data(data, "/")
 
-
-
-        console.log("Datas")
-        console.log((data_tratada>=de && data_tratada<=ate))
-           // console.log(((text.indexOf(val)>0 || val==="") && ((ate!="" && de!="")&&(data_tratada>=val[0] && data_tratada<=val[1]))))
-            
             if ((text.indexOf(val)>0 || val==="") && (datas_vazias || (data_tratada>=de && data_tratada<=ate))){
                 
                 if (text.indexOf(tipo)>0){   
@@ -74,7 +157,6 @@ function procurar_fluxo($rows, val){
     $('#Saldo_contador').text(transacoes)
 }
 
-
 function filtro_normal($rows, val, caller="caller"){
 
         $rows.show().filter(function() {
@@ -91,17 +173,15 @@ function filtro_normal($rows, val, caller="caller"){
 function filtro_datas($rows, de_tratado, ate_tratado){
 
     $rows.hide().filter(function() {
-        var text = $(this).text().split("/")
-        var entrega = tratar_data(text)
+        var text = $(this).text()
+        
+        var entrega = tratar_data(text, "/")
         
         return (entrega>=de_tratado && entrega<=ate_tratado)
     }).show();
    
 
 }
-
-
-
 
 $(document).ready(function() {
     
@@ -152,7 +232,23 @@ $(document).ready(function() {
         procurar_fluxo($rows)
     })
 
-    
+    $('#box_entrada').click(function() {
+        
+        $('#filtro_Financeiro').val('Entrada')    
+        procurar_fluxo($rows)
+    })  
+
+    $('#box_saida').click(function() {
+        
+        $('#filtro_Financeiro').val('Saida')    
+        procurar_fluxo($rows)
+    })  
+
+    $('#box_total').click(function() {
+        
+        $('#filtro_Financeiro').val('')    
+        procurar_fluxo($rows)
+    })  
 
 
     $('#data_de').change(function() {

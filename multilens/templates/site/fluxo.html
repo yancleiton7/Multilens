@@ -73,13 +73,13 @@
                     </entrada>
                 </div>
 
-                <div class="box" id="box" style="background-color: rgba(255, 30, 0, 0.5)">
+                <div class="box" id="box_saida" style="background-color: rgba(255, 30, 0, 0.5)">
                     <b>Total de Saída:</b> R$ 
                         <entrada id="Saida"> {{financeiro[0].get_total_contas_valor()}}  </entrada><p>
                     <b>Contas:</b> 
                         <entrada id="Saida_contador">{{financeiro[0].get_total_contas()}} </entrada>
                 </div>
-                <div class="box" id="box" style="background-color: rgba(248, 248, 248, 0.5)">
+                <div class="box" id="box_total" style="background-color: rgba(248, 248, 248, 0.5)">
                     <b>Saldo:</b> <entrada id="Saldo">
                         {{financeiro[0].get_saldo()}}
                     </entrada> <p>
@@ -94,11 +94,11 @@
             <table class="table is-striped is-fullwidth is-hoverable" id="tabela" >
                 <thead>
                     <tr style="background-color: rgb(215, 215, 215);">
-                        <th>Identificador</th>
-                        <th>Data</th>
-                        <th>Descrição</th>
-                        <th>Valor</th>
-                        <th>Tipo</th>
+                        <th onclick="sortTable(0)">Identificador</th>
+                        <th onclick="sortTable(1)">Data</th>
+                        <th onclick="sortTable(2)">Descrição</th>
+                        <th onclick="sortTable(3)"> Valor</th>
+                        <th onclick="sortTable(4)" >Tipo</th>
                         {% if current_user.is_admin %}         
                         <th>Ações</th>
                         {%endif%}
@@ -115,14 +115,16 @@
                         <td style="font-size: 1em;"> [Entrada] </td>
                     {% endif %}        
                             
-                            <td id="data_pagamento" style="font-size: small"> {{item_financeiro.get_data_pagamento()}} </td>
+                            <td id="data_pagamento" style="font-size: small">{{item_financeiro.get_data_pagamento()}}</td>
                             <td style="font-size: small"> {{item_financeiro.descricao}} </td>
                             <td style="font-size: small"> R$ {{item_financeiro.valor}}  </td>
                             <td style="font-size: small"> {{item_financeiro.tipo_forma}}  </td>
                             {% if current_user.is_admin %}
                             <td >
                                 <div class="control buttons" >
+                                    <strong>
                                         <a class="button is-danger is-small remove" >Excluir</a>
+                                    </strong>    
                                 </div>
                              </td>
                              {% endif %}

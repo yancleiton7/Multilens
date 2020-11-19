@@ -10,11 +10,19 @@ $(document).ready(function () {
                 url: window.location.href + register.attr('id'),
                 type: "DELETE",
                 success: function () {
-                    
-                    register.remove()
+                    if ((window.location.href).includes('/fluxo/')){
+                        var deletar = confirm('Você precisará alterar os status da Conta ou Pedido. Confirma exclusão?');
+                        if(deletar){
+                            register.remove()
+                        }
+                    }
+                    else{
+                        register.remove()
+                    }
+                   
                 },
                 error: function () {
-                    alert(window.location.href + register.attr('id'))
+                    alert(window.location.href)
                     alert("Não foi possível excluir o registro, tente novamente mais tarde.")
                 }
             })

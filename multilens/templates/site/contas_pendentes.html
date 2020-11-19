@@ -64,11 +64,11 @@
             <table class="table is-striped is-fullwidth is-hoverable"  id="tabela">
                 <thead>
                     <tr style="background-color: rgb(215, 215, 215);">
-                        <th>Id</th>
-                        <th>Data Vencimento</th>
-                        <th>Recorrencia</th>
-                        <th>Valor</th>
-                        <th>Descrição</th>
+                        <th onclick="sortTable(0)">Id</th>
+                        <th onclick="sortTable(1)">Data Vencimento</th>
+                        <th onclick="sortTable(2)">Recorrencia</th>
+                        <th onclick="sortTable(3)">Valor</th>
+                        <th onclick="sortTable(4)" style="width: 30%;">Descrição</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -79,26 +79,23 @@
                         
 
                             <td> #{{conta.id}} </td>
-                            <td> {{conta.get_data_vencimento()}} </td>
+                            <td>{{conta.get_data_vencimento()}}</td>
                             <td> {{conta.recorrencia.tipo_mensalidade}} </td>
+                            {% if conta.recorrencia.tipo_mensalidade == "Parcelado" %}
+                                <td> {{conta.parcelas_info[0].valor}}  </td>
+                            {% else %}  
                             <td> {{conta.valor}}  </td>
-                            <td> <b>Fornecedor:</b> {{conta.fornecedor}} <p>
-                            <b>Descrição:</b> {{conta.descricao}} <p>
-                                
+                            {% endif %} 
+                            <td>  <b>Fornecedor:</b> {{conta.fornecedor}} <p>
+                                <b>Descrição:</b> {{conta.descricao}} <p>
                                 {% if conta.recorrencia.tipo_mensalidade == "Parcelado" %}
-                                    
-                                        Parcela {{conta.get_formato_parcela()}} 
-                                        R$ {{conta.parcelas_info[0].valor}}
-                                        
-                                     
+                                        Parcela {{conta.get_formato_parcela()}}<p>
                                 {% elif conta.recorrencia.tipo_mensalidade == "Variável" %}
                                     {{conta.status_pagamento_conta}} <p>     
-                                {% else %}   
-                                   <b> {{conta.recorrencia.tipo_mensalidade}} </b>      
-                                {% endif %} 
-
-
-                            </td>
+                                {% else %}
+                                <b> {{conta.recorrencia.tipo_mensalidade}} </b>
+                                {% endif %}
+                    </td>
 
                             <td >
                                 <div class="control buttons" >

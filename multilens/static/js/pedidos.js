@@ -246,6 +246,8 @@ $(window).load(function() {
             $('#status_pagamento option[value='+ response.status_pagamento +']').attr('selected','selected');
             $("#id_cliente").val(id_cliente)
             $("#id_cliente").attr('readonly', true);
+            
+            $("#Status_pagamento").hide()
             $("#status_entrega_div").show()
            
         }
@@ -260,10 +262,14 @@ $(window).load(function() {
             $('#tipo_retirada option[value='+ response.tipo_retirada +']').attr('selected','selected');
             $('#status_entrega option[value='+ response.status_entrega +']').attr('selected','selected');
             //$("#endereco").val(response.endereco)
+            if (response.status_pagamento==="3"){
+                $('#Status_pagamento').show()
+            }
             
         }
     })
     
+
     
     var tipo_mensalidade = $("#tipo_mensalidade").find(":selected").text()
     

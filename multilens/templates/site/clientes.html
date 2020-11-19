@@ -62,13 +62,13 @@
             <table class="table is-fullwidth" id="tabela"> 
                 <thead>
                 <tr>
-                    <th>Id</th>  
-                    <th>Cadastrado</th>  
-                    <th>Nome do Cliente</th>
-                    <th>Aniversário</th>
-                    <th>Telefone</th>
-                    <th>Celular</th>
-                    <th>Observação</th>
+                    <th onclick="sortTable(0)">Id</th>  
+                    <th onclick="sortTable(1)">Cadastrado</th>  
+                    <th onclick="sortTable(2)">Nome do Cliente</th>
+                    <th onclick="sortTable(3)">Aniversário</th>
+                    <th onclick="sortTable(4)">Telefone</th>
+                    <th onclick="sortTable(5)">Celular</th>
+                    <th onclick="sortTable(6)">Observação</th>
                     <th>Ações</th>
                 </tr>
                 </thead>
@@ -80,7 +80,7 @@
                     <td >{{ cliente.id }}</td>
                     <td >{{ cliente.get_data_cadastro() }}</td>
                     
-                    <th>{{ cliente.name.title() }}</th>
+                    <td>{{ cliente.name.title() }}</td>
                     <td id="filtro_data">{{ cliente.get_aniversario() }}</td>
                     <td>{{ cliente.phone }}</td>
                     <td>{{ cliente.cel }}</td>
