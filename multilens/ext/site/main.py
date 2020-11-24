@@ -1,29 +1,44 @@
-import json
-import os
-import time
+import json, datetime, os, time
+
 
 
 from flask import (Blueprint, current_app, flash, redirect, render_template,
-                   request, send_file, url_for)
+                   request, send_file, url_for, Response)
 from flask_login import current_user, login_required
 
 
 from multilens.ext.api.resources import ResourcePedido
-from multilens.ext.db.models import Cliente, Estoque, Produto, Contas_parceladas, Balance, Pedidos, Financeiro, Contas, Pedido_item, Contas_pagas
+from multilens.ext.db.relatorio import Gerar_relatorios
+from multilens.ext.db.models import Cliente, Produto, Contas_parceladas, Balance, Pedidos, Financeiro, Contas, Pedido_item, Contas_pagas
                                       
 
 from .form import (FormClientes, FormStatusPagamento, FormBalanceEntrada, FormPedido, FormFornecedor, FormParcelas,
-                     FormBalanceSaida, FormProduto, FormContas, FormPedidoItens, FormStatusEntrega, FormContasPagas)
+                     FormBalanceSaida, FormProduto, FormContas, FormPedidoItens, FormStatusEntrega, FormContasPagas, FormRelatorios)
 
 bp = Blueprint("site", __name__)
 
 
-@bp.route("/", methods=["GET"])
+@bp.route("/", methods=["GET", "POST"])
 def index():
-    if not current_user.is_authenticated:
-        return redirect(url_for("login"))
+    if request.method == "GET":
+        form = FormRelatorios()
+        if not current_user.is_authenticated:
+            return redirect(url_for("login"))
+        
+        infos={}
+        infos["pedidos"] = Pedidos.get_entrega_capa()
+        infos["balance"] = Balance.get_balance_capa()
+        infos["hoje"] = datetime.datetime.now().strftime('%Y-%m-%d')
+        infos["clientes"] = Cliente.get_aniversariantes()
+        infos["contas"] = Contas.get_avencer_capa()
+        infos["pendentes"] = Pedidos.get_pendentes_pagamentos()
 
-    return render_template("site/index.html")
+        return render_template("site/index.html", infos=infos, form=form)
+    elif request.method == "POST":
+        form = request.form
+        print(form)
+        output = Gerar_relatorios.gerar_excel(form["relatorios"], form["data_inicio"], form["data_fim"])
+        return Response(output, mimetype="application/ms-excel", headers={"Content-Disposition":"attachment;filename=employee_report.xls"})
 
 
 
@@ -137,6 +152,7 @@ def form_contas():
             
             if response["success"]:
                 flash(response["message"], "is-success")
+                return redirect(url_for("site.conta", conta=response['id']))
 
             else:
                 flash(response["message"], "is-danger")
@@ -148,7 +164,7 @@ def form_contas():
     return render_template("forms/conta.html", form=form)
 
 
-@bp.route("/conta/<int:conta>", methods=["GET", "POST", "DELETE"])
+@bp.route("/contas/<int:conta>", methods=["GET", "POST", "DELETE"])
 @login_required
 def conta(conta: int):
     form = FormContas()
@@ -210,7 +226,7 @@ def status_pagamento_conta(conta: int):
                     response["message"],
                     "is-success",
                 )
-                return render_template("forms/contas_pagamentos.html", form=form)
+                
                 
             
 
@@ -366,7 +382,8 @@ def form_produto():
                     "is-success",
                 )
                 form.limpar()
-                return render_template("forms/produto.html", form=form)
+                return redirect(url_for('site.fornecedores', produto= response["object"].id))
+                
                 
             
 
@@ -509,6 +526,8 @@ def form_produto_saida():
     elif request.method == "POST":
         if form.validate_on_submit():
             form.event.data = "Saida"
+            form.quantidade.data = str(-1 * int(form.quantidade.data))
+            
             form.item_id.data = Produto.get_id(form.produto.data.nome_produto)
             response = Balance.create_by_form(form)
             form.limpar()
@@ -522,10 +541,12 @@ def form_produto_saida():
             
 
             else:
+                
                 flash(response["message"], "is-danger")
 
         else:
             for field in form.errors.values():
+                
                 [flash(err, "is-danger") for err in field]
 
         return render_template("forms/saida.html", form=form)

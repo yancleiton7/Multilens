@@ -22,7 +22,7 @@ $(document).ready(function () {
                    
                 },
                 error: function () {
-                    alert(window.location.href)
+                    alert(window.location.href + register.attr('id'))
                     alert("Não foi possível excluir o registro, tente novamente mais tarde.")
                 }
             })

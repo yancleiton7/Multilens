@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-br" style="height: 100%">
 
 <head>
   {% set color_theme = config.get("COLOR_THEME", "is-success") %}
+  {% set btn_voltar = config.get("C_BTN", "has-text-gray-light") %}
+  
   {% block head %}
 
   <meta charset="UTF-8">
@@ -20,6 +22,11 @@
   {% block extra_scripts %} {% endblock extra_scripts %}
 
   {% endblock head %}
+
+  <style>
+    html, body { height: 100%; margin: 0; }
+    </style>
+
   {% block extra_css %} {% endblock extra_css %}
 </head>
 {% block nav %}
@@ -79,7 +86,7 @@
 {% block top %} {% endblock top %}
 <div class="main">
 
-  <body class="body">
+  <body class="body" style="height: 100%">
     {% block body %}
     {% endblock body %}
   </body>

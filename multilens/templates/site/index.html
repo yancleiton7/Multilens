@@ -1,5 +1,242 @@
 {% extends "base.html" %}
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/index.js') }}" type="text/javascript"></script>
+{% endblock extra_scripts %}
 
 {% block body %}
+
+<div class="field is-grouped">
+    <article class="panel " style="width: 25%; height:90vh">
+        
+        <div class="panel-heading">Entregas próximos 7 dias.</div>
+        
+            <div class="form-body" style="height:88%; overflow-y: auto;">
+                <div class="table-container" >
+                
+                {% for pedido in infos["pedidos"]%}
+
+                
+                
+                {% if pedido.data_entrega<infos["hoje"] %}
+                <div class="notification is-warning" style="padding:1ch; margin-bottom: 1ch;" onclick="show_article('PedidoE{{pedido.id}}')">
+                {% elif pedido.data_entrega==infos["hoje"] %}   
+                <div class="notification has-background-danger-light" style="padding:1ch; margin-bottom: 1ch;" onclick="show_article('PedidoE{{pedido.id}}')">
+                {% else %}  
+                <div class="notification is-green" style="padding:1ch; margin-bottom: 1ch;"  onclick="show_article('PedidoE{{pedido.id}}')"> 
+                {% endif %}   
+
+                    <b>Pedido Nº: {{pedido.id}}:</b>
+                        Entrega: {{pedido.get_data_entrega()}} às {{pedido.hora_entrega}}<p>
+                        {{pedido.cliente.name}} 
+                        <div id='PedidoE{{pedido.id}}' style="display:none">
+                            <b>Telefone:</b> {{pedido.cliente.cel}} : 
+
+                            {% for item in pedido.pedidos_itens %}
+                            <p> {{item.quantidade}} {{item.pedido_nome.tipo}} - {{item.descricao}}
+                            {% endfor %}      
+
+                            
+                        </div>
+                        
+                </div>
+                {% endfor %}
+                
+
+            </div>
+        </div>
+
+    </article>
+
+    <strong style="background-color:rgb(250, 250, 250); color: rgb(241, 241, 241);">.</strong>
+
+    <article class="panel" style="width: 18%; height:90vh">
+        
+        <div class="panel-heading">Aniveriantes do Mês.</div>
+        
+            <div class="form-body" style="height:88%; overflow-y: auto;">
+                <div class="table-container">
+                
+                {% for cliente in infos["clientes"]%}
+
+                
+                <div class="notification " style="padding:1ch; margin-bottom: 1ch;">   
+                    <strong>{{cliente.get_data_aniversario()}}</strong> --  {{cliente.cel}} <p>
+                    {{cliente.name}} 
+                    
+                    
+                </div>
+                {% endfor %}
+                
+
+            </div>
+        </div>
+
+    </article>
+
+    <strong style="background-color:rgb(250, 250, 250); color: rgb(241, 241, 241);">.</strong>
+
+    <article class="panel" style="width: 18%; height:90vh">
+        
+        <div class="panel-heading">Estoque</div>
+        
+            <div class="form-body"style="height: 88%; overflow-y: auto;" >
+                <div class="table-container" >
+                
+                {% for produto in infos["balance"]%}
+                {% if produto.quantidade == None%}
+
+                <div class="notification" style="padding:1ch; margin-bottom: 1ch;" onclick="show_article('produto{{produto.id}}')">   
+                    <strong>{{produto.nome_produto}}</strong> <p></p>
+                    Precisa {{produto.id}} comprar:  {{produto.estoque_minimo}} {{produto.unidade}} 
+                
+                    <div id='produto{{produto.id}}' style="display:none">
+                        <b>Estoque mínimo:</b> {{produto.estoque_minimo}} <p>
+                        <b>Produtos no Estoque:</b> {{produto.quantidade}} <p></p>
+                    </div>
+                </div>
+
+                {% elif produto.estoque_minimo>produto.quantidade %}
+                <div class="notification" style="padding:1ch; margin-bottom: 1ch;" onclick="show_article('produto{{produto.id}}')">   
+                    <strong>{{produto.nome_produto}}</strong> <p></p>
+                    Precisa comprar:  {{produto.estoque_minimo-produto.quantidade}} {{produto.unidade}} 
+                    <div id='produto{{produto.id}}' style="display:none">
+                        <b>Estoque mínimo:</b> {{produto.estoque_minimo}} <p>
+                        <b>Produtos no Estoque:</b> {{produto.quantidade}} <p></p>
+                    </div>
+                </div>
+
+                {% endif %}
+                {% endfor %}
+                
+
+            </div>
+        </div>
+
+    </article>
+
+    <strong style="background-color:rgb(250, 250, 250); color: rgb(241, 241, 241);">.</strong>
+
+    <article class="panel" style="width: 18%; height:90vh">
+        
+        <div class="panel-heading">Contas a pagar - 7D</div>
+        
+            <div class="form-body"style="height: 88%; overflow-y: auto;" >
+                <div class="table-container" >
+                
+                {% for conta in infos["contas"]%}
+
+                {% if conta.data_vencimento<infos["hoje"] %}
+                <div class="notification has-background-warning" style="padding:1ch; margin-bottom: 1ch;" onclick="show_article('Conta{{conta.id}}')">
+                {% elif conta.data_vencimento==infos["hoje"] %}   
+                <div class="notification has-background-danger-light" style="padding:1ch; margin-bottom: 1ch;" onclick="show_article('Conta{{conta.id}}')">
+                {% else %}  
+                <div class="notification is-green" style="padding:1ch; margin-bottom: 1ch;"  onclick="show_article('Conta{{conta.id}}')"> 
+                {% endif %}  
+
+                    <strong>{{conta.descricao}}</strong> <p>
+                    Vencimento em: {{conta.get_data_vencimento()}}
+                    <div id='Conta{{conta.id}}' style="display:none">
+                        <b>Fornecedor:</b> {{conta.fornecedor}} <p>
+                        {% if conta.recorrencia.tipo_mensalidade == "Parcelado" %}    
+                            <b>Valor:</b> {{conta.parcelas_info[0].valor}} <p> 
+                            <b>Parcelas </b> {{conta.get_formato_parcela()}}
+                        {% else %} 
+                            <b>Valor:</b> {{conta.valor}}  
+                        {% endif %}
+  
+
+                        
+                    </div>
+                </div>
+
+                {% endfor %}
+                
+
+            </div>
+        </div>
+
+    </article>
+
+    <strong style="background-color:rgb(250, 250, 250); color: rgb(241, 241, 241);">.</strong>
+
+  <div style="width: 20%; height:48vh"> 
+        <article class="panel" style="height:100%">
+            
+            <div class="panel-heading">Pagamentos pendentes</div>
+            
+                <div class="form-body"style="height: 85%; overflow-y: auto;" >
+                    <div class="table-container" style="height: 100%;" >
+                        {% for pedido in infos["pendentes"]%}
+            
+                        {% if pedido.s_entrega.status_entrega == "Entregue" %}
+                        <div class="notification has-background-warning" style="padding:1ch; margin-bottom: 1ch;" onclick="show_article('PedidoP{{pedido.id}}')">
+                        {% else %}  
+                        <div class="notification" style="padding:1ch; margin-bottom: 1ch;"  onclick="show_article('PedidoP{{pedido.id}}')"> 
+                        {% endif %}   
+        
+                            <b>Pedido Nº: {{pedido.id}}:</b>
+                            {{pedido.cliente.name}} <p>
+                                <div id='PedidoP{{pedido.id}}' style="display:none">
+                                    <b>Telefone:</b> {{pedido.cliente.cel}} <p>
+                                    <b>Data Entrega:</b> {{pedido.get_data_entrega()}} <p>
+                                    <b>Entrega:</b> {{pedido.s_entrega.status_entrega}} <p>  
+                                    <b>Data Pagamento:</b> {{pedido.get_data_pagamento()}} <p>
+                                    <p></p>
+                                    {% for item in pedido.pedidos_itens %}
+                                    <p> {{item.quantidade}} {{item.pedido_nome.tipo}} - {{item.descricao}}
+                                    {% endfor %}      
+        
+                                    
+                                </div>
+                                
+                        </div>
+                        {% endfor %}
+                </div>
+            </div>
+
+        </article>
+
+        <form method="POST"> 
+            {{ form.csrf_token }}
+            <article  class="panel" style="height:39vh">
+                <div class="panel-heading" style="vertical-align:middle;">Relatórios
+                    
+                        {{ form.relatorios() }}
+                    
+
+                </div>
+                <div class="form-body"  style="height: 100%;" >
+                    <div class="control is-expanded" style="vertical-align: middle;">
+                        <div class="table-container"  style="height: 100%;">
+
+                            
+                            <div class="field is-grouped">
+                                <label class="label" style="vertical-align: middle;"> Dt Início </label>
+                                {{ form.data_inicio(class="input", type="date", placeholder="01/01/2000") }}
+                                    
+                            </div>
+
+
+
+                            <div class="field is-grouped">
+                                <label class="label"> Data Fim </label>
+                                {{ form.data_fim(class="input", type="date", placeholder="01/01/2000") }}
+                            </div>
+
+                            <input class="button is-fullwidth is-success"
+                            type="submit" value="Generate Excel Report" >
+
+                            
+                        </div>
+                    </div>
+                </div>
+                
+            </article>
+        </form>
+    </div> 
+
+</div>
+
+
 
 {% endblock body %}

@@ -144,11 +144,11 @@
 
             <div class="field is-grouped">
                 <div class="control is-expanded">
-                    <input class="button is-fullwidth {{ color_theme }}" id="btn_salvar" type="submit" value="Salvar" > 
+                    <input class="button is-fullwidth is-success" id="btn_salvar" type="submit" value="Salvar" > 
                     
                 </div>
                 <div class="control">
-                    <a href="{{url_for('site.pedidos')}}" class="button is-success">Voltar</a>
+                    <a href="{{url_for('site.pedidos')}}" class="button {{btn_voltar}}">Voltar</a>
                 </div>
             </div>
         </div>

@@ -45,7 +45,7 @@ $(document).ready(function() {
             success: function(response){
                 
                 $("#nome_cliente").val(response.name)
-                $("#telefone").val(response.phone)
+                $("#telefone").val(response.cel)
                 $("#endereco").val(response.endereco)
             }
         })
@@ -241,7 +241,7 @@ $(window).load(function() {
         type: "GET",
         success: function(response){
             $("#nome_cliente").val(response.name)
-            $("#telefone").val(response.phone)
+            $("#telefone").val(response.cel)
             $("#endereco").val(response.endereco)
             $('#status_pagamento option[value='+ response.status_pagamento +']').attr('selected','selected');
             $("#id_cliente").val(id_cliente)

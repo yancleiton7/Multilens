@@ -2,9 +2,10 @@ from flask_wtf import FlaskForm
 from wtforms import FloatField, PasswordField, StringField
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms.fields.html5 import EmailField
+from wtforms.fields import SelectField
 from wtforms.validators import Email, Length, Optional, Regexp, Required
 
-from multilens.ext.db.models import ( Register, Estoque, Produto,Tipo, Retirada, Pagamento_conta, Pagamento,
+from multilens.ext.db.models import ( Register, Produto,Tipo, Retirada, Pagamento_conta, Pagamento,
                                      Grupo,  Cliente, Status_pagamento, Status_Entrega,Tipo_mensalidade, Contas)
 
 
@@ -16,6 +17,7 @@ class BaseForm(FlaskForm):
         for field in self:
             if isinstance(field, QuerySelectField):
                 setattr(obj, field.name, field.data.id)
+                
 
 class FormLogin(BaseForm):
     username = StringField("Usuario", [Required()])
@@ -41,18 +43,7 @@ class FormClientes(BaseForm):
             Regexp("^[0-9]*$", message="Informe somente números"),
         ],
     )
-    phone = StringField(
-        "Telefone",
-        [
-            Required("Informe um telefone validio"),
-            Length(
-                min=10,
-                max=11,
-                message="O telefone precisa conter exatamente 11 números 2 do DDD 9 do número ",
-            ),
-            Regexp("^[0-9]*$", message="Informe somente números"),
-        ],
-    )
+    email = StringField("Email")
 
 
 
@@ -641,8 +632,16 @@ class FormParcelas(BaseForm):
     def load(self, parcela):
         self.process(obj=parcela)
         return ""
-       
-        
+
+class FormRelatorios(BaseForm):
+    relatorios = SelectField(
+        u'Relatorios',
+        choices = [('tudo', 'Tudo'), ('pedido', 'Pedidos'), ('contas', 'Contas'), ('clientes', 'Clientes'),
+          ('estoque', 'Estoque'),  ('financeiro', 'Financeiro')]
+    )
+    data_inicio = StringField("Data Pagamento")
+    data_fim = StringField("Data Pagamento")
+
                
         
         

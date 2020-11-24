@@ -1,7 +1,7 @@
 from flask_admin import Admin
 
 from multilens.ext.db import db
-from multilens.ext.db.models import (Balance, Estoque, User)
+from multilens.ext.db.models import (Balance, User)
 
 from .models import (AdminView, BalanceModelView, EstoqueModelView,
                      UserModelView)
@@ -20,7 +20,5 @@ def init_app(app):
     admin.add_view(SaleTypeModelView(SaleType, db.session, "Tipos de venda"))
     admin.add_view(PaymentTypeModelView(PaymentType, db.session, "Tipo de pagamento"))
     '''
-    admin.add_view(EstoqueModelView(Estoque, db.session, "Produtos"))
-    admin.add_view(BalanceModelView(Balance, db.session, "Estoque"))
 
     admin.init_app(app)

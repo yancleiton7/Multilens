@@ -68,11 +68,11 @@
             
             <div class="field is-grouped">
                 <div class="control is-expanded">
-                    <input class="button is-fullwidth {{ color_theme }}" type="submit" value="Salvar Alterações" > 
+                    <input class="button is-fullwidth is-success" type="submit" value="Salvar Alterações" > 
                     
                 </div>
                 <div class="control">
-                    <a href="{{url_for('site.contas_pendentes')}}" class="button is-success">Voltar</a>
+                    <a href="{{url_for('site.contas_pendentes')}}" class="button {{btn_voltar}}">Voltar</a>
                 </div>
             </div>
         </div>

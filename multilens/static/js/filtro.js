@@ -5,6 +5,12 @@ function sortTable(n) {
     
     //Set the sorting direction to ascending:
     dir = "asc"; 
+
+    rows = table.rows;
+
+    nome_titulo = rows[0].getElementsByTagName("TH")[n].innerHTML.toLowerCase()
+    
+
     /*Make a loop that will continue until
     no switching has been done:*/
     while (switching) {
@@ -43,7 +49,14 @@ function sortTable(n) {
             valor_de_y = tratar_data(valor_de_y, "/")
             
 
+        } else if (nome_titulo==="id" || nome_titulo==="disponível" || nome_titulo==="estoque mínimo"){
+            
+            valor_de_x = parseInt(valor_de_x)
+            valor_de_y = parseInt(valor_de_y)
+            
+
         }
+
 
 
 

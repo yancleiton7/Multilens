@@ -1,11 +1,11 @@
 import datetime as dt
 from datetime import datetime
+from datetime import timedelta
 
 from flask_login import UserMixin, current_user
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash
 from sqlalchemy.sql import func
-
 
 from . import db
 
@@ -135,36 +135,6 @@ class User(UserMixin, db.Model):
     def is_admin(self):
         return self.admin
 
-class Estoque(db.Model):
-    __tablename__ = "estoque"
-    #balance = db.relationship("Balance", backref="balance", lazy="dynamic")
-
-    id = db.Column("id", db.Integer, primary_key=True)
-    nome_produto = db.Column("nome_produto", db.Unicode)
-    valor_pago = db.Column("valor_pago", db.Float)
-    quantidade = db.Column("quantidade", db.Integer)
-    data_compra = db.Column("data_compra", db.Boolean)
-    observacao = db.Column("observacao", db.Integer)
-
-
-    @staticmethod
-    def get_avaliable_items():
-        return Estoque.query.all()
-
-    @staticmethod
-    def get(id: int):
-        return Estoque.query.filter_by(id=id).first()
-    
-
-
-    @staticmethod
-    def get_balance(id: int):
-        balance = Balance.query.filter_by(item_id=id)
-        entry = sum([i.quantidade for i in balance.filter_by(event="Entrada")])
-        sale = sum([i.quantidade for i in balance.filter_by(event="Saida")])
-
-        return entry - sale
-
 class Contas(db.Model):
     __tablename__ = "contas"
     id = db.Column("id", db.Integer, primary_key=True)
@@ -186,10 +156,13 @@ class Contas(db.Model):
     def get(id: int):
         return Contas.query.filter_by(id=id).first()
 
+    @staticmethod
+    def get_relatorio(inicio, fim):
+        return Contas.query.filter(Contas.data_vencimento>=inicio, Contas.data_vencimento<=fim).all()
 
     @staticmethod
     def get_all():
-        return Contas.query.all()
+        return Contas.query.order_by(Contas.id.desc()).all()
 
     def get_descricao(self):
         tipo_mensalidade = self.recorrencia.tipo_mensalidade
@@ -200,7 +173,7 @@ class Contas(db.Model):
             return (f"Compras feitas em {self.fornecedor} ")
         else:
             return (f"{self.fornecedor} - Descrição: {self.descricao}")
-   
+
     @staticmethod
     def get_pendentes():
         lista_de_contas = Contas.query.filter_by(status_pagamento=1).all()
@@ -217,18 +190,13 @@ class Contas(db.Model):
             elif vencimento <= hoje:
                 lista_pendentes_mes_atual.append(conta)
 
-        print(lista_pendentes_mes_atual)
         return lista_pendentes_mes_atual
 
-    def get_status_vencimento(self):
-        if self.pagamento.status_pagamento_conta == "Pendente":
-            if self.data_vencimento  > datetime.now().strftime('%Y-%m-%d'):
-                status = "A vencer"
-            else:
-                status = "Vencido"        
-            return status
-        else:
-            return ""
+    @staticmethod
+    def get_avencer_capa():
+        hojeMais7 = datetime.now()+timedelta(days=7)
+        return Contas.query.filter(Contas.status_pagamento==1, Contas.data_vencimento<hojeMais7
+        ).order_by(Contas.data_vencimento.asc()).all()
 
     def get_data_vencimento(self):
         return converter_data(self.data_vencimento)
@@ -281,8 +249,7 @@ class Contas(db.Model):
     def deleta_parcelas(self):
         for parcela in self.parcelas_info:
             parcela.remove()
-
-
+   
     @staticmethod
     def create_by_form(form):       
         conta = Contas()
@@ -409,6 +376,9 @@ class Contas_pagas(db.Model):
 
     def get_data_pagamento(self):
         return converter_data(self.data_pagamento)
+    
+    def get_data_vencimento(self):
+        return converter_data(self.data_vencimento)
 
 
     @staticmethod
@@ -500,18 +470,25 @@ class Contas_pagas(db.Model):
 
 class Produto(db.Model):
     __tablename__ = "produtos"
-    balance = db.relationship("Balance", backref="balance", lazy="dynamic")
+    #balance = db.relationship("Balance", backref="balance", lazy="dynamic")
+
 
     id = db.Column("id", db.Integer, primary_key=True)
     nome_produto = db.Column("nome_produto", db.Unicode)
-    grupo = db.Column("grupo", db.Unicode)
+    grupo = db.Column("grupo", db.Integer, db.ForeignKey("grupo.id"))
     observacao = db.Column("observacao", db.Unicode)
     estoque_minimo = db.Column("estoque_minimo", db.Unicode)
     unidade = db.Column("unidade", db.Unicode)
     data_cadastro = db.Column("data_cadastro", db.Unicode, default=datetime.now().strftime('%Y-%m-%d'))
     fornecedor = db.relationship("Fornecedor", backref="owner")
 
-    
+    grupo_nome = db.relationship("Grupo", foreign_keys=grupo)
+
+    @staticmethod
+    def get_relatorio(inicio, fim):
+        return Produto.query.filter(Produto.data_cadastro>=inicio, Produto.data_cadastro<=fim).all()
+
+
 
     @staticmethod
     def necessita_compra(id: int):
@@ -522,6 +499,10 @@ class Produto(db.Model):
             return [False, "Prodtuo Disponível"]
         else:
             return [True, "Precisa comprar: "+str(minimo-estoque)]
+
+    @staticmethod
+    def necessita_compra_capa():
+        return Produto.query.filter()
 
     @staticmethod
     def get_preco(id: int):
@@ -544,11 +525,18 @@ class Produto(db.Model):
     
     @staticmethod
     def get_balance(id: int):
-        balance = Balance.query.filter_by(item_id=id)
-        entry = sum([i.quantidade for i in balance.filter_by(event="Entrada")])
-        sale = sum([i.quantidade for i in balance.filter_by(event="Saida")])
 
-        return entry - sale
+        balance = db.session.query(func.sum(Balance.quantidade
+        ).label("Total")
+        ).filter_by(item_id=id
+        ).first()
+        
+        if balance[0] is None:
+            resultado = 0
+        else:
+            resultado = balance[0]
+
+        return resultado
 
     def get_data_cadastro(self):
         return converter_data(self.data_cadastro)
@@ -580,10 +568,12 @@ class Produto(db.Model):
 
     def save(self):
         try:
+           
             db.session.add(self)
             db.session.commit()
 
-        except:
+        except Exception as e:
+            
             db.session.rollback()
             response = {
                 "success": False,
@@ -659,14 +649,16 @@ class Produto(db.Model):
         response["message"] = "Fornecedores editados com successo!"
         return response
         
-
     def remove(self):
         db.session.delete(self)
         db.session.commit()
         response = {"success": True, "message": "Produto excluido com sucesso!"}
 
         return response
-    
+
+    def to_dict(self) -> dict:
+        return dict((col, getattr(self, col)) for col in self.__table__.columns.keys())
+
     @staticmethod
     def get_all():
         return Produto.query.all()
@@ -678,7 +670,13 @@ class Fornecedor(db.Model):
     descricao = db.Column("descricao", db.Unicode)
     id_produto = db.Column(db.Integer, db.ForeignKey("produtos.id"))
     valor = db.Column("valor", db.Integer)
-    
+
+    produto = db.relationship("Produto", foreign_keys=id_produto)
+
+    @staticmethod 
+    def get_all():
+        return Fornecedor.query.all()
+
 
     def remove(self):
         db.session.delete(self)
@@ -715,7 +713,14 @@ class Pedido_item(db.Model):
     quantidade = db.Column("quantidade", db.Integer)
 
     pedido_nome = db.relationship("Tipo", foreign_keys=produto)
-    
+    pedido = db.relationship("Pedidos", foreign_keys=id_pedido)
+
+    @staticmethod
+    def get_all():
+        return Pedido_item.query.all()
+
+
+
     @staticmethod
     def get_itens(id_pedido):
         return Pedido_item.query.filter_by(id_pedido=id_pedido)
@@ -782,16 +787,21 @@ class Pedidos(db.Model):
     retirada = db.relationship("Retirada", foreign_keys=tipo_retirada)
 
     @staticmethod
+    def get_relatorio(inicio, fim):
+        return Pedidos.query.filter(Pedidos.data_pedido>=inicio, Pedidos.data_pedido<=fim).all()
+
+
+    
+    @staticmethod
     def get(id: int):
         return Pedidos.query.filter_by(id=id).first()
 
     def get_status_pagamento(self):
-        return Status_pagamento.query.filter_by(id=self.status_pagamento).first()
+        return self.s_pagamento.status_pagamento
 
     def get_status_entrega(self):
-        return Status_Entrega.query.filter_by(id=self.status_entrega).first()
+        return self.s_entrega.status_entrega
         
-
 
     def get_data_entrega(self):        
         return converter_data(self.data_entrega)
@@ -805,7 +815,8 @@ class Pedidos(db.Model):
 
     @staticmethod
     def get_all():
-        return Pedidos.query.order_by(Pedidos.data_entrega.asc(), Pedidos.hora_entrega.asc()).all()
+        result = Pedidos.query.order_by(Pedidos.data_entrega.asc(), Pedidos.hora_entrega.asc()).all()
+        return result
      
     def get_pendentes_entrega():
         return Pedidos.query.order_by(Pedidos.data_entrega.asc(), Pedidos.hora_entrega.asc()).filter_by(status_entrega=1)
@@ -816,10 +827,22 @@ class Pedidos(db.Model):
     def get_pagos():
         return Pedidos.query.order_by(Pedidos.data_entrega.asc(), Pedidos.hora_entrega.asc()).filter(Pedidos.status_pagamento==3)
 
+    @staticmethod
+    def get_entrega_capa():
+        hoje = datetime.today() + timedelta(days = 6)
+        hoje = hoje.strftime('%Y-%m-%d')
+        return Pedidos.query.filter(Pedidos.data_entrega<=hoje
+        ).order_by(Pedidos.data_entrega.asc(), Pedidos.hora_entrega.asc()
+        ).filter(Pedidos.status_entrega==1)
+
     def get_descricao_computada(self):
         descricao_computada = ""
         for pedidos_item in self.pedidos_itens:
-            descricao_computada = descricao_computada + str(pedidos_item.quantidade) + " " + pedidos_item.descricao + "\n"
+            s = ""
+            if pedidos_item.quantidade>0 and pedidos_item.pedido_nome.tipo!="Outros":
+                s = "s"
+
+            descricao_computada = descricao_computada + str(pedidos_item.quantidade) +": "+ pedidos_item.pedido_nome.tipo+s+" " + pedidos_item.descricao + "\n"
         
         return descricao_computada
 
@@ -920,7 +943,25 @@ class Balance(db.Model):
     preco = db.Column("preco", db.Unicode, default="00,00")
     observacao = db.Column("observacao", db.Unicode)
 
+    produto = db.relationship("Produto", foreign_keys=item_id)
+
+    @staticmethod
+    def get_relatorio(inicio, fim):
+        return Balance.query.filter(Balance.date>=inicio, Balance.date<=fim).all()
+
+
+    @staticmethod
+    def get_balance_capa():
+        
+        balance = db.session.query(Produto.nome_produto, Produto.estoque_minimo,
+        Produto.unidade, Produto.id,
+            func.sum(Balance.quantidade).label("quantidade")
+            ).group_by(Produto.id).join(Balance, isouter=True)
+
+        return balance.all()
     
+    def get_data(self):
+        return converter_data(self.date)
 
     @staticmethod
     def get(id: int):
@@ -938,7 +979,7 @@ class Balance(db.Model):
             db.session.add(self)
             db.session.commit()
 
-        except:
+        except Exception as e:
             db.session.rollback()
             response = {
                 "success": False,
@@ -948,7 +989,7 @@ class Balance(db.Model):
         else:
             response = {
                 "success": True,
-                "message": "Produto cadastrado com successo!",
+                "message": "Alteração feita no estoque!",
                 "object": self,
             }
 
@@ -1056,6 +1097,12 @@ class Financeiro(db.Model):
 
     
     # .filter(Financeiro.data_pagamento>'2020-11-02')
+    
+    @staticmethod
+    def get_relatorio(inicio, fim):
+        return Financeiro.query.filter(Financeiro.data_pagamento>=inicio, Financeiro.data_pagamento<=fim).all()
+
+
 
 
     @staticmethod
@@ -1077,18 +1124,14 @@ class Financeiro(db.Model):
     def get_total_contas(self):
         return Financeiro.query.filter_by(tipo_item="Conta").count()
 
-
     def get_saldo(self):
         saida = float(self.get_total_contas_valor().replace(",","."))
         entrada = float(self.get_total_pedidos_valor().replace(",","."))
         return tratar_centavos(entrada-saida)
 
-
     def get_total_geral(self):
         qry = db.session.query(func.count(Financeiro.valor).label("total"))
         return qry.first()[0]
-
-
    
     @staticmethod
     def get_tipo(tipo):
@@ -1103,8 +1146,6 @@ class Financeiro(db.Model):
     @staticmethod
     def get(id: int):
         return Financeiro.query.filter_by(id=id).first()
-
-
 
     def save(self):
         try:
@@ -1134,7 +1175,7 @@ class Financeiro(db.Model):
 
     @staticmethod
     def create_by_form(form):
-        institution = Financeiro()
+        financeiro = Financeiro()
         register = Register()
 
         form.populate_obj(register)
@@ -1142,9 +1183,9 @@ class Financeiro(db.Model):
         register.save()
 
         form.populate_obj(institution)
-        institution.register_id = register.id
+        financeiro.register_id = register.id
 
-        response = institution.save()
+        response = financeiro.save()
 
         if not response["success"]:
             register.delete()
@@ -1156,7 +1197,6 @@ class Financeiro(db.Model):
         response = self.save()
 
         return response
-
 
     def to_dict(self):
         return dict((col, getattr(self, col)) for col in self.__table__.columns.keys())
@@ -1188,7 +1228,13 @@ class Register(db.Model):
         endereco = endereco + " - " + register["city"] +"/"+ register["estado"] 
         return endereco
 
-        
+    
+    def get_endereco_s(self):
+        register = self.to_dict()
+        endereco = register["address"] + " - " + register["district"] + " - " + register["numero"] + " - " + register["complemento"]
+        endereco = endereco + " - " + register["city"] +"/"+ register["estado"] 
+        return endereco
+            
     def save(self):
         try:
             db.session.add(self)
@@ -1252,7 +1298,7 @@ class Cliente(db.Model):
     register_id = db.Column("register_id", db.Integer, db.ForeignKey("register.id"))
     name = db.Column("name", db.Unicode)
     cel = db.Column("cel", db.Integer)
-    phone = db.Column("phone", db.Integer)
+    email = db.Column("email", db.Unicode)
     aniversario = db.Column("aniversario", db.Unicode)
     observacao = db.Column("observacao", db.Unicode)
     data_cadastro = db.Column("data_cadastro", db.Unicode, default=datetime.now().strftime('%Y-%m-%d'))
@@ -1260,6 +1306,9 @@ class Cliente(db.Model):
     register = db.relationship("Register", foreign_keys=register_id)
     pedidos = db.relationship("Pedidos", backref="owner")
 
+    @staticmethod
+    def get_relatorio(inicio, fim):
+        return Cliente.query.filter(Cliente.data_cadastro>=inicio, Cliente.data_cadastro<=fim).all()
 
     @staticmethod
     def create_by_form(form):
@@ -1330,9 +1379,10 @@ class Cliente(db.Model):
         return Cliente.query.filter_by(id=id).first()
 
     @staticmethod
-    def get_aniversariantes(mes: int):
-        lista = [item for item in Cliente.query.all() if item.aniversario[3:5]==mes["mes"]]
-        return lista
+    def get_aniversariantes():
+        mes_Atual = datetime.now().strftime('%m')
+        Mes_procura = '%-{}-%'.format(mes_Atual)
+        return Cliente.query.filter(Cliente.aniversario.like(Mes_procura)).all()
 
     def get_aniversario(self):
         return converter_data(self.aniversario)
@@ -1342,6 +1392,9 @@ class Cliente(db.Model):
 
     def get_data_cadastro(self):
         return converter_data(self.data_cadastro)
+
+    def get_data_aniversario(self):
+        return converter_data(self.aniversario)
 
     def to_dict(self) -> dict:
         return dict((col, getattr(self, col)) for col in self.__table__.columns.keys())
