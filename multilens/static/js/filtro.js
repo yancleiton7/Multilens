@@ -1,3 +1,5 @@
+//const { url } = require("inspector");
+
 function sortTable(n) {
     var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
     table = document.getElementById("tabela");
@@ -197,6 +199,7 @@ function filtro_datas($rows, de_tratado, ate_tratado){
 }
 
 $(document).ready(function() {
+
     
     var $rows = $('#tabela tbody tr');
     
@@ -295,6 +298,22 @@ $(document).ready(function() {
         }
 
     });
+
+    $('#quantidade_linhas_tabela').change(function() {
+        quantidade = $(this).find(":selected").text()
+
+        caminho = window.location.href.split('?')[0]
+        if (caminho.length===1){
+            window.location.href = window.location.href+'?limit='+quantidade
+        } else {
+            window.location.href = caminho+'?limit='+quantidade
+        }
+        
+        
+        
+    });
+
+
 
     $("#imprimir").click(function () {
        
