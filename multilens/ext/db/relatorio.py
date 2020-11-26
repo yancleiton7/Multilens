@@ -149,19 +149,23 @@ class Gerar_relatorios():
         
         #add headers
         sheet.write(0, 0, 'Id Pedido')
-        sheet.write(0, 1, 'Data Cadastro')
-        sheet.write(0, 2, 'Produto')
-        sheet.write(0, 3, 'Descricao')
-        sheet.write(0, 4, 'Quantidade')
+        sheet.write(0, 1, 'Id Cliente')
+        sheet.write(0, 2, 'Nome do Cliente')
+        sheet.write(0, 3, 'Data Cadastro')
+        sheet.write(0, 4, 'Produto')
+        sheet.write(0, 5, 'Descricao')
+        sheet.write(0, 6, 'Quantidade')
 
 
         idx = 0
         for item in itens:
             sheet.write(idx+1, 0, item.pedido.id)
-            sheet.write(idx+1, 1, item.pedido.get_data_pedido())
-            sheet.write(idx+1, 2, item.pedido_nome.tipo)
-            sheet.write(idx+1, 3, item.descricao)
-            sheet.write(idx+1, 4, item.quantidade)
+            sheet.write(idx+1, 1, item.pedido.cliente.id)
+            sheet.write(idx+1, 2, item.pedido.cliente.name)
+            sheet.write(idx+1, 3, item.pedido.get_data_pedido())
+            sheet.write(idx+1, 4, item.pedido_nome.tipo)
+            sheet.write(idx+1, 5, item.descricao)
+            sheet.write(idx+1, 6, item.quantidade)
             idx += 1
 
         return workbook
@@ -271,8 +275,13 @@ class Gerar_relatorios():
         return workbook
 
     @staticmethod
-    def gerar_excel(relatorio, inicio='1899-01-01', fim='2899-12-31'):
-        
+    def gerar_excel(relatorio, inicio, fim):
+        if inicio == "":
+            inicio='1900-01-01'
+        if fim=="":
+            fim='2900-01-01'
+
+
         #output in bytes
         output = io.BytesIO()
         #create WorkBook object
