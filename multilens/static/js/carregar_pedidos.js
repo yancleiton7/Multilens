@@ -168,6 +168,20 @@ $(document).ready(function() {
 
     $('#form_principal').delegate('[id^=valor_unitario]','keyup', function (e) { 
         $(this).gerar_multiplicacao()
+
+        options = {
+            prefix: '',
+            suffix: '',
+            fixed: true,
+            fractionDigits: 2,
+            decimalSeparator: ',',
+            thousandsSeparator: '.',
+            autoCompleteDecimal: true
+          };
+          
+
+          SimpleMaskMoney.setMask(this, options)
+
     });
 
     $('#form_principal').delegate('[id^=quantidade]','keyup', function (e) { 
@@ -176,6 +190,7 @@ $(document).ready(function() {
         
     $($('[id^=valor_unitario]')).keyup(function () {
         $(this).gerar_multiplicacao()
+
     });
 
     $($('[id^=quantidade]')).keyup(function () {

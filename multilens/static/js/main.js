@@ -46,6 +46,25 @@ $(document).ready(function () {
     })
 
 
+    $('[inputmode="numeric"]').keyup(function () {
+
+        options = {
+            prefix: '',
+            suffix: '',
+            fixed: true,
+            fractionDigits: 2,
+            decimalSeparator: ',',
+            thousandsSeparator: '.',
+            autoCompleteDecimal: true
+          };
+          
+
+          SimpleMaskMoney.setMask(this, options)
+
+
+    });
+
+
 });
 
 

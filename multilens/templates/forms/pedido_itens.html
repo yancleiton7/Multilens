@@ -54,14 +54,14 @@
                         <label class="label"> {{ form.valor_unitario.label }} </label>
                     
                         <div class="control">
-                            {{ form.valor_unitario(class="input", type="text", placeholder="Adicione o valor unitário") }}
+                            {{ form.valor_unitario(class="input", type="text", placeholder="Adicione o valor unitário", inputmode="numeric" ) }}
                         </div>
                     </div>
                     <div class="control is-expanded">
                         <label class="label"> {{ form.valor_total.label }} </label>
                     
                         <div class="control">
-                            {{ form.valor_total(class="input", type="text", placeholder="Valor total") }}
+                            {{ form.valor_total(class="input", type="text", placeholder="Valor total", inputmode="numeric") }}
                         </div>
                     </div>
                 </div>
