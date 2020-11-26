@@ -12,7 +12,10 @@ from . import db
 db.metadata.clear()
 
 def converter_data(data_a_converter):
-    data_convertida = data_a_converter[-2:]+"/"+data_a_converter[5:7]+"/"+data_a_converter[:4]
+    try:
+        data_convertida = data_a_converter[-2:]+"/"+data_a_converter[5:7]+"/"+data_a_converter[:4]
+    except:
+        data_convertida = "não definido"
     return data_convertida
 
 def encriptar_telefone(telefone):
@@ -32,8 +35,12 @@ def monthdelta(date, delta):
     return date.replace(day=d,month=m, year=y)
 
 def tratar_centavos(valor):
-    valor_formatado =  str('{:.2f}').format(valor)
-    valor_formatado = valor_formatado.replace(".", ",")
+    if valor is not None:
+        valor_formatado =  str('{:.2f}').format(valor)
+        valor_formatado = valor_formatado.replace(".", ",")
+    else:
+        print(valor)
+        valor_formatado = "00,00"
     return valor_formatado
 
 class BaseModel:
@@ -650,6 +657,9 @@ class Produto(db.Model):
         return response
         
     def remove(self):
+        for fornecedor in self.fornecedor:
+            fornecedor.remove()
+
         db.session.delete(self)
         db.session.commit()
         response = {"success": True, "message": "Produto excluido com sucesso!"}
@@ -711,6 +721,8 @@ class Pedido_item(db.Model):
     descricao = db.Column("descricao", db.Unicode)
     id_pedido = db.Column(db.Integer, db.ForeignKey("pedidos.id"))
     quantidade = db.Column("quantidade", db.Integer)
+    valor_unitario = db.Column("valor_unitario", db.Unicode)
+    valor_total = db.Column("valor_total", db.Unicode)
 
     pedido_nome = db.relationship("Tipo", foreign_keys=produto)
     pedido = db.relationship("Pedidos", foreign_keys=id_pedido)
@@ -904,9 +916,11 @@ class Pedidos(db.Model):
         pedido_itens[0].quantidade = lista_pedido_itens["quantidade"]
         pedido_itens[0].produto = lista_pedido_itens["produto"]
         pedido_itens[0].descricao = lista_pedido_itens["descricao"]
+        pedido_itens[0].valor_unitario = lista_pedido_itens["valor_unitario"]
+        pedido_itens[0].valor_total = lista_pedido_itens["valor_total"]
         pedido_itens[0].save()
 
-        quantidade_repeticao = int(len(lista_pedido_itens)/3)
+        quantidade_repeticao = int(len(lista_pedido_itens)/5)
         
         for i in range(1,quantidade_repeticao):
             
@@ -915,6 +929,8 @@ class Pedidos(db.Model):
             pedido_itens[i].quantidade = lista_pedido_itens["quantidade"+str(i)]
             pedido_itens[i].produto = lista_pedido_itens["produto"+str(i)]
             pedido_itens[i].descricao = lista_pedido_itens["descricao"+str(i)]
+            pedido_itens[i].valor_unitario = lista_pedido_itens["valor_unitario"+str(i)]
+            pedido_itens[i].valor_total = lista_pedido_itens["valor_total"+str(i)]
             pedido_itens[i].save()
         
         response={}  
@@ -959,7 +975,25 @@ class Balance(db.Model):
             ).group_by(Produto.id).join(Balance, isouter=True)
 
         return balance.all()
+
+    def get_valor(self):
+        if self.event=="Entrada":
+            return self.preco
+        else:
+            return "-"
     
+    def get_quantidade(self):
+        if self.event=="Entrada":
+            return self.quantidade
+        else:
+            return int(self.quantidade)*-1
+    
+    @staticmethod
+    def get_to_table(limit, offset):
+        return Balance.query.order_by(Balance.date.desc()).limit(limit).offset(offset).all()
+
+
+
     def get_data(self):
         return converter_data(self.date)
 
@@ -1097,40 +1131,57 @@ class Financeiro(db.Model):
 
     
     # .filter(Financeiro.data_pagamento>'2020-11-02')
-    
-    @staticmethod
-    def get_relatorio(inicio, fim):
-        return Financeiro.query.filter(Financeiro.data_pagamento>=inicio, Financeiro.data_pagamento<=fim).all()
-
-
-
 
     @staticmethod
     def get_all():
         return Financeiro.query.order_by(Financeiro.data_pagamento.desc()).all()
 
-    def get_total_pedidos_valor(self):
-        mes = datetime.now().strftime('%m')
-        qry = db.session.query(func.sum(Financeiro.valor).label("total")).filter_by(tipo_item="Pedido")
+    
+    @staticmethod
+    def get_relatorio(inicio, fim):
+        return Financeiro.query.filter(Financeiro.data_pagamento>=inicio, Financeiro.data_pagamento<=fim).all()
+
+    @staticmethod
+    def get_to_table(limit, offset):
+        lista_financeira = []
+        lista_financeira.append(Financeiro.query.order_by(Financeiro.data_pagamento.desc()).limit(limit).offset(offset).all())
+        lista_financeira.append(Financeiro.get_total_pedidos_valor(limit, offset))
+        lista_financeira.append(Financeiro.get_total_pedidos(limit, offset))
+        lista_financeira.append(Financeiro.get_total_contas_valor(limit, offset))
+        lista_financeira.append(Financeiro.get_total_contas(limit, offset))
+        lista_financeira.append(Financeiro.get_saldo(limit, offset))
+        lista_financeira.append(Financeiro.get_total_geral(limit, offset))
+
+        return lista_financeira
+
+
+    @staticmethod
+    def get_total_pedidos_valor(limit, offset):
+        qry = db.session.query(func.sum(Financeiro.valor).label("total")).filter_by(tipo_item="Pedido").limit(limit).offset(offset)
         return tratar_centavos(qry.first()[0])
 
-    def get_total_contas_valor(self):
-        qry = db.session.query(func.sum(Financeiro.valor).label("total")).filter_by(tipo_item="Conta")
+    @staticmethod
+    def get_total_contas_valor(limit, offset):
+        qry = db.session.query(func.sum(Financeiro.valor).label("total")).filter_by(tipo_item="Conta").limit(limit).offset(offset)
         return tratar_centavos(qry.first()[0])
 
-    def get_total_pedidos(self):
-        return Financeiro.query.filter_by(tipo_item="Pedido").count()
+    @staticmethod
+    def get_total_pedidos(limit, offset):
+        return Financeiro.query.filter_by(tipo_item="Pedido").limit(limit).offset(offset).count()
 
-    def get_total_contas(self):
-        return Financeiro.query.filter_by(tipo_item="Conta").count()
+    @staticmethod
+    def get_total_contas(limit, offset):
+        return Financeiro.query.filter_by(tipo_item="Conta").limit(limit).offset(offset).count()
 
-    def get_saldo(self):
-        saida = float(self.get_total_contas_valor().replace(",","."))
-        entrada = float(self.get_total_pedidos_valor().replace(",","."))
+    @staticmethod
+    def get_saldo(limit, offset):
+        saida = float(Financeiro.get_total_contas_valor(limit, offset).replace(",","."))
+        entrada = float(Financeiro.get_total_pedidos_valor(limit, offset).replace(",","."))
         return tratar_centavos(entrada-saida)
 
-    def get_total_geral(self):
-        qry = db.session.query(func.count(Financeiro.valor).label("total"))
+    @staticmethod
+    def get_total_geral(limit, offset):
+        qry = db.session.query(func.count(Financeiro.valor).label("total")).limit(limit).offset(offset)
         return qry.first()[0]
    
     @staticmethod
