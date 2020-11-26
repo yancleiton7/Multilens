@@ -102,7 +102,7 @@ class FormBalanceEntrada(BaseForm):
         "Preço",
         [
             Required("Preencher com o preço do produto."),
-            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe o valor no formato RR,cc ex: 45,22"),
+            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe o preço no formato RR,cc ex: 15,20 (Quinze reais e vinte e dois centavos)"),
         ],
     )
 
@@ -196,7 +196,7 @@ class FormFornecedor(BaseForm):
         "Preço",
         [
             Required("Preencher com o preço nesse fornecedor"),
-            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe o valor no formato RR,cc ex: 45,22"),
+            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe o valor no formato RR,cc ex: 15,20 (Quinze reais e vinte e dois centavos)"),
         ],
     )
 
@@ -278,7 +278,7 @@ class FormContas(BaseForm):
     descricao  = StringField("Descrição da Conta", [Required("Informar a descrição da conta")])
     fornecedor = StringField("Fornecedor", [Required("Registrar o fornecedor.")])
     valor  = StringField("Valor", [Required("Colocar o valor da conta"),
-            Regexp("^[0-9]\d{0,4}(\.\d{5})*,\d{2}$", message="Informe o valor da conta no formato RR,cc ex: 45,22"),])
+            Regexp("^[0-9]\d{0,4}(\.\d{5})*,\d{2}$", message="Informe o valor da conta no formato RR,cc ex: 15,20 (Quinze reais e vinte e dois centavos)"),])
     
     status_pagamento = QuerySelectField(
         "Status do Pagamento",
@@ -312,7 +312,7 @@ class FormContas(BaseForm):
         "Valor das Parcelas",
         [        
             Required("Informar o valor das parcelas."),
-            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe o valor das parcelas no formato RR,cc ex: 45,22"),
+            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe o valor das parcelas no formato RR,cc ex: 15,20 (Quinze reais e vinte e dois centavos)"),
         ],
     )
 
@@ -343,14 +343,6 @@ class FormPedido(BaseForm):
         "Hora da Entrega",
         [
             Required("Por favor preencher hora da entrega."),
-        ],
-    )
-
-    valor = StringField(
-        "Valor total do pedido",
-        [
-            Required("Preencher com o valor do pedido, para contabilizar no Financeiro"),
-            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe o valor no formato RR,cc ex: 45,22"),
         ],
     )
 
@@ -451,7 +443,7 @@ class FormPedidoItens(BaseForm):
         "Valor Unitário",
         [        
             Required("Informar da unidade."),
-            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe o valor das parcelas no formato RR,cc ex: 45,22"),
+            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe o valor unitário no formato RR,cc ex: 15,20 (Quinze reais e vinte e dois centavos)"),
         ],
     )
 
@@ -459,7 +451,7 @@ class FormPedidoItens(BaseForm):
         "Valor total",
         [        
             Required("Informar o valor total (Quantidade * Valor unitário)."),
-            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe o valor das parcelas no formato RR,cc ex: 45,22"),
+            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe o valor total no formato RR,cc ex: 15,20 (Quinze reais e vinte e dois centavos)"),
         ],
     )
     
@@ -498,7 +490,7 @@ class FormStatusPagamento(BaseForm):
         "Valor total do pedido",
         [
             Required("Preencher com o valor do pedido, para contabilizar no Financeiro"),
-            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe o valor no formato RR,cc ex: 45,22"),
+            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe o valor no formato RR,cc ex: 15,20 (Quinze reais e vinte e dois centavos)"),
         ],
     )
 
@@ -583,7 +575,7 @@ class FormContasPagas(BaseForm):
         "Valor total do pagamento",
         [
             Required("Preencher com o valor pago nessa conta."),
-            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe o valor no formato RR,cc ex: 45,22"),
+            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe o valor no formato RR,cc ex: 15,20 (Quinze reais e vinte e dois centavos)"),
         ],
     )
 
@@ -634,7 +626,7 @@ class FormParcelas(BaseForm):
         "Valor da Parcela",
         [
             Required("Preencher com o valor da parcela."),
-            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Parcela: Informe o valor no formato RR,cc ex: 45,22"),
+            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Parcela: Informe o valor no formato RR,cc ex: 15,20 (Quinze reais e vinte e dois centavos)"),
         ],
     )
 
