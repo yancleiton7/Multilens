@@ -50,7 +50,7 @@
                 <div class="control">
                     <label class="label"> {{ form.valor.label }} </label>              
                     <div class="control">
-                            {{ form.valor(class="input", type="text", placeholder="Valor da conta a pagar.") }}
+                            {{ form.valor(class="input", type="text", placeholder="Valor da conta a pagar.", inputmode="numeric") }}
                     </div>
                 </div>  
 
@@ -84,7 +84,7 @@
                 <div class="control is-expanded" id="Valor_parcela" style="display:none">
                     <label class="label"> {{ form.valor_parcelas.label }} </label>
                         <div class="control">
-                            {{ form.valor_parcelas(class="input", type="text", placeholder="") }}
+                            {{ form.valor_parcelas(class="input", type="text", placeholder="", inputmode="numeric") }}
                         </div>
                 </div>  
                 <div class="control" id="Status_pagamento" style="display:none">

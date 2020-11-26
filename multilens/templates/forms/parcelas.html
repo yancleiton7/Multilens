@@ -30,7 +30,7 @@
                         
     {% if loop.index0 == 0%}   <label class="label"> {{ form.valor.label }} </label>   {% endif %}           
                             <div class="control">
-                                {{ form.valor( class="input", type="text", placeholder="") }}
+                                {{ form.valor( class="input", type="text", placeholder="", inputmode="numeric") }}
                             </div>
                     </div>
 

@@ -47,7 +47,7 @@ $(document).ready(function () {
 
 
     $('[inputmode="numeric"]').keyup(function () {
-
+        //$(this).selectRange(2)
         options = {
             prefix: '',
             suffix: '',
