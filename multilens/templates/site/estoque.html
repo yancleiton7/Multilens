@@ -18,6 +18,9 @@
             <a class="navbar-item" href="{{ url_for('site.produtos') }}">
               Produtos
             </a>
+            <a class="navbar-item" href="{{ url_for('site.balance') }}">
+                Balanço
+              </a>
 
         </div>
 
@@ -37,14 +40,14 @@
 
     <div class="form-body">
 
-        <div class="control is-expanded has-icons-left">
+        <div class="control is-expanded has-icons-left" >
             <input class="input {{ color_theme}}" id="filtro" type="search" placeholder="Pesquise na tabela">
             <span class="icon is-left">
                 <i class="fas fa-search" aria-hidden="true"></i>
             </span>
         </div>
 
-        <div class="table-container">
+        <div class="table-container"  style="height: 68vh; overflow-y: scroll;" >
             <table class="table is-striped is-fullwidth is-hoverable" id="tabela">
                 <thead>
                     <tr>
