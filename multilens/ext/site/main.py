@@ -36,9 +36,8 @@ def index():
         return render_template("site/index.html", infos=infos, form=form)
     elif request.method == "POST":
         form = request.form
-        print(form)
         output = Gerar_relatorios.gerar_excel(form["relatorios"], form["data_inicio"], form["data_fim"])
-        return Response(output, mimetype="application/ms-excel", headers={"Content-Disposition":"attachment;filename=employee_report.xls"})
+        return Response(output, mimetype="application/ms-excel", headers={"Content-Disposition":"attachment;filename=Doceriah_relatorios.xls"})
 
 
 
@@ -314,6 +313,18 @@ def estoques():
     return render_template(
         "site/estoque.html", products=Produto.query.all()
     )
+
+
+@bp.route("/balance", methods=["GET"])
+@login_required
+def balance(limit=50, offset=0):
+    if request.method == "GET":
+        if len(request.args)==0:
+            return render_template("site/balance.html", limit=limit, balance=Balance.get_to_table(limit,offset))
+        else:
+            limit = request.args["limit"]
+            return render_template("site/balance.html", limit=limit, balance=Balance.get_to_table(limit,offset))
+
 
 @bp.route("/estoque/<int:produto>", methods=["GET", "POST", "DELETE"])
 @login_required
@@ -602,11 +613,15 @@ def entregas():
 def pedidos():
     return render_template("site/pedidos.html", pedidos=Pedidos.get_all())
 
-@bp.route("/fluxo/", methods=["GET"])
+@bp.route("/fluxo", methods=["GET"])
 @login_required
-def fluxo():
+def fluxo(limit=50, offset=0):
     if request.method == "GET":
-        return render_template("site/fluxo.html", financeiro=Financeiro.get_all())
+        if len(request.args)==0:
+            return render_template("site/fluxo.html", limit=limit, offset=offset, financeiro=Financeiro.get_to_table(limit,offset))
+        else:
+            limit = request.args["limit"]
+            return render_template("site/fluxo.html", limit=limit, offset=offset, financeiro=Financeiro.get_to_table(limit,offset))
 
 
 @bp.route("/fluxo/<int:financa>", methods=["DELETE"])
@@ -614,11 +629,11 @@ def fluxo():
 def fluxo_delete(financa: int):
     if request.method == "DELETE":
         financeiro = Financeiro.get(financa)
-        print(financeiro)
         if financeiro is not None:
             financeiro.remove()
             response = {"success": True, "message": "Pedido excuído com acesso."}
             return response
+
     return render_template("site/fluxo.html", financeiro=Financeiro.get_all())
 
 
@@ -726,6 +741,8 @@ def itens_pedido(pedido_id: int):
             lista_pedidos_itens["produto"] =request.form["produto"]
             lista_pedidos_itens["quantidade"] =request.form["quantidade"]
             lista_pedidos_itens["descricao"] =request.form["descricao"]
+            lista_pedidos_itens["valor_unitario"] =request.form["valor_unitario"]
+            lista_pedidos_itens["valor_total"] =request.form["valor_total"]
 
             for i in range(1,21):
                 try:
@@ -733,6 +750,8 @@ def itens_pedido(pedido_id: int):
                   lista_pedidos_itens["produto"+str(i)] =request.form["produto"+str(i)]
                   lista_pedidos_itens["quantidade"+str(i)] =request.form["quantidade"+str(i)]
                   lista_pedidos_itens["descricao"+str(i)] =request.form["descricao"+str(i)]
+                  lista_pedidos_itens["valor_unitario"+str(i)] =request.form["valor_unitario"+str(i)]
+                  lista_pedidos_itens["valor_total"+str(i)] =request.form["valor_total"+str(i)]
                   
                 except:
                     
