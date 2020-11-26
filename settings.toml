@@ -18,3 +18,4 @@ EXTENSIONS = [
 debug=true
 
 [testing]
+SQLALCHEMY_DATABASE_URI = "mysql+pymysql://uryei5cidjotscyy:B086DxVHFEwOhFcYBwCO@bct7ziexqm7xot08gxji-mysql.services.clever-cloud.com:3306/bct7ziexqm7xot08gxji"

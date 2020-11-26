@@ -50,6 +50,20 @@
                             {{ form.descricao(class="input", type="text", placeholder="") }}
                         </div>
                     </div>
+                    <div class="control is-expanded">
+                        <label class="label"> {{ form.valor_unitario.label }} </label>
+                    
+                        <div class="control">
+                            {{ form.valor_unitario(class="input", type="text", placeholder="Adicione o valor unitário") }}
+                        </div>
+                    </div>
+                    <div class="control is-expanded">
+                        <label class="label"> {{ form.valor_total.label }} </label>
+                    
+                        <div class="control">
+                            {{ form.valor_total(class="input", type="text", placeholder="Valor total") }}
+                        </div>
+                    </div>
                 </div>
             </div>
             

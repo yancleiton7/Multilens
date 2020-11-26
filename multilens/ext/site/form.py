@@ -447,6 +447,21 @@ class FormPedidoItens(BaseForm):
         ],
     )
 
+    valor_unitario = StringField(
+        "Valor Unitário",
+        [        
+            Required("Informar da unidade."),
+            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe o valor das parcelas no formato RR,cc ex: 45,22"),
+        ],
+    )
+
+    valor_total = StringField(
+        "Valor total",
+        [        
+            Required("Informar o valor total (Quantidade * Valor unitário)."),
+            Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe o valor das parcelas no formato RR,cc ex: 45,22"),
+        ],
+    )
     
     def load(self, item_pedido):
         self.process(obj=item_pedido)
