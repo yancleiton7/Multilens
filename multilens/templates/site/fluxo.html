@@ -43,6 +43,16 @@
     </div>
 
     <div class="panel-block" id="desaparecer">
+        
+        <div class="select" id="quantidade_linhas_tabela">
+            <select>
+                <option>{{limit }}</option>
+                <option>15</option>
+                <option>30</option>
+                <option>50</option>
+                <option>100</option>
+            </select>
+        </div>
         <div class="control is-expanded has-icons-left">
             <input class="input {{ color_theme}}" type="search" id="filtro_Financeiro" placeholder="Procure informação aqui">
             <span class="icon is-left">
@@ -67,31 +77,31 @@
         <div class="field is-grouped" style="padding-bottom: 0ch;">
                 <div class="box" id="box_entrada" style="background-color: rgba(0, 255, 42, 0.5)">
                   <b>Entrada: </b>R$ 
-                    <entrada id="Entrada"> {{financeiro[0].get_total_pedidos_valor()}} </entrada> <p>
+                    <entrada id="Entrada"> {{financeiro[1]}} </entrada> <p>
                   <b> Pedidos:</b> <entrada id="total_entrada">
-                    <entrada id="Entrada_contador">  {{financeiro[0].get_total_pedidos()}} </entrada>
+                    <entrada id="Entrada_contador">  {{financeiro[2]}} </entrada>
                     </entrada>
                 </div>
 
                 <div class="box" id="box_saida" style="background-color: rgba(255, 30, 0, 0.5)">
                     <b>Total de Saída:</b> R$ 
-                        <entrada id="Saida"> {{financeiro[0].get_total_contas_valor()}}  </entrada><p>
+                        <entrada id="Saida"> {{financeiro[3]}}  </entrada><p>
                     <b>Contas:</b> 
-                        <entrada id="Saida_contador">{{financeiro[0].get_total_contas()}} </entrada>
+                        <entrada id="Saida_contador">{{financeiro[4]}} </entrada>
                 </div>
                 <div class="box" id="box_total" style="background-color: rgba(248, 248, 248, 0.5)">
                     <b>Saldo:</b> <entrada id="Saldo">
-                        {{financeiro[0].get_saldo()}}
+                        {{financeiro[5]}}
                     </entrada> <p>
                     <b>Total de Transações:</b> 
-                    <entrada id="Saldo_contador">{{financeiro[0].get_total_geral()}}</entrada>
+                    <entrada id="Saldo_contador">{{financeiro[6]}}</entrada>
                 </div>
         </div>
 
-        <div class="table-container"  id="tabela_2" style="height: 10%" >
+        <div class="table-container"  id="tabela_2" style="height: 78vh; overflow-y: scroll;" >
             
 
-            <table class="table is-striped is-fullwidth is-hoverable" id="tabela" >
+            <table class="table is-striped is-fullwidth is-hoverable" id="tabela">
                 <thead>
                     <tr style="background-color: rgb(215, 215, 215);">
                         <th onclick="sortTable(0)">Identificador</th>
@@ -105,8 +115,8 @@
      
                     </tr>
                 </thead>
-                <tbody>
-                    {% for item_financeiro in financeiro %}
+                <tbody  >
+                    {% for item_financeiro in financeiro[0] %}
                     {% if item_financeiro.tipo_item == "Conta" %}
                         <tr style="color: rgb(214, 91, 75);font-weight: bold" id={{ item_financeiro.id }}>
                             <td style="font-size: 1em;"> [Saida] </td>
