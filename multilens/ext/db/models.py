@@ -1070,9 +1070,10 @@ class Balance(db.Model):
         return response
     
     def remove(self):
+        print("Entrei aqui")
         db.session.delete(self)
         db.session.commit()
-        response = {"success": True, "message": "Produto excluido com sucesso!"}
+        response = {"success": True, "message": "Registro excluido com sucesso!"}
 
         return response
     
