@@ -806,6 +806,9 @@ class Pedidos(db.Model):
     def get_relatorio(inicio, fim):
         return Pedidos.query.filter(Pedidos.data_pedido>=inicio, Pedidos.data_pedido<=fim).all()
 
+    @staticmethod
+    def get_to_table(limit, offset):
+        return Pedidos.query.order_by(Pedidos.data_pedido.desc()).limit(limit).offset(offset).all()
 
     
     @staticmethod
@@ -997,6 +1000,10 @@ class Balance(db.Model):
     def get_relatorio(inicio, fim):
         return Balance.query.filter(Balance.date>=inicio, Balance.date<=fim).all()
 
+    @staticmethod
+    def get_to_table(limit, offset):
+        return Balance.query.order_by(Balance.date.desc()).limit(limit).offset(offset).all()
+
 
     @staticmethod
     def get_balance_capa():
@@ -1177,46 +1184,52 @@ class Financeiro(db.Model):
 
     @staticmethod
     def get_to_table(limit, offset):
+        qry = db.session.query(Financeiro).limit(limit).offset(offset)
+        qry = qry.cte('query_get_financeiro')
+        
         lista_financeira = []
         lista_financeira.append(Financeiro.query.order_by(Financeiro.data_pagamento.desc()).limit(limit).offset(offset).all())
-        lista_financeira.append(Financeiro.get_total_pedidos_valor(limit, offset))
-        lista_financeira.append(Financeiro.get_total_pedidos(limit, offset))
-        lista_financeira.append(Financeiro.get_total_contas_valor(limit, offset))
-        lista_financeira.append(Financeiro.get_total_contas(limit, offset))
-        lista_financeira.append(Financeiro.get_saldo(limit, offset))
-        lista_financeira.append(Financeiro.get_total_geral(limit, offset))
-
+        lista_financeira.append(Financeiro.get_total_pedidos_valor(qry))
+        lista_financeira.append(Financeiro.get_total_pedidos(qry))
+        lista_financeira.append(Financeiro.get_total_contas_valor(qry))
+        lista_financeira.append(Financeiro.get_total_contas(qry))
+        lista_financeira.append(Financeiro.get_saldo(qry))
+        lista_financeira.append(Financeiro.get_total_geral(qry))
+        print(lista_financeira)
         return lista_financeira
 
 
     @staticmethod
-    def get_total_pedidos_valor(limit, offset):
-        qry = db.session.query(func.sum(Financeiro.valor).label("total")).filter_by(tipo_item="Pedido").limit(limit).offset(offset)
-        return tratar_centavos(qry.first()[0])
+    def get_total_pedidos_valor(qry):
+        qry_financeiro = db.session.query(func.sum(qry.c.valor).label("total")
+        ).filter(qry.c.tipo_item=="Pedido")
+
+        return tratar_centavos(qry_financeiro.first()[0])
 
     @staticmethod
-    def get_total_contas_valor(limit, offset):
-        qry = db.session.query(func.sum(Financeiro.valor).label("total")).filter_by(tipo_item="Conta").limit(limit).offset(offset)
-        return tratar_centavos(qry.first()[0])
+    def get_total_contas_valor(qry):
+        qry_financeiro = db.session.query(func.sum(qry.c.valor).label("total")
+        ).filter(qry.c.tipo_item=="Conta")
+        
+        return tratar_centavos(qry_financeiro.first()[0])
 
     @staticmethod
-    def get_total_pedidos(limit, offset):
-        return Financeiro.query.filter_by(tipo_item="Pedido").limit(limit).offset(offset).count()
+    def get_total_pedidos(qry):
+        return db.session.query(qry.c.tipo_item).filter(qry.c.tipo_item=="Pedido").count()
 
     @staticmethod
-    def get_total_contas(limit, offset):
-        return Financeiro.query.filter_by(tipo_item="Conta").limit(limit).offset(offset).count()
+    def get_total_contas(qry):
+        return db.session.query(qry.c.tipo_item).filter(qry.c.tipo_item=="Conta").count()
 
     @staticmethod
-    def get_saldo(limit, offset):
-        saida = float(Financeiro.get_total_contas_valor(limit, offset).replace(",","."))
-        entrada = float(Financeiro.get_total_pedidos_valor(limit, offset).replace(",","."))
+    def get_saldo(qry):
+        saida = float(Financeiro.get_total_contas_valor(qry).replace(",","."))
+        entrada = float(Financeiro.get_total_pedidos_valor(qry).replace(",","."))
         return tratar_centavos(entrada-saida)
 
     @staticmethod
-    def get_total_geral(limit, offset):
-        qry = db.session.query(func.count(Financeiro.valor).label("total")).limit(limit).offset(offset)
-        return qry.first()[0]
+    def get_total_geral(qry):
+        return db.session.query(qry.c.tipo_item).count()
    
     @staticmethod
     def get_tipo(tipo):
