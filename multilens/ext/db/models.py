@@ -36,7 +36,7 @@ def monthdelta(date, delta):
 
 def tratar_centavos(valor):
     if valor is not None:
-        valor_formatado =  str('{:.2f}').format(valor)
+        valor_formatado = str('{:.2f}').format(valor)
         valor_formatado = valor_formatado.replace(".", ",")
     else:
         print(valor)
@@ -786,9 +786,13 @@ class Pedidos(db.Model):
     tipo_retirada = db.Column("tipo_retirada", db.Integer, db.ForeignKey("retirada.id"))
     tipo_pagamento = db.Column("tipo_pagamento", db.Integer, db.ForeignKey("pagamento.id"))
     endereco_entrega = db.Column("endereco_entrega", db.Unicode)
+    data_producao = db.Column("data_producao", db.Unicode)
+    hora_producao = db.Column("hora_producao", db.Unicode)
     status_pagamento = db.Column("status_pagamento", db.Integer, db.ForeignKey("status_pagamento.id"))   
     status_entrega = db.Column("status_entrega", db.Integer, db.ForeignKey("status_entrega.id") , default=1) 
     valor = db.Column("valor", db.Unicode)
+    valor_entrega = db.Column("valor_entrega", db.Unicode)
+    valor_desconto = db.Column("valor_desconto", db.Unicode)
     observacao = db.Column("observacao", db.Unicode)
 
     cliente = db.relationship("Cliente", foreign_keys=id_cliente)
@@ -907,6 +911,8 @@ class Pedidos(db.Model):
 
     def update_pedidos(self, lista_pedido_itens):
                 
+        valor_total = 0  
+
         for pedido_item in self.pedidos_itens:
             pedido_item.remove()
         
@@ -922,6 +928,8 @@ class Pedidos(db.Model):
 
         quantidade_repeticao = int(len(lista_pedido_itens)/5)
         
+        valor_total += float(lista_pedido_itens["valor_total"].replace(",", "."))  
+
         for i in range(1,quantidade_repeticao):
             
             pedido_itens.append(Pedido_item())
@@ -932,7 +940,11 @@ class Pedidos(db.Model):
             pedido_itens[i].valor_unitario = lista_pedido_itens["valor_unitario"+str(i)]
             pedido_itens[i].valor_total = lista_pedido_itens["valor_total"+str(i)]
             pedido_itens[i].save()
+
+            valor_total += float(lista_pedido_itens["valor_total"+str(i)].replace(",", ".")) 
         
+        self.valor = tratar_centavos(valor_total)
+        self.save()
         response={}  
         response["success"] = "ok"
         response["message"] = "Produtos atualizado com successo!"

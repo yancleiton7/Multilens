@@ -326,6 +326,7 @@ class FormContas(BaseForm):
         self.id = conta.id
 
 class FormPedido(BaseForm):
+    id = 0
     
     data_pedido = StringField(
         "Data pedido",
@@ -345,7 +346,18 @@ class FormPedido(BaseForm):
             Required("Por favor preencher hora da entrega."),
         ],
     )
-
+    data_producao = StringField(
+        "Data Produção",
+        [
+            Regexp("\d{4}-\d{2}-\d{2}", message="Data de Produção: Datas seguem o formato 01/01/2000"),
+        ],
+    )
+    hora_producao = StringField(
+        "Hora da Produção",
+        [
+            Required("Por favor preencher hora da Produção."),
+        ],
+    )
     observacao = StringField("Observações")
 
     id_cliente = StringField(
@@ -373,24 +385,7 @@ class FormPedido(BaseForm):
             Required("Por favor, preecher o endereço."),
         ],
     )
-    tipo_pagamento = QuerySelectField(
-        "Forma de Pagamento",
-        validators=[Required("A forma de Pagamento é obrigatoria!")],
-        get_label="tipo_pagamento",
-        get_pk=lambda x: x.id,
-        query_factory=lambda: Pagamento.query,
-        allow_blank=True,  
-        
-    )
-    status_pagamento = QuerySelectField(
-        "Status do Pagamento",
-        validators=[Required("O status do pagamento é obrigatoria!")],
-        get_label="status_pagamento",
-        get_pk=lambda x: x.id,
-        query_factory=lambda: Status_pagamento.query,
-        allow_blank=True,  
-        
-    )
+
     status_entrega = QuerySelectField(
         "Status Entrega",
         get_label="status_entrega",
@@ -413,8 +408,6 @@ class FormPedido(BaseForm):
         self.endereco_entrega.data = ""
         self.id_cliente.data = ""
         self.tipo_retirada.data = ""
-        self.tipo_pagamento.data = ""
-        self.status_pagamento.data = ""
 
 class FormPedidoItens(BaseForm):
     produto = QuerySelectField(
@@ -480,9 +473,6 @@ class FormStatusPagamento(BaseForm):
     )
     data_pagamento = StringField(
         "Data Pagamento",
-        [
-            Regexp("\d{4}-\d{2}-\d{2}", message="Datas seguem o formato 01/01/2000"),
-        ],
     )
     observacao =  StringField("Observações")
 
@@ -492,6 +482,15 @@ class FormStatusPagamento(BaseForm):
             Required("Preencher com o valor do pedido, para contabilizar no Financeiro"),
             Regexp("^[0-9]\d{0,4}(\.\d{3})*,\d{2}$", message="Informe o valor no formato RR,cc ex: 15,20 (Quinze reais e vinte e dois centavos)"),
         ],
+    )
+    
+    valor_entrega = StringField(
+        "Valor Entrega",
+    )
+
+    
+    valor_desconto = StringField(
+        "Valor Desconto",
     )
 
     
