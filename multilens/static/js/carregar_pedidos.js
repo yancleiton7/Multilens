@@ -78,20 +78,22 @@ $(document).ready(function() {
                 count_valor = $(this).attr('id').split('quantidade')[1]
             }
             
-
             if ($('#valor_unitario'+count_valor).val()!='' && $('#quantidade'+count_valor).val()!=''){
-                valor_unitario = parseFloat($('#valor_unitario'+count_valor).val().replace(",", "."))
+                valor_unitario = parseFloat($('#valor_unitario'+count_valor).val().replaceAll(".", "").replace(",", "."))
                 quantidade = parseInt($('#quantidade'+count_valor).val())
                 valor_total = valor_unitario * quantidade
                 reais = Math.trunc(valor_total)
 
+                
                 if(reais===valor_total){centavos="00"}
                 else { 
-                    centavos = valor_total.toString().split(",")[1]
+                    centavos = valor_total.toString().split(".")[1]
                     if (centavos.length===1){centavos=centavos+"0"}
+                    else {centavos=centavos.slice(0,2)}
                 }
+
+                
                 valor_input = reais.toString()+","+centavos
-    
                 $('#valor_total'+count_valor).val(valor_input)
             }
 
@@ -132,8 +134,7 @@ $(document).ready(function() {
             div_adicinar = div_adicinar.replace('text" value="'+$("[name=valor_unitario]").val(), 'text" value="')
             div_adicinar = div_adicinar.replace('text" value="'+$("[name=valor_total]").val(), 'text" value="')
             div_adicinar = div_adicinar.replace('<div class="field is-grouped">', '<div class="field is-grouped" id="item-'+count_item+'">')
-            console.log(div_adicinar)
-            
+           
               
             $('#form_principal').append(div_adicinar); //add input box
 
