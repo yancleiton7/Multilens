@@ -260,6 +260,7 @@ def parcelas(conta_id: int):
 
     elif request.method == "POST":
         if form.validate_on_submit():
+            vencimento_atualizado = False
             contagem_de_erro = 0
             conta_obj.deleta_contas_pagas()
             for parcela in conta_obj.parcelas_info:
@@ -272,6 +273,9 @@ def parcelas(conta_id: int):
 
                     if parcela.status_pagamento=="1":
                         parcela.data_pagamento ="Pendente"
+                        if not vencimento_atualizado:
+                            conta_obj.data_vencimento = parcela.data_vencimento
+                            
                     else:
                         conta_paga = Contas_pagas()
                         conta_paga.valor = parcela.valor   
@@ -303,6 +307,8 @@ def parcelas(conta_id: int):
                         conta_paga.save()
 
                     parcela.save()
+
+            conta_obj.save()     
 
             
 

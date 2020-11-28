@@ -398,6 +398,10 @@ class Contas_pagas(db.Model):
     def get_data_vencimento(self):
         return converter_data(self.data_vencimento)
 
+    def get_minha_conta(self):
+        return Contas.get(self.id_conta)
+
+        
 
     @staticmethod
     def create_by_form(form, conta_obj):
@@ -445,22 +449,20 @@ class Contas_pagas(db.Model):
 
         conta_obj.save()
         response = conta_paga.save()
-
-        financeiro = Financeiro()
-        financeiro.tipo_item = "Conta"
-        financeiro.data_pagamento = conta_paga.data_pagamento
-        financeiro.id_item = conta_paga.id
-        financeiro.tipo_forma = conta_obj.recorrencia.tipo_mensalidade
-        financeiro.descricao = conta_obj.get_descricao()
-        financeiro.valor = conta_paga.valor
-        
-        financeiro.save()
         
 
         return response
 
     def save(self):
         try:
+            financeiro = Financeiro()
+            financeiro.tipo_item = "Conta"
+            financeiro.data_pagamento = self.data_pagamento
+            financeiro.id_item = self.id
+            financeiro.tipo_forma = self.get_minha_conta().recorrencia.tipo_mensalidade
+            financeiro.descricao = self.get_minha_conta().get_descricao()
+            financeiro.valor = self.valor
+            financeiro.save()
             db.session.add(self)
             db.session.commit()
 
@@ -482,6 +484,8 @@ class Contas_pagas(db.Model):
         return response
     
     def remove(self):
+        financeiro = Financeiro.get_item(self.id, "Conta")
+        financeiro.remove()
 
         db.session.delete(self)
         db.session.commit()
@@ -989,6 +993,13 @@ class Pedidos(db.Model):
         for itens in self.pedidos_itens:
             itens.remove()
 
+        if self.s_pagamento.status_pagamento=="Pago":
+            print(self.id)
+            financeiro = Financeiro.get_item(self.id, "Pedido")
+            print(financeiro)
+            financeiro.remove()
+
+
         db.session.delete(self)
         db.session.commit()
         response = {"success": True, "message": "Pedido excluido com sucesso!"}
@@ -1245,6 +1256,11 @@ class Financeiro(db.Model):
     @staticmethod
     def get_tipo(tipo):
         return Financeiro.query.filter_by(tipo_item=tipo).all()
+
+    @staticmethod
+    def get_item(id, tipo):
+        return Financeiro.query.filter_by(id_item=id, tipo_item=tipo).first()
+
 
     def get_data_registro(self):
         return converter_data(self.data_registro)
