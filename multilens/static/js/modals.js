@@ -7,7 +7,7 @@ $(document).ready(function () {
 
         if (apagar){
             $.ajax({
-                url: window.location.href + register.attr('id'),
+                url: window.location.href +"/" +register.attr('id'),
                 type: "DELETE",
                 success: function () {
                     if ((window.location.href).includes('/fluxo/')){

@@ -41,7 +41,7 @@ def index():
 
 
 
-@bp.route("/clientes/", methods=["GET", "DELETE"])
+@bp.route("/clientes", methods=["GET", "DELETE"])
 @login_required
 def clientes():
     if request.method == "GET":
@@ -368,7 +368,7 @@ def estoque(produto: int):
 
     return render_template("forms/estoque.html", form=form)
 
-@bp.route("/produtos/", methods=["GET", "DELETE"])
+@bp.route("/produtos", methods=["GET", "DELETE"])
 @login_required
 def produtos():       
     return render_template("site/produtos.html", produtos=Produto.get_all())
@@ -461,7 +461,7 @@ def produto(register: int):
 
     return render_template("forms/produto.html", form=form, produto=produto)
 
-@bp.route("/produto/fornecedor/<int:produto>", methods=["GET", "POST", "DELETE"])
+@bp.route("/produto/fornecedor/<int:produto>", methods=["GET", "POST"])
 @login_required
 def fornecedores(produto: int):
     produto_selecionado = Produto.query.get_or_404(produto)
@@ -478,9 +478,7 @@ def fornecedores(produto: int):
                 form.load(fornecedores)
                 form_fornecedores.append(form)
                 form = FormFornecedor()
-            
-           
-
+                   
     elif request.method == "POST":
         if form.validate_on_submit():
            
@@ -527,7 +525,7 @@ def fornecedores(produto: int):
 
     return render_template("forms/fornecedores.html", form=form_fornecedores, produto=produto_selecionado)
 
-@bp.route("/balance/saida", methods=["GET", "POST", "DELETE"])
+@bp.route("/balance/saida", methods=["GET", "POST"])
 @login_required
 def form_produto_saida():
     form = FormBalanceSaida()
@@ -562,7 +560,7 @@ def form_produto_saida():
 
         return render_template("forms/saida.html", form=form)
 
-@bp.route("/balance/entrada", methods=["GET", "POST", "DELETE"])
+@bp.route("/balance/entrada", methods=["GET", "POST"])
 @login_required
 def form_produto_entrada():
     form = FormBalanceEntrada()
@@ -593,6 +591,55 @@ def form_produto_entrada():
 
         return render_template("forms/entrada.html", form=form)
 
+
+@bp.route("/balance/<int:balance_id>", methods=["GET", "POST", "DELETE"])
+@login_required
+def balancos(balance_id: int):
+    item_balance = Balance.query.get_or_404(balance_id)
+    form = FormBalanceEntrada()
+    html_page = "forms/entrada.html"
+    if item_balance.event == "Saida":
+        item_balance.quantidade *=-1
+        form = FormBalanceSaida()
+        html_page = "forms/saida.html"
+
+    if request.method == "GET":
+        if html_page is None:
+            flash("Cadastro não localizado!", "is-warning")
+            return redirect(url_for("site.balance"))
+        else:
+            form.load(item_balance)
+           
+
+    elif request.method == "POST":
+        if form.validate_on_submit():
+            response = html_page.update_by_form(form)
+            if response["success"]:
+                flash(
+                    response["message"],
+                    "is-success",
+                )
+                return render_template(html_page, form=form)
+            else:
+                flash(response["message"], "is-danger")
+
+        else:
+            for field in form.errors.values():
+                [flash(err, "is-danger") for err in field]
+    
+    elif request.method == "DELETE":
+
+        if item_balance is not None:
+            item_balance.remove()
+            response = {"success": True, "message": "Pedido excuído com acesso."}
+        else:
+            response = {"success": False, "message": "Informe um registro valido"}
+
+        return response
+    return render_template(html_page, form=form)
+
+
+
 @bp.route("/cozinha/", methods=["GET"])
 @login_required
 def cozinha():
@@ -608,7 +655,7 @@ def pagamentos():
 def entregas():
     return render_template("site/entregas.html", pedidos=Pedidos.get_pendentes_entrega())
 
-@bp.route("/pedidos/", methods=["GET"])
+@bp.route("/pedidos", methods=["GET"])
 @login_required
 def pedidos():
     return render_template("site/pedidos.html", pedidos=Pedidos.get_all())
@@ -637,7 +684,7 @@ def fluxo_delete(financa: int):
     return render_template("site/fluxo.html", financeiro=Financeiro.get_all())
 
 
-@bp.route("/pedido/novo", methods=["GET", "POST", "PUT", "DELETE"])
+@bp.route("/pedido/novo", methods=["GET", "POST"])
 @login_required
 def novo_pedido():
     form = FormPedido()
