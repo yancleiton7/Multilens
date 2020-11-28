@@ -90,19 +90,22 @@
                             {{ form.hora_entrega(class="input", type="time", placeholder="") }}
                         </div>
                 </div>
-                <div class="control">
-                    <label class="label"> {{ form.tipo_pagamento.label }} </label>              
-                    <div class="select">
-                        {{ form.tipo_pagamento() }}
-
-                    </div>
+                <div class="control is-expanded">
+                    <label class="label"> {{ form.data_producao.label }} </label>
+                    
+                        <div class="control">
+                            {{ form.data_producao(class="input", type="date", placeholder="") }}
+                        </div>
                 </div>
-                <div class="control" id="Status_pagamento">
-                    <label class="label"> {{ form.status_pagamento.label }} </label>              
-                    <div class="select">
-                        {{ form.status_pagamento() }}
-                    </div>
-                </div>   
+                <div class="control is-expanded">
+                    <label class="label"> {{ form.hora_producao.label }} </label>
+                    
+                        <div class="control">
+                            {{ form.hora_producao(class="input", type="time", placeholder="") }}
+                        </div>
+                </div>
+
+  
 
             </div>
             
@@ -138,7 +141,12 @@
 
             <div class="field is-grouped">
                 <div class="control is-expanded">
-                    <input class="button is-fullwidth is-success" id="btn_salvar" type="submit" value="Salvar" > 
+                    <input class="button is-fullwidth is-success" id="btn_salvar" type="submit" value="Salvar Pedido" > 
+                    
+                </div>
+                <div class="control" id="btn_pagamento"  style="display:none">
+                    <a href="{{url_for('site.status_pagamento_pedido', pedido_id=form.id)}}" 
+                    class="button is-info">Informações pagamento</a> 
                     
                 </div>
                 <div class="control">

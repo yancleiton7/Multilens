@@ -28,13 +28,26 @@
 
             <div class="field is-grouped">
                 
-                
+                <div class="control is-expanded">
+                    <label class="label"> {{ form.valor_entrega.label }} </label>              
+                        <div class="control">
+                            {{ form.valor_entrega( class="input", type="text", placeholder="Valor entrega", inputmode="numeric") }}
+                        </div>
+                </div>
+                <div class="control is-expanded">
+                    <label class="label"> {{ form.valor_desconto.label }} </label>              
+                        <div class="control">
+                            {{ form.valor_desconto( class="input", type="text", placeholder="Valor desconto", inputmode="numeric") }}
+                        </div>
+                </div>
+
                 <div class="control is-expanded">
                     <label class="label"> {{ form.valor.label }} </label>              
                         <div class="control">
                             {{ form.valor( class="input", type="text", placeholder="Valor total", inputmode="numeric") }}
                         </div>
                 </div>
+                
 
                 <div class="control">
                     <label class="label"> {{ form.status_pagamento.label }} </label>
@@ -60,7 +73,6 @@
                             {{ form.data_pagamento( class="input", type="date", placeholder="Data compra") }}
                         </div>
                 </div>
-                
                 
             </div>
 
