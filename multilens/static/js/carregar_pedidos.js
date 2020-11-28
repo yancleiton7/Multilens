@@ -84,12 +84,12 @@ $(document).ready(function() {
                 quantidade = parseInt($('#quantidade'+count_valor).val())
                 valor_total = valor_unitario * quantidade
                 reais = Math.trunc(valor_total)
-                centavos = Math.trunc((valor_total-reais)*100)
-                
-    
-                if (centavos===0){centavos="00"}
-                else if (centavos<10){centavos="0"+centavos.toString()}
-    
+
+                if(reais===valor_total){centavos="00"}
+                else { 
+                    centavos = valor_total.toString().split(",")[1]
+                    if (centavos.length===1){centavos=centavos+"0"}
+                }
                 valor_input = reais.toString()+","+centavos
     
                 $('#valor_total'+count_valor).val(valor_input)
@@ -168,6 +168,11 @@ $(document).ready(function() {
 
     $('#form_principal').delegate('[id^=valor_unitario]','keyup', function (e) { 
         $(this).gerar_multiplicacao()
+
+        tamanho = $(this).val().length
+        if (tamanho===0){$(this).val("0,00")}
+        tamanho = $(this).val().length
+        $(this)[0].setSelectionRange(tamanho,tamanho)
 
         options = {
             prefix: '',

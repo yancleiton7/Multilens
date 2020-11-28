@@ -1,6 +1,7 @@
 
 $(document).ready(function() {
 
+
     (function ($) {
         $.fn.myfunction = function() {
                
@@ -27,6 +28,7 @@ $(document).ready(function() {
                
         }
         };
+
         })( jQuery )
 
     var count_item = 0;
@@ -114,6 +116,7 @@ $(document).ready(function() {
         
         $(this).myfunction()
     });
+
 
     $("#excluir_item").click(function () {
         if (count_item>0){
@@ -249,6 +252,7 @@ $(window).load(function() {
             
             $("#Status_pagamento").hide()
             $("#status_entrega_div").show()
+            $("#btn_pagamento").show()
            
         }
     })

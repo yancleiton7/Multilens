@@ -47,7 +47,12 @@ $(document).ready(function () {
 
 
     $('[inputmode="numeric"]').keyup(function () {
-        //$(this).selectRange(2)
+        tamanho = $(this).val().length
+        if (tamanho===0){$(this).val("0,00")}
+        tamanho = $(this).val().length
+        $(this)[0].setSelectionRange(tamanho,tamanho)
+
+
         options = {
             prefix: '',
             suffix: '',
@@ -59,7 +64,7 @@ $(document).ready(function () {
           };
           
 
-          SimpleMaskMoney.setMask(this, options)
+        SimpleMaskMoney.setMask(this, options)
 
 
     });
