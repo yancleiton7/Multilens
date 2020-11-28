@@ -256,7 +256,12 @@ class Contas(db.Model):
     def deleta_parcelas(self):
         for parcela in self.parcelas_info:
             parcela.remove()
-   
+
+    def deleta_contas_pagas(self):
+        contas_pagas = Contas_pagas.get_conta(self.id)
+        for conta_paga in contas_pagas:
+            conta_paga.remove()
+
     @staticmethod
     def create_by_form(form):       
         conta = Contas()
@@ -308,6 +313,8 @@ class Contas(db.Model):
         return response
 
     def remove(self):
+        self.deleta_contas_pagas()
+
         if self.recorrencia.tipo_mensalidade=="Parcelado":
             self.deleta_parcelas()
 
@@ -380,6 +387,10 @@ class Contas_pagas(db.Model):
     @staticmethod
     def get(id: int):
         return Contas_pagas.query.filter_by(id=id).first()
+
+    @staticmethod
+    def get_conta(id_conta: int):
+        return Contas_pagas.query.filter_by(id_conta=id_conta).all()
 
     def get_data_pagamento(self):
         return converter_data(self.data_pagamento)

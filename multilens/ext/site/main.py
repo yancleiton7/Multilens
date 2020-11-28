@@ -261,17 +261,28 @@ def parcelas(conta_id: int):
     elif request.method == "POST":
         if form.validate_on_submit():
             contagem_de_erro = 0
+            conta_obj.deleta_contas_pagas()
             for parcela in conta_obj.parcelas_info:
+                
                 try:
                     parcela.valor =request.form["valor"+str(parcela.id)]
                     parcela.status_pagamento =request.form["status_pagamento"+str(parcela.id)]
                     parcela.data_pagamento =request.form["data_pagamento"+str(parcela.id)]
+                    parcela.data_vencimento =request.form["data_vencimento"+str(parcela.id)]
 
                     if parcela.status_pagamento=="1":
                         parcela.data_pagamento ="Pendente"
+                    else:
+                        conta_paga = Contas_pagas()
+                        conta_paga.valor = parcela.valor   
+                        conta_paga.data_pagamento =parcela.data_pagamento
+                        conta_paga.data_vencimento =parcela.data_vencimento 
+                        conta_paga.id_conta = conta_obj.id
+                        
+                        conta_paga.save()
 
                     
-                    parcela.data_vencimento =request.form["data_vencimento"+str(parcela.id)]
+                    
                     parcela.save()
                 except:
                     contagem_de_erro += 1
@@ -279,6 +290,18 @@ def parcelas(conta_id: int):
                     parcela.status_pagamento =request.form["status_pagamento"]
                     parcela.data_pagamento =request.form["data_pagamento"]
                     parcela.data_vencimento =request.form["data_vencimento"]
+
+                    if parcela.status_pagamento=="1":
+                        parcela.data_pagamento ="Pendente"
+                    else:
+                        conta_paga = Contas_pagas()
+                        conta_paga.valor = parcela.valor   
+                        conta_paga.data_pagamento =parcela.data_pagamento
+                        conta_paga.data_vencimento =parcela.data_vencimento 
+                        conta_paga.id_conta = conta_obj.id
+                        
+                        conta_paga.save()
+
                     parcela.save()
 
             
