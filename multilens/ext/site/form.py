@@ -127,6 +127,9 @@ class FormBalanceEntrada(BaseForm):
         ]
     )
 
+    def load(self, form):
+        self.process(obj=form)
+
     def limpar(self):
         self.date.data = ""
         self.quantidade.data = ""
@@ -177,6 +180,9 @@ class FormBalanceSaida(BaseForm):
 
         ]
     )
+    
+    def load(self, form):
+        self.process(obj=form)
 
     def limpar(self):
         self.date.data = ""
