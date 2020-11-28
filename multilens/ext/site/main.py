@@ -656,7 +656,6 @@ def novo_pedido():
                 )
                 form.limpar()
                 return redirect(url_for("site.itens_pedido", pedido_id=response["id"]))
-                #return render_template("forms/novo_pedido.html", form=form, cadastro=True)
                 
             
 
@@ -769,7 +768,7 @@ def itens_pedido(pedido_id: int):
 
                 form.load(pedido_selecionado.pedidos_itens[0])
 
-                return render_template("forms/pedido_itens.html", form=form, pedido=pedido_selecionado)
+                return redirect(url_for("site.status_pagamento_pedido", pedido_id=pedido_selecionado.id))
                 
             
 
