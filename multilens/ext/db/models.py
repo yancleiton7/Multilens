@@ -971,7 +971,7 @@ class Balance(db.Model):
     preco = db.Column("preco", db.Unicode, default="00,00")
     observacao = db.Column("observacao", db.Unicode)
 
-    produto = db.relationship("Produto", foreign_keys=item_id)
+    product = db.relationship("Produto", foreign_keys=item_id)
 
     @staticmethod
     def get_relatorio(inicio, fim):
@@ -1026,6 +1026,7 @@ class Balance(db.Model):
             db.session.commit()
 
         except Exception as e:
+            print(e)
             db.session.rollback()
             response = {
                 "success": False,
