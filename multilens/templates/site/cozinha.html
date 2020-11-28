@@ -70,7 +70,7 @@
                         <tr>
                             <td style="vertical-align: middle">
                                     <b>{{pedido.cliente.name}}</b>
-                                <p>  {{pedido.get_data_entrega()}} às {{ pedido.hora_entrega}}
+                                <p> <b>Produção:</b> {{pedido.get_data_producao()}} às {{ pedido.hora_producao}}
                                 <p> <b>Telefone:</b> {{pedido.cliente.get_telefone_encrypted()}}
                             </td>
 
