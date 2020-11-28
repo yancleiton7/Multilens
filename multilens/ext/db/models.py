@@ -784,11 +784,11 @@ class Pedidos(db.Model):
     hora_entrega = db.Column("hora_entrega", db.Unicode)
     id_cliente = db.Column(db.Integer, db.ForeignKey("cliente.id"))
     tipo_retirada = db.Column("tipo_retirada", db.Integer, db.ForeignKey("retirada.id"))
-    tipo_pagamento = db.Column("tipo_pagamento", db.Integer, db.ForeignKey("pagamento.id"))
+    tipo_pagamento = db.Column("tipo_pagamento", db.Integer, db.ForeignKey("pagamento.id"), default=3)
     endereco_entrega = db.Column("endereco_entrega", db.Unicode)
     data_producao = db.Column("data_producao", db.Unicode)
     hora_producao = db.Column("hora_producao", db.Unicode)
-    status_pagamento = db.Column("status_pagamento", db.Integer, db.ForeignKey("status_pagamento.id"))   
+    status_pagamento = db.Column("status_pagamento", db.Integer, db.ForeignKey("status_pagamento.id"), default=1)   
     status_entrega = db.Column("status_entrega", db.Integer, db.ForeignKey("status_entrega.id") , default=1) 
     valor = db.Column("valor", db.Unicode)
     valor_entrega = db.Column("valor_entrega", db.Unicode)
@@ -822,12 +822,32 @@ class Pedidos(db.Model):
     def get_data_entrega(self):        
         return converter_data(self.data_entrega)
 
+    def get_data_producao(self):        
+        return converter_data(self.data_producao)
+
     def get_data_pedido(self):
         return converter_data(self.data_pedido)
 
     def get_data_pagamento(self):
         return converter_data(self.data_pagamento)
 
+    def get_valor_final(self):
+        if self.valor is not None:
+            valor = float(self.valor.replace(",","."))
+            if self.valor_desconto is not None:
+                try:
+                    valor-=float(self.valor_desconto.replace(",","."))
+                except:
+                    pass
+            if self.valor_entrega is not None:
+                try:
+                    valor-=float(self.valor_entrega.replace(",","."))
+                except:
+                    pass
+            str(valor).replace(".",",")
+        else:
+            valor = self.valor
+        return tratar_centavos(valor)
 
     @staticmethod
     def get_all():
