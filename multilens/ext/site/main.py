@@ -126,7 +126,7 @@ def cliente(register: int):
 def financeiro_pedidos():
     return render_template("site/financeiro_pedidos.html", pedidos=Pedidos.get_pagos())
 
-@bp.route("/contas/", methods=["GET"])
+@bp.route("/contas", methods=["GET"])
 @login_required
 def contas():
     return render_template("site/contas.html", contas=Contas.get_all())
@@ -657,8 +657,15 @@ def entregas():
 
 @bp.route("/pedidos", methods=["GET"])
 @login_required
-def pedidos():
-    return render_template("site/pedidos.html", pedidos=Pedidos.get_all())
+def pedidos(limit=50, offset=0):
+    if request.method == "GET":
+        if len(request.args)==0:
+            return render_template("site/pedidos.html", limit=limit, offset=offset, pedidos=Pedidos.get_to_table(limit,offset))
+        else:
+            limit = request.args["limit"]
+            return render_template("site/pedidos.html", limit=limit, offset=offset, pedidos=Pedidos.get_to_table(limit,offset))
+
+    
 
 @bp.route("/fluxo", methods=["GET"])
 @login_required
