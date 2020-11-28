@@ -104,16 +104,21 @@ class Gerar_relatorios():
         sheet.write(0, 1, 'Data Pedido')
         sheet.write(0, 2, 'Id Cliente')
         sheet.write(0, 3, 'Nome Cliente')
-        sheet.write(0, 4, 'Data Entrega')
-        sheet.write(0, 5, 'Hora Entrega')
-        sheet.write(0, 6, 'Endereço de Entrega')
-        sheet.write(0, 7, 'Tipo Retirada')
-        sheet.write(0, 8, 'Status Entrega')
-        sheet.write(0, 9, 'Data Pagamento')
-        sheet.write(0, 10, 'Status Pagamento')
-        sheet.write(0, 11, 'Tipo Pagamento')
-        sheet.write(0, 12, 'Valor Total do Pedido')
-        sheet.write(0, 13, 'Observacao')
+        sheet.write(0, 4, 'Data Produção')
+        sheet.write(0, 5, 'Hora Produção')
+        sheet.write(0, 6, 'Data Entrega')
+        sheet.write(0, 7, 'Hora Entrega')
+        sheet.write(0, 8, 'Endereço de Entrega')
+        sheet.write(0, 9, 'Tipo Retirada')
+        sheet.write(0, 10, 'Status Entrega')
+        sheet.write(0, 11, 'Data Pagamento')
+        sheet.write(0, 12, 'Status Pagamento')
+        sheet.write(0, 13, 'Tipo Pagamento')
+        sheet.write(0, 14, 'Valor Total do Pedido')
+        sheet.write(0, 15, 'Valor Entrega')
+        sheet.write(0, 16, 'Valor Desconto')
+        sheet.write(0, 17, 'Valor Final')
+        sheet.write(0, 18, 'Observacao')
 
 
         idx = 0
@@ -122,16 +127,21 @@ class Gerar_relatorios():
             sheet.write(idx+1, 1, pedido.get_data_pedido())
             sheet.write(idx+1, 2, pedido.cliente.id)
             sheet.write(idx+1, 3, pedido.cliente.name)
-            sheet.write(idx+1, 4, pedido.get_data_entrega())
-            sheet.write(idx+1, 5, pedido.hora_entrega)
-            sheet.write(idx+1, 6, pedido.endereco_entrega)
-            sheet.write(idx+1, 7, pedido.retirada.tipo_retirada)
-            sheet.write(idx+1, 8, pedido.s_entrega.status_entrega)
-            sheet.write(idx+1, 9, pedido.get_data_pagamento())
-            sheet.write(idx+1, 10, pedido.s_pagamento.status_pagamento)
-            sheet.write(idx+1, 11, pedido.pagamento.tipo_pagamento)
-            sheet.write(idx+1, 12, pedido.valor)
-            sheet.write(idx+1, 13, pedido.observacao)
+            sheet.write(idx+1, 4, pedido.get_data_producao())
+            sheet.write(idx+1, 5, pedido.hora_producao)
+            sheet.write(idx+1, 6, pedido.get_data_entrega())
+            sheet.write(idx+1, 7, pedido.hora_entrega)
+            sheet.write(idx+1, 8, pedido.endereco_entrega)
+            sheet.write(idx+1, 9, pedido.retirada.tipo_retirada)
+            sheet.write(idx+1, 10, pedido.s_entrega.status_entrega)
+            sheet.write(idx+1, 11, pedido.get_data_pagamento())
+            sheet.write(idx+1, 12, pedido.s_pagamento.status_pagamento)
+            sheet.write(idx+1, 13, pedido.pagamento.tipo_pagamento)
+            sheet.write(idx+1, 14, pedido.valor)
+            sheet.write(idx+1, 15, pedido.valor_entrega)
+            sheet.write(idx+1, 16, pedido.valor_desconto)
+            sheet.write(idx+1, 17, pedido.get_valor_final())
+            sheet.write(idx+1, 18, pedido.observacao)
             idx += 1
 
         return workbook
@@ -155,6 +165,8 @@ class Gerar_relatorios():
         sheet.write(0, 4, 'Produto')
         sheet.write(0, 5, 'Descricao')
         sheet.write(0, 6, 'Quantidade')
+        sheet.write(0, 7, 'Valor Unitário')
+        sheet.write(0, 8, 'Valor Total')
 
 
         idx = 0
@@ -166,6 +178,8 @@ class Gerar_relatorios():
             sheet.write(idx+1, 4, item.pedido_nome.tipo)
             sheet.write(idx+1, 5, item.descricao)
             sheet.write(idx+1, 6, item.quantidade)
+            sheet.write(idx+1, 7, item.valor_unitario)
+            sheet.write(idx+1, 8, item.valor_total)
             idx += 1
 
         return workbook
@@ -239,7 +253,7 @@ class Gerar_relatorios():
         idx = 0
         for produto_balance in result:
             sheet.write(idx+1, 0, produto_balance.item_id)
-            sheet.write(idx+1, 1, produto_balance.produto.nome_produto)
+            sheet.write(idx+1, 1, produto_balance.product.nome_produto)
             sheet.write(idx+1, 2, produto_balance.quantidade)
             sheet.write(idx+1, 3, produto_balance.get_data())
             sheet.write(idx+1, 4, produto_balance.event)
