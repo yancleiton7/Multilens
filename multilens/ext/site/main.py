@@ -725,7 +725,7 @@ def fluxo_delete(financa: int):
 def novo_pedido():
     form = FormPedido()
     if request.method == "GET":
-        return render_template("forms/novo_pedido.html", form=form, cadastro=True)
+        return render_template("forms/novo_pedido.html", form=form, clientes=Cliente.get_all(), cadastro=True)
 
     elif request.method == "POST":
         if form.validate_on_submit():

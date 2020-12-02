@@ -117,6 +117,17 @@ $(document).ready(function() {
         $(this).myfunction()
     });
 
+    $("#id_cliente").dblclick(function () {
+        
+        $("#article_cliente").show()
+    });
+
+    $("#id_cliente").focusout(function () {
+        if ($("#id_cliente").val()!=""){
+        $("#article_cliente").hide()
+    }
+    
+    });
 
     $("#excluir_item").click(function () {
         if (count_item>0){
