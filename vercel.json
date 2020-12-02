@@ -1,6 +1,6 @@
 {
     "routes": [{
-        "src": "/multilens/(.*)",
-        "dest": "multilens/app.py"
+        "src": "/multilens/templates/(.*)",
+        "dest": "multilens/ext/site/main.py"
     }]
 }
