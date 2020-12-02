@@ -2,7 +2,7 @@
     "version": 2,
     "builds": [
         {
-            "src": "/multilens/ext/site/main.py",
+            "src": "./multilens/ext/site/main.py",
             "use": "@vercel/python"
         }
     ],
