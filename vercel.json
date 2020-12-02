@@ -2,14 +2,14 @@
     "version": 2,
     "builds": [
         {
-            "src": "/multilens/ext/site/main.py",
+            "src": "./index.py",
             "use": "@vercel/python"
         }
     ],
     "routes": [
         {
-            "src": "./multilens/templates/(.*)",
-            "dest": "multilens/templates/"
+            "src": "/(.*)",
+            "dest": "/"
         }
     ]
 }
