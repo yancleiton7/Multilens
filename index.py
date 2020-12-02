@@ -10,3 +10,5 @@ def create_app():
     config.init_app(app)
 
     return app
+
+app = create_app()
