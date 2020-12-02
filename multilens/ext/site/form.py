@@ -406,7 +406,7 @@ class FormPedidoItens(BaseForm):
         validators=[Required("O produto é obrigatorio!")],
         get_label="tipo",
         get_pk=lambda x: x.id,
-        query_factory=lambda: Tipo.query,
+        query_factory=lambda: Tipo.query.order_by(Tipo.tipo),
         allow_blank=True
         
     )
