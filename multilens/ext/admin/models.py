@@ -58,47 +58,58 @@ class UserModelView(BaseView):
     column_labels = {"user": "Usuario", "name": "Nome", "password": "Senha"}
 
 
-class EstoqueModelView(BaseView):
+class GrupoModelView(BaseView):
     page_size = 10
     column_searchable_list = [
-        "nome_produto",
+        "id", "grupo"
     ]
-    form_excluded_columns = [
-        "Quantidadei", "quantidade"
+    column_labels = {"id": "id", "grupo": "Grupo"}
+
+class PagamentoModelView(BaseView):
+    page_size = 10
+    column_searchable_list = [
+        "tipo_pagamento"
     ]
-    column_labels = {"nome_produto": "Produto", "valor_pago": "Preço", "data_compra": "Data da Compra", "quantidade": "Quantidade"}
+    column_labels = {"id": "id", "tipo_pagamento": "Tipo de Pagamento"}
 
-'''
-class SpecialityModelView(BaseView):
-    column_editable_list = ["speciality"]
-    column_labels = {"speciality": "Especialidade"}
-
-
-class SaleTypeModelView(BaseView):
-    column_editable_list = ["type_of_sale"]
-    column_labels = {"type_of_sale": "Tipo de venda"}
-
-
-class PaymentTypeModelView(BaseView):
-    column_editable_list = ["type_of_payment"]
-    column_labels = {"type_of_payment": "Tipo de pagamento"}
-'''
-
-class BalanceModelView(BaseView):
-    column_editable_list = [
-        "quantidade",
+class StatusPagamentoContaModelView(BaseView):
+    page_size = 10
+    column_searchable_list = [
+        "status_pagamento_conta"
     ]
-    column_list = ["balance", "quantidade", "event", "date"]
-    form_columns = ["balance", "quantidade", "event"]
+    column_labels = {"id": "id", "status_pagamento_conta": "Status Contas"}
 
-    column_labels = {
-        "item_id": "Item ID",
-        "quantidade": "Quantidade",
-        "date": "Data",
-        "event": "Entrada/Saida",
-        "balance": "Produto",
-    }
+class TipoRetiradaContaModelView(BaseView):
+    page_size = 10
+    column_searchable_list = [
+        "tipo_retirada"
+    ]
+    column_labels = {"id": "id", "tipo_retirada": "Tipo de Retirada"}
 
-    form_overrides = {"event": SelectField}
+class StatusEntregaModelView(BaseView):
+    page_size = 10
+    column_searchable_list = [
+        "status_entrega"
+    ]
+    column_labels = {"id": "id", "status_entrega": "Status Entrega"}
 
-    form_args = {"event": {"choices": [("Entrada", "Entrada"), ("Saida", "Saida")]}}
+class StatusPagamentoModelView(BaseView):
+    page_size = 10
+    column_searchable_list = [
+        "status_pagamento"
+    ]
+    column_labels = {"id": "id", "status_pagamento": "Status Pagamento"}
+
+class TipoModelView(BaseView):
+    page_size = 10
+    column_searchable_list = [
+        "tipo"
+    ]
+    column_labels = {"id": "id", "tipo": "Item do Pedido"}
+
+class TipoMensalidadeModelView(BaseView):
+    page_size = 10
+    column_searchable_list = [
+        "tipo_mensalidade"
+    ]
+    column_labels = {"id": "id", "tipo_mensalidade": "Mensalidade"}

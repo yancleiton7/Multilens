@@ -6,6 +6,7 @@ from flask_login import UserMixin, current_user
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash
 from sqlalchemy.sql import func
+from sqlalchemy import event
 
 from . import db
 
@@ -42,6 +43,9 @@ def tratar_centavos(valor):
         print(valor)
         valor_formatado = "00,00"
     return valor_formatado
+
+
+
 
 class BaseModel:
 
@@ -116,6 +120,7 @@ class User(UserMixin, db.Model):
     name = db.Column("name", db.Unicode)
     cpf = db.Column("cpf", db.Unicode)
     admin = db.Column("admin", db.Boolean)
+
 
     @staticmethod
     def create(user: str, password: str, email: str, cpf: str, admin=False):
@@ -1529,3 +1534,11 @@ class Cliente(db.Model):
         details = self.to_dict()
         details.pop("register_id")
         return details
+
+
+@event.listens_for(User.password, 'set', retval=True)
+def hash_user_password(target, value, oldvalue, initiator):
+    if value != oldvalue:
+        return generate_password_hash(value)
+
+    return value

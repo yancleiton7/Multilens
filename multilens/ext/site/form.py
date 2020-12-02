@@ -77,19 +77,18 @@ class FormClientes(BaseForm):
             self.complemento.data = cliente.register.complemento
 
 class FormBalanceEntrada(BaseForm):
-    produto = QuerySelectField(
-        "Nome do Produto",
-        validators=[Required("O produto é obrigatorio!")],
-        get_label="nome_produto",
-        get_pk=lambda x: x.id,
-        query_factory=lambda: Produto.query,
-        allow_blank=True,  
-        
+
+    item_id = StringField(
+        "ID",
+        [
+            Required("Digite um id válido.")
+        ],
     )
 
     quantidade = StringField(
         "Quantidade",
         [        
+            Required("Por favor informar a quantidade."),
             Regexp("^[0-9]*$", message="Informe somente números"),
         ],
     )
@@ -120,12 +119,7 @@ class FormBalanceEntrada(BaseForm):
         ]
     )
 
-    item_id = StringField(
-        "item_id",
-        [
 
-        ]
-    )
 
     def load(self, form):
         self.process(obj=form)
@@ -135,17 +129,14 @@ class FormBalanceEntrada(BaseForm):
         self.quantidade.data = ""
         self.observacao.data = ""
         self.preco.data = ""
-        self.produto.data = ""
+        self.item_id.data = ""
 
 class FormBalanceSaida(BaseForm):
-    produto = QuerySelectField(
-        "Nome do Produto",
-        validators=[Required("O produto é obrigatorio!")],
-        get_label="nome_produto",
-        get_pk=lambda x: x.id,
-        query_factory=lambda: Produto.query,
-        allow_blank=True,  
-        
+    item_id = StringField(
+        "ID",
+        [
+            Required("Digite um id válido.")
+        ],
     )
 
     quantidade = StringField(
@@ -174,19 +165,13 @@ class FormBalanceSaida(BaseForm):
         ]
     )
     
-    item_id = StringField(
-        "item_id",
-        [
-
-        ]
-    )
     
     def load(self, form):
         self.process(obj=form)
 
     def limpar(self):
         self.date.data = ""
-        self.produto.data = ""
+        self.item_id.data = ""
         self.quantidade.data = ""
         self.observacao.data = ""
 

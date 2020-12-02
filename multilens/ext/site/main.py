@@ -559,14 +559,12 @@ def fornecedores(produto: int):
 def form_produto_saida():
     form = FormBalanceSaida()
     if request.method == "GET":
-        return render_template("forms/saida.html", form=form)
+        return render_template("forms/saida.html", form=form, produtos=Produto.get_all())
 
     elif request.method == "POST":
         if form.validate_on_submit():
             form.event.data = "Saida"
             form.quantidade.data = str(-1 * int(form.quantidade.data))
-            
-            form.item_id.data = Produto.get_id(form.produto.data.nome_produto)
             response = Balance.create_by_form(form)
             form.limpar()
             if response["success"]:
@@ -574,7 +572,7 @@ def form_produto_saida():
                     response["message"],
                     "is-success",
                 )
-                return render_template("forms/saida.html", form=form)
+                return render_template("forms/saida.html", form=form, produtos=Produto.get_all())
                 
             
 
@@ -587,19 +585,18 @@ def form_produto_saida():
                 
                 [flash(err, "is-danger") for err in field]
 
-        return render_template("forms/saida.html", form=form)
+        return render_template("forms/saida.html", form=form, produtos=Produto.get_all())
 
 @bp.route("/balance/entrada", methods=["GET", "POST"])
 @login_required
 def form_produto_entrada():
     form = FormBalanceEntrada()
     if request.method == "GET":
-        return render_template("forms/entrada.html", form=form)
+        return render_template("forms/entrada.html", form=form, produtos=Produto.get_all())
 
     elif request.method == "POST":
         if form.validate_on_submit():
             form.event.data = "Entrada"
-            form.item_id.data = Produto.get_id(form.produto.data.nome_produto)
             response = Balance.create_by_form(form)
             form.limpar()
             if response["success"]:
@@ -607,7 +604,7 @@ def form_produto_entrada():
                     response["message"],
                     "is-success",
                 )
-                return render_template("forms/entrada.html", form=form)
+                return render_template("forms/entrada.html", form=form, produtos=Produto.get_all())
                 
             
 
@@ -618,7 +615,7 @@ def form_produto_entrada():
             for field in form.errors.values():
                 [flash(err, "is-danger") for err in field]
 
-        return render_template("forms/entrada.html", form=form)
+        return render_template("forms/entrada.html", form=form, produtos=Produto.get_all())
 
 
 @bp.route("/balance/<int:balance_id>", methods=["GET", "POST", "DELETE"])
