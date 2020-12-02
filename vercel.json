@@ -1,6 +1,6 @@
 {
-  "version": 2,
-  "builds": [
-    { "src": "multilens/templates/site/app.py", "use": "@multilens/templates/site" }
-  ]
+    "routes": [{
+        "src": "/multilens/(.*)",
+        "dest": "multilens/app.py"
+    }]
 }
