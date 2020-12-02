@@ -1,0 +1,6 @@
+{
+    "routes": [{
+        "src": "/multilens/(.*)",
+        "dest": "multilens/index.py"
+    }]
+}
