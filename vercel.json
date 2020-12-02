@@ -1,6 +1,6 @@
 {
   "version": 2,
   "builds": [
-    { "src": "*.py", "use": "@multilens/templates/site" }
+    { "src": "multilens/templates/site/app.py", "use": "@multilens/templates/site" }
   ]
 }
