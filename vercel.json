@@ -8,8 +8,8 @@
     ],
     "routes": [
         {
-            "src": "./multilens/templates/(.*)",
-            "dest": "multilens/templates/"
+            "src": "./(.*)",
+            "dest": "/"
         }
     ]
 }
