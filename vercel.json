@@ -1,6 +1,15 @@
 {
-    "routes": [{
-        "src": "/multilens/templates/(.*)",
-        "dest": "multilens/ext/site/main.py"
-    }]
+    "version": 2,
+    "builds": [
+        {
+            "src": "./multilens/ext/site/run.py",
+            "use": "@vercel/python"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/multilens/templates/(.*)",
+            "dest": "multilens/templates/"
+        }
+    ]
 }
