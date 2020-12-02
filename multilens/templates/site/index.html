@@ -165,7 +165,7 @@
             <div class="panel-heading">Pagamentos pendentes</div>
             
                 <div class="form-body"style="height: 85%; overflow-y: auto;" >
-                    <div class="table-container" style="height: 100%;" >
+                    <div class="table-container">
                         {% for pedido in infos["pendentes"]%}
             
                         {% if pedido.s_entrega.status_entrega == "Entregue" %}
