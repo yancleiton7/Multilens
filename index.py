@@ -1,3 +1,12 @@
-from multilens.app import create_app
+#Arquivo criado para o Vercel
 
-app = create_app()
+from flask import Flask
+
+from multilens.ext import config
+
+
+def create_app():
+    app = Flask(__name__)
+    config.init_app(app)
+
+    return app
