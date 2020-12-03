@@ -1,0 +1,21 @@
+Ponto faz com que não passe o para próxima tela.
+Conta Parcelada está indo para 3 parcela.
+
+
+Quando tenta apagar uma parcela da conta
+conta.obj.deleta_contas_pagas()
+conta_paga.remove()
+financeiro.remove() 
+
+
+Aba Financeiro
+Mostrar Parcela 1 de 10
+e mostrar parcela 2 de 10
+
+Contas a pagar aumentar para range para 15 dias.
+
+Colocar observação nos bullets de Pedidos
+
+Colocar um botão que ao clicar apareça o nome do cliente e os pedidos.
+
+Campo Feedback

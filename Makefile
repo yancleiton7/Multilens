@@ -1,15 +1,15 @@
 run:
-	FLASK_APP=multilens/app.py FLASK_ENV=development flask run
+	FLASK_APP=doceriah/app.py FLASK_ENV=development flask run
 
 format:
-	black multilens/
-	isort multilens/
+	black doceriah/
+	isort doceriah/
 
 deploy:
-	FLASK_ENV=production FLASK_APP=multilens/app.py flask run --host 192.168.100.45
+	FLASK_ENV=production FLASK_APP=doceriah/app.py flask run --host 192.168.100.45
 
 reset-db:
-	export FLASK_APP=multilens/app.py
+	export FLASK_APP=doceriah/app.py
 	export FLASK_ENV=development
 	flask drop-db
 	flask create-db

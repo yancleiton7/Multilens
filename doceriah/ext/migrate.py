@@ -1,6 +1,6 @@
 from flask_migrate import Manager, Migrate, MigrateCommand
 
-from multilens.ext.db import db
+from doceriah.ext.db import db
 
 migrate = Migrate()
 

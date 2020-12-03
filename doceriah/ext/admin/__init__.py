@@ -1,7 +1,7 @@
 from flask_admin import Admin
 
-from multilens.ext.db import db
-from multilens.ext.db.models import (Balance, User, Grupo, Pagamento, Pagamento_conta, Retirada, Status_Entrega,
+from doceriah.ext.db import db
+from doceriah.ext.db.models import (Balance, User, Grupo, Pagamento, Pagamento_conta, Retirada, Status_Entrega,
                                     Status_pagamento, Tipo, Tipo_mensalidade)
 
 

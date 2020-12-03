@@ -1,17 +1,17 @@
 [default]
-SQLALCHEMY_DATABASE_URI = "sqlite:///multilens.db"
+SQLALCHEMY_DATABASE_URI = "sqlite:///doceriah.db"
 SQLALCHEMY_TRACK_MODIFICATIONS = false
 SESSION_REFRESH_EACH_REQUEST = true
 COLOR_THEME = "is-primary"
 ORDER_FOLDER = "order"
 
 EXTENSIONS = [
-    "multilens.ext.db:init_app",
-    "multilens.ext.api:init_app",
-    "multilens.ext.auth:init_app",
-    "multilens.ext.site:init_app",
-    "multilens.ext.admin:init_app",
-    "multilens.ext.cli:init_app",
+    "doceriah.ext.db:init_app",
+    "doceriah.ext.api:init_app",
+    "doceriah.ext.auth:init_app",
+    "doceriah.ext.site:init_app",
+    "doceriah.ext.admin:init_app",
+    "doceriah.ext.cli:init_app",
 ]
 
 [development]

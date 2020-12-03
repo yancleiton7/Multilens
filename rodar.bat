@@ -1,3 +1,3 @@
-set FLASK_APP=multilens/app.py
+set FLASK_APP=doceriah/app.py
 set FLASK_ENV=development
 flask run

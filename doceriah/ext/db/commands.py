@@ -1,7 +1,7 @@
 from werkzeug.security import check_password_hash
 
-from multilens.ext.db import db
-from multilens.ext.db.models import User
+from doceriah.ext.db import db
+from doceriah.ext.db.models import User
 
 
 def create_db():

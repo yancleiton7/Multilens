@@ -5,7 +5,7 @@ from wtforms.fields.html5 import EmailField
 from wtforms.fields import SelectField
 from wtforms.validators import Email, Length, Optional, Regexp, Required
 
-from multilens.ext.db.models import ( Register, Produto,Tipo, Retirada, Pagamento_conta, Pagamento,
+from doceriah.ext.db.models import ( Register, Produto,Tipo, Retirada, Pagamento_conta, Pagamento,
                                      Grupo,  Cliente, Status_pagamento, Status_Entrega,Tipo_mensalidade, Contas)
 
 

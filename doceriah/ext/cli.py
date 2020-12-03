@@ -1,8 +1,8 @@
 import click
 from sqlalchemy.exc import IntegrityError, OperationalError
 
-from multilens.ext.db.commands import create_db, drop_db
-from multilens.ext.db.models import User
+from doceriah.ext.db.commands import create_db, drop_db
+from doceriah.ext.db.models import User
 
 
 def init_app(app):
@@ -33,4 +33,4 @@ def add_user(username: str, password: str, email: str, cpf: int, admin: bool):
 
 
 def list_users():
-    return "Lista com todos os funcionarios da Multilens"
+    return "Lista com todos os funcionarios da doceriah"

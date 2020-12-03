@@ -7,9 +7,9 @@ from flask import (Blueprint, current_app, flash, redirect, render_template,
 from flask_login import current_user, login_required
 
 
-from multilens.ext.api.resources import ResourcePedido
-from multilens.ext.db.relatorio import Gerar_relatorios
-from multilens.ext.db.models import Cliente, Produto, Contas_parceladas, Balance, Pedidos, Financeiro, Contas, Pedido_item, Contas_pagas
+from doceriah.ext.api.resources import ResourcePedido
+from doceriah.ext.db.relatorio import Gerar_relatorios
+from doceriah.ext.db.models import Cliente, Produto, Contas_parceladas, Balance, Pedidos, Financeiro, Contas, Pedido_item, Contas_pagas
                                       
 
 from .form import (FormClientes, FormStatusPagamento, FormBalanceEntrada, FormPedido, FormFornecedor, FormParcelas,

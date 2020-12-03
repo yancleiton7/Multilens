@@ -4,9 +4,9 @@ from flask import abort, flash, redirect, render_template, request, url_for
 from flask_login import LoginManager, login_required, login_user, logout_user
 from werkzeug.security import check_password_hash
 
-from multilens.ext.db.models import User
-from multilens.ext.site import is_safe_url
-from multilens.ext.site.form import FormLogin
+from doceriah.ext.db.models import User
+from doceriah.ext.site import is_safe_url
+from doceriah.ext.site.form import FormLogin
 
 login_manager = LoginManager()
 

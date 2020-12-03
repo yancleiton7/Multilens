@@ -1,7 +1,7 @@
 import sqlite3
 import random
 
-conn = sqlite3.connect('multilens.db')
+conn = sqlite3.connect('doceriah.db')
 
 cursor = conn.cursor()
 

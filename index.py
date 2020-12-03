@@ -2,7 +2,7 @@
 
 from flask import Flask
 
-from multilens.ext import config
+from doceriah.ext import config
 
 
 def create_app():
