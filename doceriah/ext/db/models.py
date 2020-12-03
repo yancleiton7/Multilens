@@ -206,7 +206,7 @@ class Contas(db.Model):
 
     @staticmethod
     def get_avencer_capa():
-        hojeMais7 = datetime.now()+timedelta(days=7)
+        hojeMais7 = datetime.now()+timedelta(days=15)
         return Contas.query.filter(Contas.status_pagamento==1, Contas.data_vencimento<hojeMais7
         ).order_by(Contas.data_vencimento.asc()).all()
 
