@@ -24,7 +24,7 @@ def index():
         form = FormRelatorios()
         if not current_user.is_authenticated:
             return redirect(url_for("login"))
-        
+      
         infos={}
         infos["pedidos"] = Pedidos.get_entrega_capa()
         infos["balance"] = Balance.get_balance_capa()
